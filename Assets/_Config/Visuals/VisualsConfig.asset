@@ -44,7 +44,7 @@ MonoBehaviour:
   jumpCount: 2
   nightSpeedMultiplier: 0.45
   stormSpeedMultiplier: 1.6
-  shelterSpread: 0.35
+  shelterSpread: 0.6
   happyEmoteInterval: {x: 6, y: 14}
   sleepEmoteInterval: {x: 3, y: 5}
   stormEmoteInterval: {x: 2.5, y: 4}
