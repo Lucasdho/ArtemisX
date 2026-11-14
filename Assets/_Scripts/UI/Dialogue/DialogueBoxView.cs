@@ -5,7 +5,7 @@ using UnityEngine.InputSystem;
 
 namespace ArtemisX.UI.Dialogue
 {
-    /// <summary>Renders portrait, speaker banner, typewriter text, and choice buttons for DialogueRunner.</summary>
+    /// <summary>Renders speaker portrait/mood, formatted speaker name, typewriter text, and choice buttons for DialogueRunner.</summary>
     public class DialogueBoxView : MonoBehaviour
     {
         [SerializeField] private DialogueRunner runner;
@@ -134,12 +134,14 @@ namespace ArtemisX.UI.Dialogue
         private void ApplyLineMetadata(DialogueSequence.DialogueLine line)
         {
             var speaker = line.speaker;
+            string playerName = runner != null ? runner.PlayerName : null;
+
             if (speakerNameLabel != null)
-                speakerNameLabel.text = speaker != null ? speaker.displayName : string.Empty;
+                speakerNameLabel.text = speaker != null ? speaker.GetDisplayName(playerName) : string.Empty;
 
             if (portraitImage != null)
             {
-                portraitImage.sprite = speaker != null ? speaker.portrait : null;
+                portraitImage.sprite = speaker != null ? speaker.GetPortrait(line.mood) : null;
                 portraitImage.enabled = portraitImage.sprite != null;
             }
 
@@ -176,9 +178,14 @@ namespace ArtemisX.UI.Dialogue
                 if (btn == null) continue;
 
                 if (i < choiceCount)
-                    btn.Bind(choices[i].choiceId, choices[i].label, HandleChoiceSelected);
+                {
+                    string formattedLabel = runner != null ? runner.FormatText(choices[i].label) : choices[i].label;
+                    btn.Bind(choices[i].choiceId, formattedLabel, HandleChoiceSelected);
+                }
                 else
+                {
                     btn.Hide();
+                }
             }
         }
 
