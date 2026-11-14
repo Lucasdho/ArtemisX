@@ -2,23 +2,22 @@
 
 ## 1. What Passed / What Failed
 
-All Definition of Done checks passed in Play Mode inside `Assets/Scenes/Dev_Dialogue.unity`:
+All Definition of Done checks and finalized storytelling requirements passed in Play Mode inside `Assets/Scenes/Dev_Dialogue.unity`:
 
-1. **Intro milestone + Day 1 morning briefing on Play**: Passed. Starting Play Mode triggered `DayManager` Day 1, playing `Seq_Intro_[PLACEHOLDER]` (`intro_day1`) followed immediately by `Seq_MorningBriefing_[PLACEHOLDER]` (`briefing_default`).
-2. **Typewriter skip / advance (Space & click)**: Passed. First tap while typing completed the active line (`6/72` -> `72/72` chars) without advancing; `Space` and clicks advanced lines (`Speaker B` -> `Speaker A`) and closed cleanly after the final line.
-3. **Next Day flow (debrief -> advance once -> briefing)**: Passed. Clicking `NextDayButton` played `Seq_EveningDebrief_[PLACEHOLDER]` (`debrief_default`) while still on Day 1, called `DayManager.AdvanceDay()` once on completion (`Day 1` -> `Day 2`, `DayCounter` updated to `Day 2`), and immediately played Day 2's morning briefing (`briefing_default`).
-4. **Event card & choice event**: Passed. Clicking `TriggerEventButton` opened `Seq_EventCard_Storm_[PLACEHOLDER]` (`event_storm_placeholder`) with 2 choice buttons (`Retract Panels`, `Keep Deployed`). Picking `Retract Panels` raised `DialogueRunner.ChoiceMade("event_storm_placeholder", "retract_panels")` once, logged `[Dialogue] ChoiceMade: event_storm_placeholder -> retract_panels`, and closed the dialogue box (`IsOpen = False`).
-5. **Input blocking while dialogue is open**: Passed. `NextDayFlow` set `NextDayButton.interactable = false` whenever `DialogueRunner.IsOpen` was true, and `DialogueCanvas`'s full-screen `InputBlocker` absorbed background clicks before they could reach underlying UI.
-6. **Layout readability at `1920x1080` and `1680x1050`**: Passed. Verified and captured:
+1. **Bauzer Roster, Mood Portraits & Player Name**: Passed. Starting Play Mode showed `Bauzer` with `portrait_bauzer_happy`, `{playerName}` substituted cleanly (`"Commander"`, and verified live updates such as `"Lucas"`), and mood portrait switching (`portrait_bauzer_happy` -> `portrait_bauzer_neutral` -> `portrait_bauzer_worried`). All lines stayed within `<= 110` characters and `<= 2` lines per beat.
+2. **Intro + Day 1 Briefing + Day Cap HUD**: Passed. On Play, `intro_day1` (`Seq_Intro_[PLACEHOLDER]`) played first, followed by `briefing_day1` (`Seq_Briefing_Day1_[PLACEHOLDER]`) explaining the 30-day mission cap, while `TestHUD/TopBar/DayCounter` displayed `"Day 1 / 30"` via `MissionDayCapView`.
+3. **Typewriter Skip / Advance (Click & Space)**: Passed. First UI tap while typing completed the active line (`6/76` -> `76/76` chars) without advancing; UI clicks and Input System `Space` key presses advanced lines and closed cleanly after the last line.
+4. **Next Day Flow & Live Evening Debriefs**: Passed. Clicking `NextDayButton` played `debrief_normal` (`Seq_EveningDebrief_[PLACEHOLDER]`) while on Day 1, called `DayManager.AdvanceDay()` once (`Day 1 / 30` -> `Day 2 / 30`), and selected Day 2's briefing from `okBriefingPool` (`pool_ok_2`). After choosing a storm action (`-10 Power`), the Day 2 -> Day 3 debrief picked `debrief_event_resolved` with live `{power_delta}` (`-10`), `{event_name}` (`dust storm`), and `{outcome_summary}` trade-off sentence. Day 3 -> Day 4 under low Power (`10 <= 25`) selected `lowPowerBriefingPool` (`pool_low_power_2`).
+5. **Event Cards (2 Choices, Simulation Events, Max 1/Day) & Input Blocking**: Passed. `NextDayButton` stayed disabled (`interactable = false`) and `NextDayFlow.OnNextDayClicked()` returned early whenever dialogue was open, while `DialogueCanvas/DialogueRoot/InputBlocker` blocked background pointer raycasts. `StormIncoming` played `briefing_first_storm` then `event_storm_placeholder` with 2 choice buttons (`Retract (-10 Power)`, `Ride Out (-10 Parts)`); a second simulation event (`ComponentBroken`) on the same day was rejected (`max 1 per day`). Choosing `Retract (-10 Power)` raised `ChoiceMade` once, logged `[Dialogue] ChoiceMade: event_storm_placeholder -> retract_panels`, reduced `Power` (`60 -> 50`), and closed the box. `ComponentBroken` was verified on Day 5 (`event_broken_placeholder`), clearing `HasBrokenComponent` when patched with Parts (`[Dialogue] ChoiceMade: event_broken_placeholder -> repair_with_parts`).
+6. **Auto Supply Ship, Slot Queue Order & Post-Debrief Leaderboard Handoff**: Passed. Day 5 (`day % supplyInterval == 0`, default `supplyInterval = 5`) automatically queued `briefing_supply_day` followed by `milestone_supply_ship`. Enqueuing `MissionEnd` (`slot 50`) before `SupplyArrival` (`slot 30`) while `MorningBriefing` (`slot 10`) was open played them in strict order `milestone_first_building -> milestone_supply_ship -> milestone_end_early_win`. `NicknameFilter` truncated >12-char names and rejected `@`/personal-data inputs. `StoryDirector.LeaderboardHandoffRequested` did **not** fire while `milestone_end_early_win` was open, firing once after it closed with `MissionRunRecord` (`nickname=Lucas, character=astronaut_3, daysTaken=5, stars=3, endReason=EarlyWin`) and logging `[Dialogue] LeaderboardHandoff: nickname=Lucas, character=astronaut_3, days=5, stars=3, reason=EarlyWin`. Day-30 hard-cap guards in `StoryDirector.PlayDebriefThen` and `NextDayFlow` keep `DayCounter` capped at `Day 30 / 30` and queue `DayCap` debrief after the Day 30 evening debrief.
+7. **Layout Readability at `1920x1080` and `1680x1050`**: Passed. Re-captured with Bauzer's worried portrait, `"BAUZER"` banner, `"DAY 2 / 30"`, and 2 choice buttons:
    - `Assets/Docs/screenshots/run2a-dialogue-1920x1080.png` (`1920x1080`)
    - `Assets/Docs/screenshots/run2a-dialogue-1680x1050.png` (`1680x1050`)
-   Both render crisp portraits on the left, speaker name banner, body text, and 2 choice buttons with zero clipping and clear clearance left of the bottom-right `NextDayButton`.
-7. **Console cleanliness**: Passed. Zero compiler errors, zero runtime errors, and zero warnings from `Assets/_Scripts/Story/**` or `Assets/_Scripts/UI/Dialogue/**` in Unity console checks (`console get --level warn` showed only a pre-existing Unity QuickSearch `SearchInit.IndexationOnStartup` exception and pre-existing Quaternius `.blend` / `MCP-FOR-UNITY` port messages outside our code).
-8. **Environment / CLI setup note**: Running `unity setup antigravity` on Unity CLI `1.0.0-beta.13` exited with code 2 (`unknown command 'antigravity'`), so Antigravity's installed Unity plugin skills (`unity-cli`, `ui-ugui`) were used instead. All edits remained strictly inside the Run 2A file-ownership boundaries on `feat/dialogue`.
+8. **Console & Environment Notes**: Passed — zero compiler/runtime errors or warnings from `Assets/_Scripts/Story/**` or `Assets/_Scripts/UI/Dialogue/**` (console only showed a pre-existing Unity `SearchInit.IndexationOnStartup` exception and `MCP-FOR-UNITY` port log). On CLI `1.0.0-beta.13`, `unity setup antigravity` exited `2` (`unknown command 'antigravity'`), so installed Unity plugin skills were used.
 
 ## 2. Exact Steps to Wire Into `Assets/Scenes/Base.unity`
 
-1. Select `Managers` in `Assets/Scenes/Base.unity` and add these three components from `Assets/_Scripts/Story/`:
+1. Select `Managers` in `Assets/Scenes/Base.unity` and add from `Assets/_Scripts/Story/`:
    - `DialogueRunner`
    - `StoryDirector`
    - `NextDayFlow`
@@ -26,6 +25,7 @@ All Definition of Done checks passed in Play Mode inside `Assets/Scenes/Dev_Dial
    - Assign `config` -> `Assets/_Config/Story/DialogueConfig.asset`.
 3. On `StoryDirector`:
    - Assign `dayManager` -> `Managers` (`DayManager`)
+   - Assign `resourceManager` -> `Managers` (`ResourceManager`)
    - Assign `runner` -> `Managers` (`DialogueRunner`)
    - Assign `schedule` -> `Assets/_Config/Story/StorySchedule.asset`
 4. On `NextDayFlow`:
@@ -35,26 +35,27 @@ All Definition of Done checks passed in Play Mode inside `Assets/Scenes/Dev_Dial
    - Assign `nextDayButton` -> `HUD/NextDayButton` (`Button`)
 5. Drag `Assets/_Prefabs/UI/DialogueCanvas.prefab` into the root hierarchy of `Assets/Scenes/Base.unity`, then on its `DialogueBoxView` component assign:
    - `runner` -> `Managers` (`DialogueRunner`)
-6. Select `HUD/NextDayButton` in `Assets/Scenes/Base.unity` and update `Button -> On Click ()`:
-   - Remove the existing persistent listener targeting `Managers -> DayManager.AdvanceDay`.
-   - Add a persistent listener targeting `Managers -> NextDayFlow.OnNextDayClicked`.
-7. **Milestone / Event / World-input hooks for other runs**:
-   - World-click, building-placement, and camera controllers should check `dialogueRunner.IsOpen` (and/or `EventSystem.current.IsPointerOverGameObject()`) to stay paused while dialogue is open.
-   - Hook `storyDirector.TriggerFirstBuilding()`, `storyDirector.TriggerSupplyShipArrived()`, `storyDirector.TriggerMissionEnd()`, and `storyDirector.TriggerEventCard(sequence)` at the corresponding simulation events.
-   - Subscribe to `dialogueRunner.ChoiceMade` (`Action<string, string>` receiving `sequenceId, choiceId`) to apply gameplay consequences when event-card mechanics are implemented.
+6. Select `HUD/NextDayButton` in `Assets/Scenes/Base.unity`:
+   - Replace the existing `Button -> On Click ()` listener targeting `Managers -> DayManager.AdvanceDay` with `Managers -> NextDayFlow.OnNextDayClicked`.
+7. Select `HUD/TopBar/DayCounter` (same object holding `DayCounterView`) and add `MissionDayCapView` (`Assets/_Scripts/UI/Dialogue/`):
+   - Assign `days` -> `Managers` (`DayManager`)
+   - Assign `config` -> `Assets/_Config/Story/DialogueConfig.asset`
+   - Assign `label` -> `DayCounter` (`Text`)
+   (Result: HUD shows `"Day X / 30"` at all times without modifying `DayCounterView.cs`.)
+8. **Hooks for other systems (Start Screen, Simulation, World Input, Leaderboard)**:
+   - **Start Screen**: call `dialogueRunner.SetPlayerName(rawInput)` (automatically sanitized by `NicknameFilter` to `<= 12` chars, profanity-filtered, no personal data) and `dialogueRunner.SetPlayerCharacter(characterId)`.
+   - **World Input**: guard camera/placement/world clicks on `dialogueRunner.IsOpen`.
+   - **Simulation Events & Milestones**: call `storyDirector.TriggerSimulationEvent(SimulationEventType.StormIncoming)` or `ComponentBroken` (capped at 1/day), `storyDirector.TriggerFirstBuilding()`, and at end-of-day resolve `storyDirector.CheckEndOfDayMissionEnd(achievedGoalsCount)` (or `storyDirector.TriggerMissionEnd(MissionEndReason.EarlyWin | DayCap, achievedGoalsCount)`).
+   - **Leaderboard Handoff**: subscribe the Leaderboard UI controller to `storyDirector.LeaderboardHandoffRequested` (`Action<MissionRunRecord>`). It fires only **after** Bauzer's final mission-end debrief finishes.
 
-## 3. What We Are Unsure About & Missing Assets
+## 3. Leaderboard & Design Handoff Spec + Missing Assets
 
-- **Missing character portrait art**: Using placeholder Kenney emote sprites copied into `Assets/_UI/Dialogue/portrait_speaker_a.png` and `Assets/_UI/Dialogue/portrait_speaker_b.png`; real character portraits (and any alternate expression variants) are still needed.
-- **Unassigned milestone sequences**: `StorySchedule.asset` currently leaves `firstBuildingMilestone`, `supplyShipArrivedMilestone`, and `missionEndMilestone` null until copy and speakers are decided (the `Trigger*` methods on `StoryDirector` are already wired and safely no-op when unassigned).
-- **World-space input pause**: `DialogueCanvas` blocks all UI pointer raycasts via `InputBlocker`, and `NextDayFlow` disables `HUD/NextDayButton` while open, but any future scripts reading keyboard/mouse actions directly from the Input System must check `DialogueRunner.IsOpen`.
-- **Event card gameplay effects**: Per spec, choice selection fires `DialogueRunner.ChoiceMade(sequenceId, choiceId)` with zero simulation side effects; wiring consequences into `ResourceManager` or `DayManager` remains for a follow-up run.
-
-## 4. Storytelling Design Questions for Lucas
-
-1. **Speaker Roster & Identities**: Who are the recurring crew/AI characters (names, roles, callsigns, accent colors), and does each speaker need multiple mood/expression portraits?
-2. **Tone & Reading Level**: For the 9-99 target audience, should dialogue lean playful arcade-sci-fi or grounded NASA-mission-control, and what max line length / reading cadence feels right?
-3. **Morning Briefing Structure**: Should Days 1-20 each have an authored entry in `StorySchedule.dayBriefings`, or should only key plot days be authored while regular days pull from a non-repeating pool?
-4. **Evening Debrief Content**: Should evening debriefs summarize the day's actual resource deltas / events before `AdvanceDay()`, or serve as short reflective end-of-day sign-offs?
-5. **Event Card Trigger Rules & Consequences**: How often should event cards trigger (e.g., chance per morning, mid-day popup, or scripted days), should cards offer 2 or 3 choices, and can choices modify resources, unlock buildings, or queue follow-up lines?
-6. **Milestone Definitions**: What exact thresholds trigger `TriggerSupplyShipArrived()` (e.g., fixed day interval vs. beacon built) and `TriggerMissionEnd()` (survival day target vs. victory objective), and should milestones wait in queue after active briefings or interrupt immediately?
+- **Leaderboard Scope (handled by Leaderboard UI / backend integration outside `Assets/_Scripts/Story/`)**:
+  - Receives `MissionRunRecord` (`nickname`, `character`, `daysTaken` 1..30, `stars` 1..3, `endReason` `EarlyWin | DayCap`) from `StoryDirector.LeaderboardHandoffRequested`.
+  - Online storage: Supabase REST API via `UnityWebRequest` (WebGL-safe, publishable anon key only, insert + read only; rank by fewest `daysTaken`, then highest `stars`).
+  - Bar graph UI: `x` = day the run ended (`1..30`) + separate `"Mission Extended"` bar for `DayCap` runs; `y` = number of runs; player's bar highlighted.
+  - Network failure fallback: never block the game or end flow; display the player's own `MissionRunRecord` and `"Leaderboard offline"`.
+- **Missing / Placeholder Assets**:
+  - Bauzer's final accent color pick (`[Lucas to pick]`) in `Assets/_Config/Story/Speaker_A_[PLACEHOLDER].asset` (currently `#3DB8F5`).
+  - Final Bauzer portrait sprites for her 3 moods (`Assets/_UI/Dialogue/portrait_bauzer_neutral.png`, `portrait_bauzer_happy.png`, `portrait_bauzer_worried.png`) and the 4 selectable astronaut portraits (currently Kenney vector emote placeholders).
+  - Final copywriting pass to replace `[PLACEHOLDER]` tags across the 22 `DialogueSequence` assets in `Assets/_Config/Story/`, plus Supabase URL / publishable anon key for the online leaderboard client.
