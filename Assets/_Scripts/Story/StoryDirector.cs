@@ -14,7 +14,9 @@ namespace ArtemisX.Story
         [SerializeField] private StorySchedule schedule;
 
         public event Action<MissionEndReason, int> MissionEnded;
+        public event Action<MissionRunRecord> LeaderboardHandoffRequested;
 
+        public MissionRunRecord LastRunRecord { get; private set; }
         public bool HasBrokenComponent { get; private set; }
         public bool HasTriggeredEventToday => lastEventCardDay == CurrentDay;
         public DialogueConfig Config => runner != null ? runner.Config : null;
@@ -95,7 +97,11 @@ namespace ArtemisX.Story
         /// <summary>Milestone hook for mission completion with default early-win 3-star parameters.</summary>
         public void TriggerMissionEnd() => TriggerMissionEnd(MissionEndReason.EarlyWin, 3);
 
-        /// <summary>Queues the MissionEnd sequence last and emits MissionEnded(reason, stars).</summary>
+        /// <summary>Queues Bauzer's final debrief for the given reason and hands off to the leaderboard afterwards.</summary>
+        public void TriggerMissionEnd(MissionEndReason reason)
+            => TriggerMissionEnd(reason, reason == MissionEndReason.EarlyWin ? 3 : 1);
+
+        /// <summary>Queues the MissionEnd sequence last, then emits MissionEnded and LeaderboardHandoffRequested.</summary>
         public void TriggerMissionEnd(MissionEndReason reason, int achievedGoalsCount)
         {
             if (missionEnded) return;
@@ -103,16 +109,40 @@ namespace ArtemisX.Story
 
             bool allGoalsMet = achievedGoalsCount >= 3 || reason == MissionEndReason.EarlyWin;
             int stars = reason == MissionEndReason.EarlyWin ? 3 : Mathf.Clamp(achievedGoalsCount, 1, 3);
+            int daysTaken = Mathf.Clamp(CurrentDay, 1, MissionLength);
+
+            var record = new MissionRunRecord
+            {
+                nickname = runner != null ? runner.PlayerName : "Commander",
+                character = runner != null ? runner.PlayerCharacter : "astronaut_1",
+                daysTaken = daysTaken,
+                stars = stars,
+                endReason = reason
+            };
+            LastRunRecord = record;
 
             SyncTemplateTokens();
             if (runner != null)
+            {
                 runner.SetTemplateValue("stars", stars.ToString());
+                runner.SetTemplateValue("days_taken", daysTaken.ToString());
+                runner.SetTemplateValue("end_reason", reason.ToString());
+            }
 
             var sequence = schedule != null ? schedule.GetMissionEndSequence(reason, allGoalsMet) : null;
             if (runner != null && sequence != null)
-                runner.Enqueue(sequence, null, DialogueQueueSlot.MissionEnd);
+                runner.Enqueue(sequence, () => CompleteMissionEndHandoff(record), DialogueQueueSlot.MissionEnd);
+            else
+                CompleteMissionEndHandoff(record);
+        }
 
-            MissionEnded?.Invoke(reason, stars);
+        private void CompleteMissionEndHandoff(MissionRunRecord record)
+        {
+            Debug.Log(
+                $"[Dialogue] LeaderboardHandoff: nickname={record.nickname}, character={record.character}, days={record.daysTaken}, stars={record.stars}, reason={record.endReason}",
+                this);
+            MissionEnded?.Invoke(record.endReason, record.stars);
+            LeaderboardHandoffRequested?.Invoke(record);
         }
 
         /// <summary>End-of-day check: triggers EarlyWin if all 3 goals are met, or DayCap at missionLength.</summary>

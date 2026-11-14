@@ -46,11 +46,13 @@ namespace ArtemisX.Story
         public string CurrentVisibleText { get; private set; } = string.Empty;
         public string CurrentFullText { get; private set; } = string.Empty;
         public string PlayerName => ResolvePlayerName();
+        public string PlayerCharacter => ResolvePlayerCharacter();
 
         private readonly List<QueuedEntry> pendingQueue = new List<QueuedEntry>();
         private readonly Dictionary<string, string> templateValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         private string playerNameOverride;
+        private string playerCharacterOverride;
         private DialogueSequence currentSequence;
         private Action currentOnFinished;
         private int currentLineIndex = -1;
@@ -67,6 +69,7 @@ namespace ArtemisX.Story
         private void Awake()
         {
             SetPlayerName(ResolvePlayerName());
+            SetPlayerCharacter(ResolvePlayerCharacter());
         }
 
         private void Update()
@@ -98,11 +101,19 @@ namespace ArtemisX.Story
             }
         }
 
-        /// <summary>Updates the active player name token substituted into {playerName} and player lines.</summary>
+        /// <summary>Updates the sanitized player nickname substituted into {playerName} and player lines.</summary>
         public void SetPlayerName(string playerName)
         {
-            playerNameOverride = string.IsNullOrWhiteSpace(playerName) ? null : playerName.Trim();
+            int maxLen = config != null ? config.maxNicknameLength : NicknameFilter.MaxLength;
+            string fallback = config != null ? config.defaultPlayerName : "Commander";
+            playerNameOverride = NicknameFilter.Sanitize(playerName, fallback, maxLen);
             templateValues["playerName"] = ResolvePlayerName();
+        }
+
+        /// <summary>Updates the chosen astronaut identifier used in leaderboard handoff records.</summary>
+        public void SetPlayerCharacter(string characterId)
+        {
+            playerCharacterOverride = string.IsNullOrWhiteSpace(characterId) ? null : characterId.Trim();
         }
 
         /// <summary>Stores a runtime token substituted into dialogue lines and choice labels.</summary>
@@ -227,13 +238,27 @@ namespace ArtemisX.Story
 
         private string ResolvePlayerName()
         {
+            int maxLen = config != null ? config.maxNicknameLength : NicknameFilter.MaxLength;
+            string fallback = NicknameFilter.Sanitize(
+                config != null ? config.defaultPlayerName : "Commander",
+                "Commander",
+                maxLen);
+
             if (!string.IsNullOrWhiteSpace(playerNameOverride))
-                return playerNameOverride;
+                return NicknameFilter.Sanitize(playerNameOverride, fallback, maxLen);
 
-            if (config != null && !string.IsNullOrWhiteSpace(config.defaultPlayerName))
-                return config.defaultPlayerName;
+            return fallback;
+        }
 
-            return "Commander";
+        private string ResolvePlayerCharacter()
+        {
+            if (!string.IsNullOrWhiteSpace(playerCharacterOverride))
+                return playerCharacterOverride;
+
+            if (config != null && !string.IsNullOrWhiteSpace(config.defaultCharacterId))
+                return config.defaultCharacterId;
+
+            return "astronaut_1";
         }
 
         private void StartNextFromQueue()

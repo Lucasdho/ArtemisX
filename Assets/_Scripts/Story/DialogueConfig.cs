@@ -16,6 +16,8 @@ namespace ArtemisX.Story
 
         [Header("Mission & Roster")]
         public string defaultPlayerName = "Commander";
+        [Range(1, 12)] public int maxNicknameLength = 12;
+        public string defaultCharacterId = "astronaut_1";
         [Min(1)] public int missionLength = 30;
         [Min(1)] public int supplyInterval = 5;
 
