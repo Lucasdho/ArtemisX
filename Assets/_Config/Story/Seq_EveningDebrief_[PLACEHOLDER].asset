@@ -12,10 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 793928e1aac8946ba974934098abc7b9, type: 3}
   m_Name: 'Seq_EveningDebrief_[PLACEHOLDER]'
   m_EditorClassIdentifier: Assembly-CSharp::ArtemisX.Story.DialogueSequence
-  sequenceId: debrief_default
+  sequenceId: debrief_normal
   lines:
-  - speaker: {fileID: 11400000, guid: e9491b65d8a9c4edfa921bee9056b201, type: 2}
-    text: '[PLACEHOLDER] Evening debrief: another lunar day concludes at base.'
   - speaker: {fileID: 11400000, guid: f1a52219a36a5425fbc0493a4d791c19, type: 2}
-    text: '[PLACEHOLDER] Logging status before advancing to the next mission day.'
+    mood: 0
+    text: '[PLACEHOLDER] Day {day}: Power {power_delta}, Water {water_delta} ({event_name}).'
+  - speaker: {fileID: 11400000, guid: f1a52219a36a5425fbc0493a4d791c19, type: 2}
+    mood: 1
+    text: '[PLACEHOLDER] Playing it safe kept the crew steady instead of rushing.'
   choices: []

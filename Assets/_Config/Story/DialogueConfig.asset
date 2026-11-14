@@ -15,3 +15,12 @@ MonoBehaviour:
   charactersPerSecond: 45
   autoAdvanceDelay: 0
   inputCooldown: 0.05
+  defaultPlayerName: Commander
+  maxNicknameLength: 12
+  defaultCharacterId: astronaut_1
+  missionLength: 30
+  supplyInterval: 5
+  lowPowerThreshold: 25
+  lowWaterThreshold: 25
+  maxCharactersPerLine: 110
+  maxLinesPerBeat: 2

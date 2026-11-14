@@ -15,9 +15,20 @@ MonoBehaviour:
   sequenceId: event_storm_placeholder
   lines:
   - speaker: {fileID: 11400000, guid: f1a52219a36a5425fbc0493a4d791c19, type: 2}
-    text: '[PLACEHOLDER] Alert! Solar storm incoming. Retract solar panels?'
+    mood: 2
+    text: '[PLACEHOLDER] Dust storm ahead! Retract solar panels or ride it out?'
   choices:
   - choiceId: retract_panels
-    label: Retract Panels
+    label: Retract (-10 Power)
+    resourceDeltas:
+    - resource: 0
+      delta: -10
+    fixesBrokenComponent: 0
+    outcomeSummary: Retracting panels saved Parts today at a small Power cost.
   - choiceId: keep_deployed
-    label: Keep Deployed
+    label: Ride Out (-10 Parts)
+    resourceDeltas:
+    - resource: 4
+      delta: -10
+    fixesBrokenComponent: 0
+    outcomeSummary: Keeping panels out preserved Power while wearing down Parts.

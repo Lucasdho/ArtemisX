@@ -12,7 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: df1f0e700229944ad8c999fd7512e815, type: 3}
   m_Name: 'Speaker_B_[PLACEHOLDER]'
   m_EditorClassIdentifier: Assembly-CSharp::ArtemisX.Story.Speaker
-  speakerId: speaker_b
-  displayName: Speaker B
-  portrait: {fileID: 21300000, guid: bf62ac311edde4989bf581b97801a57a, type: 3}
-  accentColor: {r: 0.98, g: 0.65, b: 0.22, a: 1}
+  speakerId: player
+  displayName: Commander
+  usePlayerName: 1
+  portrait: {fileID: 21300000, guid: 20bc4fedc85914f6a9ad80ecaea1318e, type: 3}
+  happyPortrait: {fileID: 0}
+  worriedPortrait: {fileID: 0}
+  accentColor: {r: 0.95, g: 0.62, b: 0.22, a: 1}

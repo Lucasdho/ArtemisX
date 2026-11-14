@@ -15,11 +15,9 @@ MonoBehaviour:
   sequenceId: intro_day1
   lines:
   - speaker: {fileID: 11400000, guid: f1a52219a36a5425fbc0493a4d791c19, type: 2}
-    text: '[PLACEHOLDER] Welcome to the lunar outpost, trainee. Systems are online.'
-  - speaker: {fileID: 11400000, guid: e9491b65d8a9c4edfa921bee9056b201, type: 2}
-    text: '[PLACEHOLDER] Solar arrays and life support are ready for our first day.'
+    mood: 1
+    text: '[PLACEHOLDER] Hi {playerName}! I''m Bauzer, your lunar base computer!'
   - speaker: {fileID: 11400000, guid: f1a52219a36a5425fbc0493a4d791c19, type: 2}
-    text: '[PLACEHOLDER] Watch your five resources closely. Every choice matters.'
-  - speaker: {fileID: 11400000, guid: e9491b65d8a9c4edfa921bee9056b201, type: 2}
-    text: '[PLACEHOLDER] Let us begin the Day 1 morning check.'
+    mood: 0
+    text: "[PLACEHOLDER] Our mission runs 30 days\u2014let's make this base self-sufficient!"
   choices: []
