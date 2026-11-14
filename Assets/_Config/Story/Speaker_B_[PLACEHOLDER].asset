@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: df1f0e700229944ad8c999fd7512e815, type: 3}
+  m_Name: 'Speaker_B_[PLACEHOLDER]'
+  m_EditorClassIdentifier: Assembly-CSharp::ArtemisX.Story.Speaker
+  speakerId: speaker_b
+  displayName: Speaker B
+  portrait: {fileID: 21300000, guid: bf62ac311edde4989bf581b97801a57a, type: 3}
+  accentColor: {r: 0.98, g: 0.65, b: 0.22, a: 1}

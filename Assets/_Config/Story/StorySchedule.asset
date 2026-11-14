@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6be2ea0caf8624a5d9c0e8fe98b8a3a6, type: 3}
+  m_Name: StorySchedule
+  m_EditorClassIdentifier: Assembly-CSharp::ArtemisX.Story.StorySchedule
+  dayBriefings: []
+  defaultMorningBriefing: {fileID: 11400000, guid: c49df0ce12d9f4f7e9e216a3ff49383b, type: 2}
+  defaultEveningDebrief: {fileID: 11400000, guid: edac7f91070d24059bc54ace0c47fed2, type: 2}
+  introMilestone: {fileID: 11400000, guid: a6fa51877a8f3404ebecdab304a66e26, type: 2}
+  firstBuildingMilestone: {fileID: 0}
+  supplyShipArrivedMilestone: {fileID: 0}
+  missionEndMilestone: {fileID: 0}
+  defaultEventCard: {fileID: 11400000, guid: 7782908db0c544b99a94d53e3b49c24f, type: 2}
