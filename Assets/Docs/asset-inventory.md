@@ -27,17 +27,17 @@ Everything below is already imported under `Assets/GameAssets/` (read-only). Mod
 
 **Astronaut (decided):** the Quaternius *Ultimate Space Kit* cartoon astronauts (`Astronaut_BarbaraTheBee`, `Astronaut_FernandoTheFlamingo`, `Astronaut_FinnTheFrog`, `Astronaut_RaeTheRedPanda`). The KayKit Mannequin is not used as the astronaut.
 
-**Resource icons (decided):** there are **no proper resource icons** in the Kenney packs, and the emotes are made for other meanings. The five resource icons will be **designed in-house in Figma**. Until they exist, the HUD uses these temporary emotes from Kenney Emotes (`PNG/Vector/Style 1`):
+**Resource icons (done):** original in-house icons, designed in Figma (file "Artemis X - Resource Icons", https://www.figma.com/design/M3anQLUxmbgXLAHpqOGKXR). Exported as 128 px PNGs to `Assets/_UI/Icons/` and used by the HUD bars.
 
-| Resource | Sprite | Fit |
+| Resource | File | Art |
 |---|---|---|
-| Power | `emote_idea` (light bulb) | OK |
-| Water | `emote_drop` (blue drop) | Good |
-| Oxygen | `emote_circle` (blue ring, reads as "O") | Weak |
-| Food | `emote_heart` | Weak |
-| Parts | `emote_star` | Weak (no gear/cog icon) |
+| Power | `icon_power.png` | yellow lightning bolt |
+| Water | `icon_water.png` | blue drop |
+| Oxygen | `icon_oxygen.png` | bubbles with "O2" |
+| Food | `icon_food.png` | green leaf |
+| Parts | `icon_parts.png` | two orange gears |
 
-To make in Figma: power, water, oxygen, food and parts icons, as one consistent set.
+To change an icon: edit its component in Figma, re-export the PNG at the same name and size, and Unity picks it up.
 
 ## KayKit Space Base Bits 1.0 (SOURCE)
 

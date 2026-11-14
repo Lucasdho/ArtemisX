@@ -21,6 +21,10 @@ Every third-party asset used in the project, for the NASA Space Apps submission.
 | Interface Sounds 1.0 | Kenney | CC0 1.0 | https://www.kenney.nl/ |
 | Kenney Future font (bundled with the UI packs) | Kenney | CC0 1.0 | https://www.kenney.nl/ |
 
+## Original assets
+
+- Resource icons (power, water, oxygen, food, parts): made by the Artemis X team in Figma.
+
 ## Code libraries
 
 | Library | Author | Licence | URL |
