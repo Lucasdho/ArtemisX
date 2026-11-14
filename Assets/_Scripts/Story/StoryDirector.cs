@@ -17,9 +17,11 @@ namespace ArtemisX.Story
         public event Action<MissionRunRecord> LeaderboardHandoffRequested;
 
         public MissionRunRecord LastRunRecord { get; private set; }
+        public bool IsMissionEnded => missionEnded;
         public bool HasBrokenComponent { get; private set; }
         public bool HasTriggeredEventToday => lastEventCardDay == CurrentDay;
         public DialogueConfig Config => runner != null ? runner.Config : null;
+        public int MissionLength => Config != null ? Mathf.Max(1, Config.missionLength) : 30;
 
         private static readonly int ResourceTypeCount = Enum.GetValues(typeof(ResourceType)).Length;
         private readonly int[] startOfDayResources = new int[ResourceTypeCount];
@@ -34,7 +36,6 @@ namespace ArtemisX.Story
         private string todayOutcomeSummary = "Steady reserves today traded speed for safety margins.";
 
         private int CurrentDay => dayManager != null ? dayManager.CurrentDay : 1;
-        private int MissionLength => Config != null ? Mathf.Max(1, Config.missionLength) : 30;
         private int SupplyInterval => Config != null ? Mathf.Max(1, Config.supplyInterval) : 5;
         private int LowPowerThreshold => Config != null ? Config.lowPowerThreshold : 25;
         private int LowWaterThreshold => Config != null ? Config.lowWaterThreshold : 25;
@@ -73,10 +74,10 @@ namespace ArtemisX.Story
                 return;
             }
 
+            runner.Enqueue(debrief, onDone, DialogueQueueSlot.EveningDebrief);
+
             if (CurrentDay >= MissionLength && !missionEnded)
                 TriggerMissionEnd(MissionEndReason.DayCap, 1);
-
-            runner.Enqueue(debrief, onDone, DialogueQueueSlot.EveningDebrief);
         }
 
         /// <summary>Milestone hook for the first completed building.</summary>
@@ -222,7 +223,7 @@ namespace ArtemisX.Story
 
         private void OnDayAdvanced(int day)
         {
-            if (runner == null || schedule == null) return;
+            if (missionEnded || runner == null || schedule == null) return;
 
             SnapshotStartOfDayResources();
             todayOutcome = DebriefOutcomeType.Normal;
