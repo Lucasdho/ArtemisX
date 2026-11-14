@@ -830,6 +830,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ArtemisX.Story.StoryDirector
   dayManager: {fileID: 252686681}
+  resourceManager: {fileID: 252686682}
   runner: {fileID: 252686678}
   schedule: {fileID: 11400000, guid: ce2b8ea8230f9419e9f8a158f8c1b95a, type: 2}
 --- !u!114 &252686681
@@ -1922,6 +1923,7 @@ GameObject:
   - component: {fileID: 2093888759}
   - component: {fileID: 2093888758}
   - component: {fileID: 2093888757}
+  - component: {fileID: 2093888761}
   m_Layer: 0
   m_Name: DayCounter
   m_TagString: Untagged
@@ -1946,7 +1948,7 @@ RectTransform:
   m_AnchorMin: {x: 1, y: 0.5}
   m_AnchorMax: {x: 1, y: 0.5}
   m_AnchoredPosition: {x: -40, y: 0}
-  m_SizeDelta: {x: 320, y: 80}
+  m_SizeDelta: {x: 360, y: 64}
   m_Pivot: {x: 1, y: 0.5}
 --- !u!114 &2093888757
 MonoBehaviour:
@@ -2010,7 +2012,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Day 1
+  m_Text: Day 1 / 30
 --- !u!222 &2093888760
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -2019,6 +2021,21 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2093888755}
   m_CullTransparentMesh: 1
+--- !u!114 &2093888761
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2093888755}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7fc653e91fadb483b9f4ebfceab490a4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ArtemisX.UI.Dialogue.MissionDayCapView
+  days: {fileID: 252686681}
+  config: {fileID: 11400000, guid: a19fef4b506b84b71b01ae087be29f57, type: 2}
+  label: {fileID: 2093888759}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
