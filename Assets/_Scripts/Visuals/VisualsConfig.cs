@@ -42,6 +42,11 @@ namespace ArtemisX.Visuals
         public string[] actionStates = { "Wave", "Jump", "Yes" };
         [Min(0f)] public float animationCrossFade = 0.15f;
         [Min(0.1f)] public float fallbackActionSeconds = 1.5f;
+        [Tooltip("Action state that also triggers big floaty hops on the spot.")]
+        public string jumpActionState = "Jump";
+        [Min(0f)] public float jumpHeight = 0.38f;
+        [Min(0.1f)] public float jumpAirSeconds = 1.15f;
+        [Min(1)] public int jumpCount = 2;
 
         [Header("Mood")]
         [Min(0.05f)] public float nightSpeedMultiplier = 0.45f;

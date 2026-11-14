@@ -15,6 +15,8 @@ namespace ArtemisX.Visuals
         [SerializeField] private WaypointPath path;
         [SerializeField] private int startIndex;
         [SerializeField] private bool reverse;
+        [Tooltip("Walk back and forth between the first and last node instead of looping.")]
+        [SerializeField] private bool pingPong;
         [Tooltip("Child that receives the hop offset and the landing squash. Usually the model root.")]
         [SerializeField] private Transform visual;
         [Tooltip("Optional. Found in children when left empty.")]
@@ -25,7 +27,12 @@ namespace ArtemisX.Visuals
         private int targetIndex;
         private Vector3 target;
         private bool hasShelter;
+        private bool headingToShelter;
         private Vector3 shelterPoint;
+        private int shelterExitIndex;
+        private int direction = 1;
+        private float jumpClock = -1f;
+        private int jumpsLeft;
         private float hopClock;
         private bool airborne;
         private float pauseTimer;
@@ -59,25 +66,39 @@ namespace ArtemisX.Visuals
                 return;
             }
 
+            direction = reverse ? -1 : 1;
             targetIndex = path.Wrap(startIndex);
             transform.position = path.GetPoint(targetIndex);
             hopClock = Random.value * config.hopAirSeconds;
             NextWaypoint();
         }
 
-        /// <summary>Sends the walker to a point (e.g. the habitat door) where it waits until <see cref="LeaveShelter"/>.</summary>
+        /// <summary>
+        /// Sends the walker to a point (e.g. the habitat door) where it waits until <see cref="LeaveShelter"/>.
+        /// It follows its own path to the node nearest that point first, so it doesn't cut through buildings.
+        /// </summary>
         public void GoToShelter(Vector3 point)
         {
             hasShelter = true;
+            headingToShelter = false;
             shelterPoint = point;
-            target = point;
-            if (state != State.Walking) BeginWalking();
+            shelterExitIndex = path.NearestIndex(point);
+            if (!pingPong)
+            {
+                // Take the shorter way round the loop to the exit node.
+                int ahead = path.Wrap(shelterExitIndex - targetIndex);
+                direction = ahead <= path.Count - ahead ? 1 : -1;
+            }
+            if (state == State.Sheltered) return;
+            if (state == State.Pausing) { EndJump(); NextWaypoint(); }
         }
 
         public void LeaveShelter()
         {
             if (!hasShelter) return;
             hasShelter = false;
+            headingToShelter = false;
+            direction = reverse ? -1 : 1;
             targetIndex = path.NearestIndex(transform.position);
             target = path.GetPoint(targetIndex);
             BeginWalking();
@@ -93,7 +114,8 @@ namespace ArtemisX.Visuals
                     break;
                 case State.Pausing:
                     pauseTimer -= dt;
-                    if (pauseTimer <= 0f) NextWaypoint();
+                    if (jumpClock >= 0f) Jump(dt);
+                    else if (pauseTimer <= 0f) NextWaypoint();
                     break;
             }
         }
@@ -151,6 +173,30 @@ namespace ArtemisX.Visuals
             visual.localScale = Vector3.Scale(visualBaseScale, squash);
         }
 
+        /// <summary>Big floaty hops on the spot, played with the jump action.</summary>
+        private void Jump(float dt)
+        {
+            jumpClock += dt;
+            if (jumpClock >= config.jumpAirSeconds)
+            {
+                Land();
+                jumpsLeft--;
+                if (jumpsLeft <= 0) { EndJump(); NextWaypoint(); return; }
+                jumpClock = 0f;
+            }
+            if (visual == null) return;
+            float t = jumpClock / config.jumpAirSeconds;
+            float stretch = config.squashAmount * Mathf.Cos(t * Mathf.PI * 2f) * 0.5f;
+            visual.localPosition = visualBasePosition + Vector3.up * (config.jumpHeight * 4f * t * (1f - t));
+            visual.localScale = Vector3.Scale(visualBaseScale, new Vector3(1f + stretch * 0.5f, 1f - stretch, 1f + stretch * 0.5f));
+        }
+
+        private void EndJump()
+        {
+            jumpClock = -1f;
+            ResetPose();
+        }
+
         private void ResetPose()
         {
             if (visual == null) return;
@@ -171,8 +217,15 @@ namespace ArtemisX.Visuals
 
             if (hasShelter)
             {
-                state = State.Sheltered;
-                Play(config.idleState);
+                if (headingToShelter)
+                {
+                    state = State.Sheltered;
+                    Play(config.idleState);
+                }
+                else
+                {
+                    NextWaypoint();
+                }
                 return;
             }
 
@@ -184,6 +237,11 @@ namespace ArtemisX.Visuals
                 {
                     string action = config.actionStates[Random.Range(0, config.actionStates.Length)];
                     pauseTimer = Play(action);
+                    if (action == config.jumpActionState)
+                    {
+                        jumpClock = 0f;
+                        jumpsLeft = config.jumpCount;
+                    }
                 }
                 else
                 {
@@ -198,7 +256,25 @@ namespace ArtemisX.Visuals
 
         private void NextWaypoint()
         {
-            targetIndex = path.Wrap(targetIndex + (reverse ? -1 : 1));
+            if (hasShelter && targetIndex == shelterExitIndex)
+            {
+                headingToShelter = true;
+                target = shelterPoint;
+                target.y = transform.position.y;
+                BeginWalking();
+                return;
+            }
+
+            if (pingPong)
+            {
+                if (hasShelter) direction = shelterExitIndex > targetIndex ? 1 : -1;
+                else if (targetIndex + direction < 0 || targetIndex + direction >= path.Count) direction = -direction;
+                targetIndex += direction;
+            }
+            else
+            {
+                targetIndex = path.Wrap(targetIndex + direction);
+            }
             target = path.GetPoint(targetIndex);
             BeginWalking();
         }
