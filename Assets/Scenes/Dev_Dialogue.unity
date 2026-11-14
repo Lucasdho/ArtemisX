@@ -800,7 +800,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5093b8afab7744170ba2f2a9c4c96ace, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ArtemisX.Story.DialogueRunner
-  config: {fileID: 0}
+  config: {fileID: 11400000, guid: a19fef4b506b84b71b01ae087be29f57, type: 2}
 --- !u!114 &252686679
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -831,7 +831,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ArtemisX.Story.StoryDirector
   dayManager: {fileID: 252686681}
   runner: {fileID: 252686678}
-  schedule: {fileID: 0}
+  schedule: {fileID: 11400000, guid: ce2b8ea8230f9419e9f8a158f8c1b95a, type: 2}
 --- !u!114 &252686681
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1142,6 +1142,38 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 63590185834795981, guid: cf3a7f01f1e7d46c28ca271b28d6b0d6, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 63590185834795981, guid: cf3a7f01f1e7d46c28ca271b28d6b0d6, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 63590185834795981, guid: cf3a7f01f1e7d46c28ca271b28d6b0d6, type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 63590185834795981, guid: cf3a7f01f1e7d46c28ca271b28d6b0d6, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 924591555587467332, guid: cf3a7f01f1e7d46c28ca271b28d6b0d6, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 924591555587467332, guid: cf3a7f01f1e7d46c28ca271b28d6b0d6, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 924591555587467332, guid: cf3a7f01f1e7d46c28ca271b28d6b0d6, type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 924591555587467332, guid: cf3a7f01f1e7d46c28ca271b28d6b0d6, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3018295282039122623, guid: cf3a7f01f1e7d46c28ca271b28d6b0d6, type: 3}
       propertyPath: m_Pivot.x
       value: 0
@@ -1229,6 +1261,22 @@ PrefabInstance:
     - target: {fileID: 6206268591672724252, guid: cf3a7f01f1e7d46c28ca271b28d6b0d6, type: 3}
       propertyPath: m_Name
       value: DialogueCanvas
+      objectReference: {fileID: 0}
+    - target: {fileID: 6992895612753569820, guid: cf3a7f01f1e7d46c28ca271b28d6b0d6, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6992895612753569820, guid: cf3a7f01f1e7d46c28ca271b28d6b0d6, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6992895612753569820, guid: cf3a7f01f1e7d46c28ca271b28d6b0d6, type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6992895612753569820, guid: cf3a7f01f1e7d46c28ca271b28d6b0d6, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1955,7 +2003,7 @@ MonoBehaviour:
     m_FontStyle: 0
     m_BestFit: 0
     m_MinSize: 10
-    m_MaxSize: 40
+    m_MaxSize: 46
     m_Alignment: 5
     m_AlignByGeometry: 0
     m_RichText: 1
