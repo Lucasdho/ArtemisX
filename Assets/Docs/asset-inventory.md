@@ -25,9 +25,9 @@ Everything below is already imported under `Assets/GameAssets/` (read-only). Mod
 
 **Rover:** yes. `spacetruck` (small 4-wheel pickup) is the rover. `spacetruck_large` (van) and `spacetruck_trailer` exist too, and `mobile_base_frame` (6-wheel chassis) + `mobile_base_command` could be combined into a bigger rover later.
 
-**Astronaut:** the KayKit `Mannequin_Medium` (with the Rig_Medium animation sets) is the placeholder. There is also the Quaternius *Ultimate Space Kit* with four astronaut characters (`Astronaut_FinnTheFrog`, etc.), which may fit a kids' game better. Design call for Lucas.
+**Astronaut (decided):** the Quaternius *Ultimate Space Kit* cartoon astronauts (`Astronaut_BarbaraTheBee`, `Astronaut_FernandoTheFlamingo`, `Astronaut_FinnTheFrog`, `Astronaut_RaeTheRedPanda`). The KayKit Mannequin is not used as the astronaut.
 
-**Resource icons:** there are **no proper resource icons** in the Kenney UI packs. Stand-ins from Kenney Emotes (`PNG/Vector/Style 1`):
+**Resource icons (decided):** there are **no proper resource icons** in the Kenney packs, and the emotes are made for other meanings. The five resource icons will be **designed in-house in Figma**. Until they exist, the HUD uses these temporary emotes from Kenney Emotes (`PNG/Vector/Style 1`):
 
 | Resource | Sprite | Fit |
 |---|---|---|
@@ -37,7 +37,7 @@ Everything below is already imported under `Assets/GameAssets/` (read-only). Mod
 | Food | `emote_heart` | Weak |
 | Parts | `emote_star` | Weak (no gear/cog icon) |
 
-Missing: a lightning bolt, O2 bubble, food/leaf and gear icon set. See "Missing assets" in the run report.
+To make in Figma: power, water, oxygen, food and parts icons, as one consistent set.
 
 ## KayKit Space Base Bits 1.0 (SOURCE)
 
