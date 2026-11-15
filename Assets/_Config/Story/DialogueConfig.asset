@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a98a284068414ac394d9fb672888ade, type: 3}
+  m_Name: DialogueConfig
+  m_EditorClassIdentifier: Assembly-CSharp::ArtemisX.Story.DialogueConfig
+  charactersPerSecond: 45
+  autoAdvanceDelay: 0
+  inputCooldown: 0.05
+  defaultPlayerName: Commander
+  maxNicknameLength: 12
+  defaultCharacterId: astronaut_1
+  missionLength: 30
+  supplyInterval: 5
+  lowPowerThreshold: 25
+  lowWaterThreshold: 25
+  maxCharactersPerLine: 110
+  maxLinesPerBeat: 2
