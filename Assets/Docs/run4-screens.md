@@ -71,7 +71,8 @@ Scene: `Assets/Scenes/HandMadeBase.unity`.
 `Assets/Docs/screenshots/run4-start-screen.png`, `run4-intro-cutscene-day.png`, `run4-onboarding-step1-weather-day.png`,
 `run4-onboarding-step1-solar.png`, `run4-onboarding-step2-map.png`, `run4-onboarding-step3-nextday.png`, `run4-day2-report.png`,
 `run4-end-earlywin-offline.png`, `run4-end-daycap-extended.png` (+ `.meta`). `run4-intro-a.png`, `run4-intro-cutscene.png`,
-`run4-onboarding-step1-weather.png` show the old storm-mood bug and can be deleted.
+`run4-onboarding-step1-weather.png` show the old storm-mood bug and can be deleted;
+`run4-start-screen-check.png` and `run4-intro-check.png` are re-checks after an Editor reload.
 
 ## Supabase
 No Artemis X project exists in the connected Supabase account, so the config is empty and the game runs offline.
@@ -123,3 +124,7 @@ grant select on public.run_histogram to anon;
   saves assets after a Play session, they may show up as modified: don't commit those changes.
 - The MissionCard checklist labels look empty in screenshots (dark text on a white card?); not investigated.
 - A transient `.git/index.lock` appeared once during this run (another git process on this checkout).
+- Mid-run the MCP instance list changed (an `ArtemisX-ui-polish` instance disappeared; the main `ArtemisX` Editor remained and
+  was the one used, `Application.dataPath` = main checkout). After that reload, saving the scene rewrote layout-driven
+  RectTransform values (zeros) and one Text max size; layouts were re-checked in Play Mode and look right
+  (commit `chore(scene): resave base scene after editor reload`).
