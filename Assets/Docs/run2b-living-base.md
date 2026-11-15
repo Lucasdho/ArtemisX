@@ -10,8 +10,10 @@ This report covers the first pass plus the feedback round Lucas gave afterwards.
 - **Four named modules and five ghosts.** `Base/Habitat` (two storeys, roof, radar), `Base/SolarArray`, `Base/ProcessingPlant`, `Base/LandingPad`, `Tunnel_East` / `Tunnel_West`, and all five `Slots/Slot_*` with pulsing rings.
 - **Small soft shadows.** Main-light shadows are back on in `PC_RPAsset` (soft, one cascade, 45 units), with the sun raised to 58 degrees so shadows stay short.
 - **Rover.** `Base/Rover_Luna` loops plant -> ice field -> plant. In a storm it finishes the loop to the nearest node, drives to `Slot_RoverGarage` and parks there; when the storm ends it rejoins the loop.
+- **Kit models.** The radar is now `Roof_Radar`, the processing plant house is `Building_L`, the electrolyser ghost is `House_Long` and the hydrogen engine ghost is `House_Cylinder`, all from the Quaternius Ultimate Space Kit on the existing `M_QuaterniusAtlas` material.
 - **Astronauts.** One of each kind (Finn, Barbara, Fernando, Rae), now about 0.44 units tall (was 0.25 in the first pass, 0.75 in Run 1). They hop-walk, pause, wave, nod and jump.
 - **Bubbles.** Small and sharp: 256 px textures built from the Kenney pack's vector SVG, stored in `Assets/_Materials/Emotes/`. They only appear when two astronauts meet (both stop, turn and wave), at night (zzz), in a storm (alert / scared), and on good fortune (`AmbientMood.Celebrate()`, also in the component menu). The random happy bubbles are gone.
+- **Night indoors.** At night the astronauts walk to the habitat door and go inside (they are hidden), and a zzz bubble shows over the habitat. They come back out when the mood changes.
 - **Night and storm.** `MoodLighting` tweens the sun and ambient light per mood and plays particles: slow stardust at night, fast streaks with a light flicker in a storm. Normal uses whatever the scene starts with.
 - **HUD.** Bars show; Next Day went Day 1 -> 2 -> 3. `HUD`, `Managers`, `EventSystem` untouched.
 - **Console.** Zero errors and zero warnings from our scripts.
@@ -21,8 +23,10 @@ This report covers the first pass plus the feedback round Lucas gave afterwards.
 
 - **Hamster Island look.** I had no screenshot of it, so the shadows are my reading of "small shadows": short, soft, 60% strength. Send a reference and I will match it.
 - **Light changed.** To get short shadows the sun went from 22 to 58 degrees, and its intensity from 2.2 to 1.15 with a brighter ambient so the ground did not blow out. This replaces the "harsh low sun" mood from Run 1.
-- **New asset pack is in the worktree but not committed.** `Assets/GameAssets/Ultimate_Space_Kit_QuaterniusCharacters` was replaced by `Ultimate_Space_Kit_Quaternius` (Characters, Environment, Items, Vehicles) while I was working. I did not do this and did not commit it. The astronaut GUIDs are unchanged, so the scene works with either layout. It contains `Roof_Radar`, `Roof_Antenna`, `SolarPanel_*`, `House_*`, `Building_L`, `Base_Large` and more, but nothing in the scene uses it yet.
-- **Stand-ins still in place:** radar (primitives), electrolyser, processing plant house, hydrogen engine, ice (tinted stone chunks), lamp glow spheres.
+- **New asset pack is committed on this branch.** `Assets/GameAssets/Ultimate_Space_Kit_QuaterniusCharacters` was replaced in the worktree by the full `Ultimate_Space_Kit_Quaternius` (Characters, Environment, Items, Vehicles). The scene now depends on it, so the folder swap is committed here; astronaut GUIDs are unchanged. `CLAUDE.md` and the shared docs still name the old folder.
+- **Model choices are mine.** The kit has no literal electrolyser, plant or engine, so I picked by shape: a pipe elbow for the plant, a capsule tank for the electrolyser, a sphere tank on legs for hydrogen. The two art styles (KayKit and Quaternius) now sit side by side.
+- **Stand-ins still in place:** ice (tinted stone chunks), ice drill, lamp glow spheres, the blue tank cluster beside the plant.
+- **Slow walk home.** The astronaut on the long east path can take over 30 seconds to reach the door at night.
 - **No rover train** (`mobile_base_*`).
 - **Not committed on purpose:** `ProjectSettings/QualitySettings.asset` (Unity rewrote it when MSAA changed), `Assets/Settings/Mobile_RPAsset.asset` (auto-upgraded on open), `Assets/TutorialInfo/Icons/URP.png` (LFS noise). Outside my file ownership.
 - **Mobile quality level** was not touched; match its shadow and MSAA settings if WebGL uses it.
@@ -32,13 +36,12 @@ This report covers the first pass plus the feedback round Lucas gave afterwards.
 - **Storm colour.** The warm tint on the taupe ground reads a little like Mars. `stormSunColor` and `stormAmbient` in the config control it.
 - **Terrain colour.** The pack's grey atlas is a warm taupe, not a neutral grey.
 - **Astronaut size.** "A bit bigger" became 0.44 units; it is one scale value per model.
-- **Night bubbles** come every 2.6 to 4 seconds per astronaut, so there are gaps with none on screen.
 - **Rover parking** drives into the middle of the ghost garage, since the garage is not built yet.
 
 ## Design questions
 
-1. Which models from the new Quaternius kit should replace the radar, electrolyser, processing plant and hydrogen engine stand-ins?
-2. Should astronauts go inside (disappear) at night, or keep walking slowly with zzz bubbles as now?
+1. Are the kit models I picked the right ones, or do you want others (`GeodesicDome`, `Base_Large`, `SolarPanel_*`, `Rover_*` are also there)?
+2. Should the rover and solar panels also switch to the Quaternius kit, so the base is one style?
 
 ## How to use it
 
