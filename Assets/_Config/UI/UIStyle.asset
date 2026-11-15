@@ -13,38 +13,38 @@ MonoBehaviour:
   m_Name: UIStyle
   m_EditorClassIdentifier: Assembly-CSharp::ArtemisX.UI.UIStyle
   font: {fileID: 12800000, guid: 6991fdde796fe4f189d9246a3beba022, type: 3}
-  textColor: {r: 0.17, g: 0.18, b: 0.21, a: 1}
-  mutedTextColor: {r: 0.48, g: 0.52, b: 0.57, a: 1}
-  positiveColor: {r: 0.18, g: 0.55, b: 0.24, a: 1}
-  negativeColor: {r: 0.75, g: 0.22, b: 0.17, a: 1}
-  neutralColor: {r: 0.48, g: 0.52, b: 0.57, a: 1}
-  panelColor: {r: 1, g: 1, b: 1, a: 1}
-  trackColor: {r: 0.87, g: 0.88, b: 0.9, a: 1}
-  progressColor: {r: 0.29, g: 0.56, b: 0.85, a: 1}
-  doneColor: {r: 0.35, g: 0.66, b: 0.31, a: 1}
+  textColor: {r: 0.973, g: 0.98, b: 0.988, a: 1}
+  mutedTextColor: {r: 0.58, g: 0.639, b: 0.722, a: 1}
+  positiveColor: {r: 0.133, g: 0.773, b: 0.369, a: 1}
+  negativeColor: {r: 0.937, g: 0.267, b: 0.267, a: 1}
+  neutralColor: {r: 0.58, g: 0.639, b: 0.722, a: 1}
+  panelColor: {r: 0.118, g: 0.161, b: 0.231, a: 0.95}
+  trackColor: {r: 0.2, g: 0.255, b: 0.333, a: 1}
+  progressColor: {r: 0.22, g: 0.741, b: 0.973, a: 1}
+  doneColor: {r: 0.133, g: 0.773, b: 0.369, a: 1}
   resources:
   - type: 0
-    tint: {r: 1, g: 0.94509804, b: 0.7607843, a: 1}
-    accent: {r: 0.8784314, g: 0.6901961, b: 0, a: 1}
+    tint: {r: 0.059, g: 0.09, b: 0.165, a: 0.902}
+    accent: {r: 0.961, g: 0.62, b: 0.043, a: 1}
     icon: {fileID: 21300000, guid: 143da5203b5b2454db2417c99fb6e434, type: 3}
     letter: P
   - type: 1
-    tint: {r: 0.8117647, g: 0.9019608, b: 1, a: 1}
-    accent: {r: 0.2901961, g: 0.5647059, b: 0.8509804, a: 1}
+    tint: {r: 0.059, g: 0.09, b: 0.165, a: 0.902}
+    accent: {r: 0.22, g: 0.741, b: 0.973, a: 1}
     icon: {fileID: 21300000, guid: 2e5a092d8f9f24ac7997b095a16d006e, type: 3}
     letter: W
   - type: 2
-    tint: {r: 0.8235294, g: 0.9529412, b: 0.9607843, a: 1}
-    accent: {r: 0.18431373, g: 0.70980394, b: 0.7529412, a: 1}
+    tint: {r: 0.059, g: 0.09, b: 0.165, a: 0.902}
+    accent: {r: 0.133, g: 0.827, b: 0.933, a: 1}
     icon: {fileID: 21300000, guid: bd47cad79076a43dfbbe8d0d4996cbf7, type: 3}
     letter: O
   - type: 3
-    tint: {r: 0.8392157, g: 0.9490196, b: 0.8235294, a: 1}
-    accent: {r: 0.34509805, g: 0.65882355, b: 0.30980393, a: 1}
+    tint: {r: 0.059, g: 0.09, b: 0.165, a: 0.902}
+    accent: {r: 0.133, g: 0.773, b: 0.369, a: 1}
     icon: {fileID: 21300000, guid: 6c2560b2608fb426b8ee6e9550babf6c, type: 3}
     letter: F
   - type: 4
-    tint: {r: 1, g: 0.8666667, b: 0.7607843, a: 1}
-    accent: {r: 0.8509804, g: 0.5019608, b: 0.22745098, a: 1}
+    tint: {r: 0.059, g: 0.09, b: 0.165, a: 0.902}
+    accent: {r: 0.984, g: 0.573, b: 0.235, a: 1}
     icon: {fileID: 21300000, guid: 4bb35e547426543d1acb81da1481ab05, type: 3}
     letter: Pt
