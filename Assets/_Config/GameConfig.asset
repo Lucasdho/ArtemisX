@@ -17,15 +17,20 @@ MonoBehaviour:
   - type: 0
     startValue: 60
     maxValue: 100
+    netPerDay: 12
   - type: 1
     startValue: 40
     maxValue: 100
+    netPerDay: -5
   - type: 2
     startValue: 70
     maxValue: 100
+    netPerDay: -3
   - type: 3
     startValue: 50
     maxValue: 100
+    netPerDay: -6
   - type: 4
     startValue: 20
     maxValue: 50
+    netPerDay: -2
