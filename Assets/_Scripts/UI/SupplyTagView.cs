@@ -32,7 +32,7 @@ namespace ArtemisX.UI
         {
             if (label == null) return;
             int remaining = Interval - day % Interval;
-            label.text = day % Interval == 0 ? "Supply today" : "Supply in " + remaining + "d";
+            label.text = day % Interval == 0 ? "Supply ship today" : "Next supply in " + remaining + "d";
         }
     }
 }
