@@ -167,12 +167,12 @@ namespace ArtemisX.Simulation.Tests
             Assert.IsFalse(s.buildings.TryBuildNext());
 
             s.res.Add(ResourceType.Parts, 45); // 50
-            Assert.IsTrue(s.buildings.TryBuildNext()); // Greenhouse: 25 Parts + 25 Power
+            Assert.IsTrue(s.buildings.TryBuildNext()); // Electrolyser: 25 Parts + 25 Power
             Assert.AreEqual(25, s.res.Get(ResourceType.Parts));
             Assert.AreEqual(15, s.res.Get(ResourceType.Power));
 
             s.res.Add(ResourceType.Parts, 25);
-            Assert.AreEqual(ActionBlockReason.NotEnoughPower, s.buildings.CanBuildNext()); // Fuel Reserve needs 30 Power
+            Assert.AreEqual(ActionBlockReason.NotEnoughPower, s.buildings.CanBuildNext()); // Terraforming Dome needs 30 Power
             s.res.Add(ResourceType.Power, 20);
             Assert.IsTrue(s.buildings.TryBuildNext());
             Assert.AreEqual(ActionBlockReason.AllBuilt, s.buildings.CanBuildNext());
@@ -185,11 +185,15 @@ namespace ArtemisX.Simulation.Tests
         public void Buildings_AddTheirPassiveOutputToNetRates()
         {
             var s = Create(new int[0]);
-            s.buildings.TryBuildNext();
+            s.buildings.TryBuildNext(); // Processing Plant: +10 Water, +4 Parts
             Assert.AreEqual(2, s.res.GetNetRate(ResourceType.Water));
+            Assert.AreEqual(4, s.res.GetNetRate(ResourceType.Parts));
+            s.res.Add(ResourceType.Parts, 50);
+            s.buildings.TryBuildNext(); // Electrolyser: +12 Oxygen
             Assert.AreEqual(4, s.res.GetNetRate(ResourceType.Oxygen));
             s.res.Add(ResourceType.Parts, 50);
-            s.buildings.TryBuildNext();
+            s.res.Add(ResourceType.Power, 50);
+            s.buildings.TryBuildNext(); // Terraforming Dome: +12 Food
             Assert.AreEqual(4, s.res.GetNetRate(ResourceType.Food));
         }
 
@@ -252,7 +256,7 @@ namespace ArtemisX.Simulation.Tests
         public void Rover_CanBreakInStorm_NoHaul_RepairsFor5Parts()
         {
             var siteConfig = Load<ExpeditionSiteConfig>(SiteConfigPath);
-            var s = Create(new[] { 1 }, () => siteConfig.stormBreakdownChance - 0.01f); // above Far's calm 25%, below storm 30%
+            var s = Create(new[] { 1 }, () => siteConfig.stormBreakdownChance - 0.01f); // below the 30% storm chance
             var brokenEvents = new List<BaseComponent>();
             s.rover.ComponentBroken += brokenEvents.Add;
 
@@ -275,7 +279,7 @@ namespace ArtemisX.Simulation.Tests
         [Test]
         public void Rover_CalmBreakdown_UsesSiteRisk()
         {
-            var s = Create(new int[0], () => 0.10f); // 10%: above Near 5%, below Far 25%
+            var s = Create(new int[0], () => 0.10f); // 10%: above Near 0%, below Far 50%
             s.rover.TryDispatchRover(NearMinerals);
             s.ctrl.EndDay();
             Assert.AreEqual(RoverStatus.Ready, s.rover.Status);

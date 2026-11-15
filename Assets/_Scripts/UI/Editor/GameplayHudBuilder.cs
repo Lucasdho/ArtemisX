@@ -137,12 +137,12 @@ namespace ArtemisX.UI.EditorTools
             BuildSolarVisuals(solarFarm, solar, visConfig, visuals);
 
             var plant = GameObject.Find("ProcessingPlant");
-            var greenhouse = GameObject.Find("foodFarm");
-            var fuel = GameObject.Find("Electrolyser_H2Generator");
+            var electro = GameObject.Find("Electrolyser_H2Generator");
+            var terraforming = GameObject.Find("foodFarm");
             var ringMaterial = Object.FindAnyObjectByType<ResourceHotspot>().GetComponentInChildren<LineRenderer>().sharedMaterial;
             BuildSlot(plant, 0, hud, buildings, visConfig, visuals, ringMaterial);
-            BuildSlot(greenhouse, 1, hud, buildings, visConfig, visuals, ringMaterial);
-            BuildSlot(fuel, 2, hud, buildings, visConfig, visuals, ringMaterial);
+            BuildSlot(electro, 1, hud, buildings, visConfig, visuals, ringMaterial);
+            BuildSlot(terraforming, 2, hud, buildings, visConfig, visuals, ringMaterial);
 
             var roverGo = Object.FindAnyObjectByType<RoverDriver>(FindObjectsInactive.Include).gameObject;
             var oldDriver = roverGo.GetComponent<RoverDriver>();
@@ -305,14 +305,14 @@ namespace ArtemisX.UI.EditorTools
         private static void BuildPopupCosts(ContextConfirmPopupView popup)
         {
             var root = (RectTransform)popup.transform;
-            root.sizeDelta = new Vector2(360f, 200f);
+            root.sizeDelta = new Vector2(380f, 240f);
             var titleText = root.Find("Title").GetComponent<Text>();
             titleText.resizeTextForBestFit = true; titleText.resizeTextMinSize = 12; titleText.resizeTextMaxSize = titleText.fontSize;
             var old = root.Find("CostRow");
             if (old != null) Object.DestroyImmediate(old.gameObject);
             var desc = (RectTransform)root.Find("Description");
-            desc.offsetMin = new Vector2(18f, 96f);
-            desc.offsetMax = new Vector2(-18f, -44f);
+            desc.offsetMin = new Vector2(22f, 84f);
+            desc.offsetMax = new Vector2(-22f, -70f);
             desc.GetComponent<Text>().resizeTextForBestFit = true;
             desc.GetComponent<Text>().resizeTextMinSize = 12;
             desc.GetComponent<Text>().resizeTextMaxSize = desc.GetComponent<Text>().fontSize;

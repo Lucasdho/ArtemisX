@@ -16,37 +16,37 @@ MonoBehaviour:
   stormBreakdownChance: 0.3
   sites:
   - siteId: Hotspot_Ice_NW
-    displayName: Ice Site A
+    displayName: Frostline Hollow
     distance: 0
     powerCost: 10
     waterReward: 18
     partsReward: 0
-    calmBreakdownChance: 0.05
+    calmBreakdownChance: 0
   - siteId: Hotspot_Ice_SW
-    displayName: Ice Site B
+    displayName: Cryo Abyss
     distance: 2
     powerCost: 18
     waterReward: 32
     partsReward: 0
-    calmBreakdownChance: 0.25
+    calmBreakdownChance: 0.5
   - siteId: Hotspot_Minerals_SSE
-    displayName: Mineral Site A
+    displayName: Gleam Gully
     distance: 0
     powerCost: 10
     waterReward: 0
     partsReward: 8
-    calmBreakdownChance: 0.05
+    calmBreakdownChance: 0
   - siteId: Hotspot_Minerals_NE
-    displayName: Mineral Site B
+    displayName: Titan's Vein
     distance: 2
     powerCost: 18
     waterReward: 0
     partsReward: 16
-    calmBreakdownChance: 0.25
+    calmBreakdownChance: 0.5
   - siteId: Hotspot_Rocks_East
-    displayName: Balanced Site
+    displayName: Crossroads Basin
     distance: 1
     powerCost: 14
     waterReward: 16
     partsReward: 8
-    calmBreakdownChance: 0.15
+    calmBreakdownChance: 0.25

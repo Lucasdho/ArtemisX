@@ -25,6 +25,7 @@ namespace ArtemisX.Visuals
         private Vector3 bodyBasePosition;
         private Quaternion bodyBaseRotation;
         private float noiseSeed;
+        private ParticleSystem[] dustSystems;
 
         private enum Mode { Loop, ToGarage, Parked, Returning }
         private Mode mode;
@@ -204,9 +205,17 @@ namespace ArtemisX.Visuals
 
         private void SetDust(bool on)
         {
-            if (wheelDust == null) return;
-            ParticleSystem.EmissionModule emission = wheelDust.emission;
-            if (emission.enabled != on) emission.enabled = on;
+            if (dustSystems == null)
+            {
+                if (wheelDust == null) return;
+                dustSystems = wheelDust.GetComponentsInChildren<ParticleSystem>(true);
+            }
+            for (int i = 0; i < dustSystems.Length; i++)
+            {
+                if (dustSystems[i] == null) continue;
+                ParticleSystem.EmissionModule emission = dustSystems[i].emission;
+                if (emission.enabled != on) emission.enabled = on;
+            }
         }
 
         private static Vector3 Flat(Vector3 v)

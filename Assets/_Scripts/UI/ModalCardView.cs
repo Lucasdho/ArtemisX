@@ -144,6 +144,12 @@ namespace ArtemisX.UI
                 var cell = deltaCells[i];
                 if (cell == null) continue;
                 var type = (ResourceType)i;
+                if (type == ResourceType.Oxygen)
+                {
+                    if (cell.root != null) cell.root.SetActive(false);
+                    continue;
+                }
+                if (cell.root != null) cell.root.SetActive(true);
                 int value = i < deltas.Length ? deltas[i] : 0;
                 if (cell.icon != null && style != null && style.TryGetLook(type, out var look))
                 {

@@ -31,5 +31,13 @@ namespace ArtemisX.Core
         [Header("Right-Tilt")]
         public Vector2 pitchRange = new Vector2(22f, 62f);
         [Min(0.01f)] public float tiltSensitivity = 0.22f;
+
+        [Header("Focus")]
+        [Tooltip("Seconds for the camera to fly to a clicked component before its menu opens. 0 = snap.")]
+        [Min(0f)] public float focusSeconds = 0.6f;
+        [Tooltip("Zoom distance when focusing an object. Set 0 to keep current zoom.")]
+        [Min(0f)] public float focusDistance = 22f;
+        [Tooltip("Shifts the camera look target forward along camera yaw so the object sits slightly below center, leaving room for its banner above.")]
+        public float focusForwardOffset = 1.8f;
     }
 }

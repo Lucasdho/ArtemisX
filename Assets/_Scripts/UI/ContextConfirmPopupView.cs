@@ -41,8 +41,22 @@ namespace ArtemisX.UI
         private Action onConfirm;
         private Camera viewCamera;
         private RectTransform canvasRect;
+        private bool pending;
+        private int pendingId;
 
-        public bool IsOpen => anchor != null;
+        /// <summary>True when shown, or reserved while the camera flies to its target.</summary>
+        public bool IsOpen => anchor != null || pending;
+
+        /// <summary>Closes any card and reserves the pop-up for a card that opens later. Returns a ticket for <see cref="IsPendingFor"/>.</summary>
+        public int BeginPending()
+        {
+            Close();
+            pending = true;
+            return ++pendingId;
+        }
+
+        /// <summary>True if the reservation with this ticket wasn't cancelled or replaced.</summary>
+        public bool IsPendingFor(int id) => pending && pendingId == id;
 
         private void Awake()
         {
@@ -72,6 +86,7 @@ namespace ArtemisX.UI
             Action confirm, Cost[] costs, Camera cam)
         {
             if (worldAnchor == null) return;
+            pending = false;
             anchor = worldAnchor;
             onConfirm = confirm;
             viewCamera = cam != null ? cam : Camera.main;
@@ -105,6 +120,7 @@ namespace ArtemisX.UI
 
         public void Close()
         {
+            pending = false;
             anchor = null;
             onConfirm = null;
             HideImmediate();

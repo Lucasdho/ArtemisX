@@ -25,6 +25,7 @@ namespace ArtemisX.UI
         [SerializeField] private RoverSiteMarkerView[] markers = new RoverSiteMarkerView[0];
         [SerializeField] private Button backButton;
         [SerializeField] private Text titleLabel;
+        [SerializeField] private RoverSiteCardView siteCard;
 
         private Vector3 savedPosition;
         private Quaternion savedRotation;
@@ -53,6 +54,7 @@ namespace ArtemisX.UI
             savedRotation = cameraRig.rotation;
 
             RefreshMarkers();
+            if (siteCard != null) siteCard.Hide();
             if (titleLabel != null && rover != null) titleLabel.text = "Send " + rover.RoverName + " to a site";
 
             ComputeMapPose(out Vector3 pos, out Quaternion rot);
@@ -62,6 +64,7 @@ namespace ArtemisX.UI
         public void Close()
         {
             if (!IsOpen) return;
+            if (siteCard != null) siteCard.Hide();
             if (mapRoot != null) mapRoot.SetActive(false);
             Fly(savedPosition, savedRotation, () =>
             {
@@ -141,6 +144,17 @@ namespace ArtemisX.UI
         private void OnSiteClicked(string siteId)
         {
             if (rover == null) return;
+            if (siteCard != null && rover.Config != null && rover.Config.TryGetSite(siteId, out var site))
+            {
+                siteCard.Show(site, rover, resources, weather, () => DispatchSite(siteId));
+                return;
+            }
+            DispatchSite(siteId);
+        }
+
+        private void DispatchSite(string siteId)
+        {
+            if (rover == null) return;
             var reason = rover.CanDispatch(siteId);
             if (reason != ActionBlockReason.None)
             {
@@ -149,6 +163,7 @@ namespace ArtemisX.UI
             }
             if (rover.TryDispatchRover(siteId))
             {
+                if (siteCard != null) siteCard.Hide();
                 if (hud != null) hud.PlaySfx(hud.Config != null ? hud.Config.confirmClip : null);
                 Close();
             }

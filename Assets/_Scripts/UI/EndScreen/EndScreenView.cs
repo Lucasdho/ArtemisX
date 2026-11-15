@@ -103,7 +103,7 @@ namespace ArtemisX.UI
 
         private ScreensConfig.Line PickGrade(MissionRunRecord run)
         {
-            if (run.endReason == MissionEndReason.EarlyWin && run.daysTaken <= config.fastRunDay && !string.IsNullOrEmpty(config.fastRunLine.text))
+            if (run.endReason == MissionEndReason.EarlyWin && run.stars >= 3 && run.daysTaken <= config.fastRunDay && !string.IsNullOrEmpty(config.fastRunLine.text))
                 return config.fastRunLine;
             if (config.gradeLines == null || config.gradeLines.Length == 0) return default;
             return config.gradeLines[Mathf.Clamp(run.stars, 0, config.gradeLines.Length - 1)];

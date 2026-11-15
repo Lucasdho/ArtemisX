@@ -10,6 +10,8 @@ namespace ArtemisX.UI
         [SerializeField] private RectTransform frame;
         [SerializeField] private GameObject hintRoot;
         [SerializeField] private Text hintLabel;
+        [Tooltip("Tutorial progress now lives in the Mission card; keep the top banner off.")]
+        [SerializeField] private bool showHintBanner = false;
         [SerializeField] private Vector2 worldFrameSize = new Vector2(240f, 240f);
         [SerializeField] private float uiPadding = 24f;
         [SerializeField] private float pulseSpeed = 4f;
@@ -50,8 +52,8 @@ namespace ArtemisX.UI
         private void Show(string hint)
         {
             if (frame != null) frame.gameObject.SetActive(true);
-            if (hintRoot != null) hintRoot.SetActive(!string.IsNullOrEmpty(hint));
-            if (hintLabel != null) hintLabel.text = hint ?? string.Empty;
+            if (hintLabel != null) hintLabel.text = showHintBanner ? (hint ?? string.Empty) : string.Empty;
+            if (hintRoot != null) hintRoot.SetActive(showHintBanner && !string.IsNullOrEmpty(hint));
             LateUpdate();
         }
 

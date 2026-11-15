@@ -60,10 +60,11 @@ MonoBehaviour:
   tipRoverOnMission: The rover is out on a trip. It comes back tomorrow morning.
   tipRoverBroken: The rover is broken. Repair it with 5 Parts first.
   tipRoverLocked: Radiation today! The rover stays docked to keep the crew safe.
-  tipBuildOrder: 'Build in order: Water & O2 Plant, then Greenhouse, then Fuel Reserve.'
+  tipBuildOrder: 'Build in order: Processing Plant, then Electrolyser, then Terraforming
+    Dome.'
   tipGeneric: That can't be done right now.
-  helpText: Tap glowing objects to act. Use the Rover button for Water and Parts,
-    then build. Press Next Day when ready!
+  helpText: 'Goal: build 3 modules (Missions card). Tap the glowing ring to build.
+    Use the Rover for Water & Parts, solar panels for Power, then press Next Day!'
   startDayLabel: Start Day
   shieldLabel: Shield & Retract
   keepPowerLabel: Keep Full Power

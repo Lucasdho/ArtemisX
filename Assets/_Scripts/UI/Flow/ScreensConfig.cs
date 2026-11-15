@@ -27,30 +27,44 @@ namespace ArtemisX.UI
         [Range(0f, 80f)] public float introEndPitch = 38f;
         [Min(0.1f)] public float introOrbitSeconds = 12f;
         [Min(0.1f)] public float introReturnSeconds = 2.5f;
+        [Min(0f)] public float landerStartHeight = 14f;
+        [Min(0.1f)] public float landerDescentSeconds = 4.5f;
         public string skipLabel = "SKIP >>";
 
         [Header("Day 1 onboarding")]
+        public Line[] goalLines =
+        {
+            new Line { mood = SpeakerMood.Happy, text = "First, our mission goal! See these 3 Missions? Each module you build earns 1 Star toward a self-sufficient base." },
+            new Line { mood = SpeakerMood.Neutral, text = "Build them in order: 1) Processing Plant, 2) Electrolyser, 3) Terraforming Dome." },
+        };
+        public string goalHint = "GOAL (1/5)  3 Modules = 3 Stars";
+        public Line[] buildNextLines =
+        {
+            new Line { mood = SpeakerMood.Happy, text = "Build here next! The glowing ring marks the Processing Plant." },
+            new Line { mood = SpeakerMood.Neutral, text = "Moon rocks and polar ice lock up metals and water. Refining them here gives us Water and Parts without Earth rockets!" },
+        };
+        public string buildNextHint = "BUILD NEXT (2/5)  Processing Plant (15 Parts, 20 Power)";
         public Line[] step1Lines =
         {
-            new Line { mood = SpeakerMood.Neutral, text = "Step 1: space weather! This panel shows today and tomorrow, using real NASA DONKI data." },
-            new Line { mood = SpeakerMood.Neutral, text = "On storm days, retract the solar panels to protect them. Tap the solar panels to see how." },
+            new Line { mood = SpeakerMood.Neutral, text = "How to get Power: watch space weather! Real NASA DONKI data warns us of storms." },
+            new Line { mood = SpeakerMood.Neutral, text = "Solar panels power our base and machines. On storm days, retract them to stay safe—tap the solar field to see." },
         };
-        public string step1WeatherHint = "STEP 1/3  Space weather";
-        public string step1Hint = "STEP 1/3  Tap the solar panels";
+        public string step1WeatherHint = "RESOURCES (3/5)  Space weather & Power";
+        public string step1Hint = "RESOURCES (3/5)  Tap the solar panels";
         public Line[] step2Lines =
         {
-            new Line { mood = SpeakerMood.Happy, text = "Step 2: exploring! Tap the Rover button, then pick a site on the map to send it out." },
-            new Line { mood = SpeakerMood.Neutral, text = "Far sites bring more, but cost more Power and break down more often. Your call!" },
+            new Line { mood = SpeakerMood.Happy, text = "How to get Parts & Water: tap the Rover button and send Luna to Ice or Mineral sites!" },
+            new Line { mood = SpeakerMood.Neutral, text = "That's how you gather what the Processing Plant needs. Far sites carry more, at higher Power and breakdown risk." },
         };
-        public string step2Hint = "STEP 2/3  Tap the Rover button";
+        public string step2Hint = "RESOURCES (4/5)  Tap the Rover button";
         public Line[] step3Lines =
         {
-            new Line { mood = SpeakerMood.Happy, text = "Step 3: press Next Day to end the shift. Watch the Moon go from day to night!" },
+            new Line { mood = SpeakerMood.Happy, text = "Press Next Day to finish your shift. Overnight, Luna returns with cargo and solar panels recharge!" },
         };
-        public string step3Hint = "STEP 3/3  Press Next Day";
+        public string step3Hint = "NEXT SHIFT (5/5)  Press Next Day";
         public Line[] doneLines =
         {
-            new Line { mood = SpeakerMood.Happy, text = "Training done, {playerName}! Build the Water & O2 Plant first. The base is yours!" },
+            new Line { mood = SpeakerMood.Happy, text = "Training done, {playerName}! Goal: 3 Stars. Tap the glowing Processing Plant ring when you have 15 Parts and 20 Power!" },
         };
         [TextArea(1, 2)] public string replayLine = "Welcome back, {playerName}! Day 1 again. Can you beat your last run?";
 
@@ -62,10 +76,10 @@ namespace ArtemisX.UI
         [Tooltip("Bauzer's grade by stars (index 0..3).")]
         public Line[] gradeLines =
         {
-            new Line { mood = SpeakerMood.Worried, text = "No buildings yet, but every astronaut learns by trying. Let's train again!" },
-            new Line { mood = SpeakerMood.Neutral, text = "One star! Fresh water and air for the crew. Next time, aim for the Greenhouse too." },
-            new Line { mood = SpeakerMood.Happy, text = "Two stars! Water, air and food. Just the Fuel Reserve left to go home on our own!" },
-            new Line { mood = SpeakerMood.Happy, text = "Three stars! The base runs on its own. You're a real lunar engineer, {playerName}!" },
+            new Line { mood = SpeakerMood.Worried, text = "No buildings yet, but every astronaut learns by trying. Start with the Processing Plant next time!" },
+            new Line { mood = SpeakerMood.Neutral, text = "One star! Processing Plant online—turning moon rocks and ice into Parts and Water. Aim for the Electrolyser next!" },
+            new Line { mood = SpeakerMood.Happy, text = "Two stars! Processing Plant and Electrolyser are making Water, Parts, O2, and H2 fuel. Just the Terraforming Dome left!" },
+            new Line { mood = SpeakerMood.Happy, text = "Three stars! Processing, Electrolysis, and Terraforming—the base lives on its own, {playerName}!" },
         };
         [Min(1)] public int fastRunDay = 12;
         public Line fastRunLine = new Line { mood = SpeakerMood.Happy, text = "Three stars in record time! Mission Control wants your autograph, {playerName}!" };

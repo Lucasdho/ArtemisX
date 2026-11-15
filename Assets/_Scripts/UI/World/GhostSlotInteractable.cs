@@ -14,7 +14,7 @@ namespace ArtemisX.UI
     public class GhostSlotInteractable : WorldInteractable
     {
         [SerializeField] private BuildingManager buildings;
-        [Tooltip("0 = Water & O2 Plant, 1 = Greenhouse, 2 = Fuel Reserve.")]
+        [Tooltip("0 = Processing Plant, 1 = Electrolyser, 2 = Terraforming Dome.")]
         [SerializeField] private int buildingIndex;
         [SerializeField] private GameplayVisualsConfig visuals;
         [Tooltip("Pulsing ring shown while this is the next slot to build.")]
@@ -90,7 +90,11 @@ namespace ArtemisX.UI
 
             if (buildings.NextIndex != buildingIndex)
             {
-                if (hud.Config != null) hud.ShowTip(hud.Config.tipBuildOrder);
+                string nextName = !buildings.AllBuilt ? buildings.NextBuilding.displayName : null;
+                string tip = !string.IsNullOrEmpty(nextName)
+                    ? $"Build {nextName} first! Follow the glowing ring."
+                    : (hud.Config != null ? hud.Config.tipBuildOrder : string.Empty);
+                hud.ShowTip(tip);
                 return;
             }
 
@@ -102,10 +106,11 @@ namespace ArtemisX.UI
             }
 
             var b = buildings.Config.buildings[buildingIndex];
-            string output = DescribeOutput(b.dailyOutput);
+            string output = DescribeOutput(b);
             string desc = $"Star {buildingIndex + 1} of 3. {output}";
-            if (reason == ActionBlockReason.NotEnoughParts) desc += "\nNeed more Parts.";
-            else if (reason == ActionBlockReason.NotEnoughPower) desc += "\nNeed more Power.";
+            if (!string.IsNullOrEmpty(b.scienceWhy)) desc += $"\n{b.scienceWhy}";
+            if (reason == ActionBlockReason.NotEnoughParts) desc += "\nNeed Parts: send the Rover to a Mineral site or tap supply drops.";
+            else if (reason == ActionBlockReason.NotEnoughPower) desc += "\nNeed Power: keep solar panels active.";
 
             OpenCard("Build " + b.displayName, desc, "Build", reason == ActionBlockReason.None, Build,
                 new[]
@@ -122,12 +127,16 @@ namespace ArtemisX.UI
             if (buildings.TryBuildNext()) hud.PlaySfx(hud.Config != null ? hud.Config.buildClip : null);
         }
 
-        private static string DescribeOutput(ResourceAmount[] output)
+        private static string DescribeOutput(BuildingConfig.Building building)
         {
-            if (output == null || output.Length == 0) return "Stores rocket fuel to finish the base!";
+            var output = building.dailyOutput;
+            if (output == null || output.Length == 0) return "Advances lunar self-sufficiency.";
             var parts = new List<string>();
             foreach (var o in output) parts.Add($"+{o.amount} {o.resource}");
-            return "Makes " + string.Join(", ", parts) + " a day.";
+            string summary = string.Join(", ", parts);
+            if (string.Equals(building.buildingId, "electrolyser", System.StringComparison.Ordinal))
+                summary += " & H2 fuel";
+            return "Makes " + summary + " a day.";
         }
     }
 }

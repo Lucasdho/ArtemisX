@@ -21,39 +21,60 @@ MonoBehaviour:
   introEndPitch: 38
   introOrbitSeconds: 12
   introReturnSeconds: 2.5
+  landerStartHeight: 14
+  landerDescentSeconds: 4.5
   skipLabel: SKIP >>
+  goalLines:
+  - player: 0
+    mood: 1
+    text: First, our mission goal! See these 3 Missions? Each module you build earns
+      1 Star toward a self-sufficient base.
+  - player: 0
+    mood: 0
+    text: 'Build them in order: 1) Processing Plant, 2) Electrolyser, 3) Terraforming
+      Dome.'
+  goalHint: GOAL (1/5)  3 Modules = 3 Stars
+  buildNextLines:
+  - player: 0
+    mood: 1
+    text: Build here next! The glowing ring marks the Processing Plant.
+  - player: 0
+    mood: 0
+    text: Moon rocks and polar ice lock up metals and water. Refining them here gives
+      us Water and Parts without Earth rockets!
+  buildNextHint: BUILD NEXT (2/5)  Processing Plant (15 Parts, 20 Power)
   step1Lines:
   - player: 0
     mood: 0
-    text: 'Step 1: space weather! This panel shows the forecast for today, using real
-      NASA DONKI data.'
+    text: 'How to get Power: watch space weather! Real NASA DONKI data warns us of
+      storms.'
   - player: 0
     mood: 0
-    text: On storm days, retract the solar panels to protect them. Tap the solar
-      panels to see how.
-  step1WeatherHint: STEP 1/3  Space weather
-  step1Hint: STEP 1/3  Tap the solar panels
+    text: "Solar panels power our base and machines. On storm days, retract them
+      to stay safe\u2014tap the solar field to see."
+  step1WeatherHint: RESOURCES (3/5)  Space weather & Power
+  step1Hint: RESOURCES (3/5)  Tap the solar panels
   step2Lines:
   - player: 0
     mood: 1
-    text: 'Step 2: exploring! Tap the Rover button, then pick a site on the map to
-      send it out.'
+    text: 'How to get Parts & Water: tap the Rover button and send Luna to Ice or
+      Mineral sites!'
   - player: 0
     mood: 0
-    text: Far sites bring more, but cost more Power and break down more often. Your
-      call!
-  step2Hint: STEP 2/3  Tap the Rover button
+    text: That's how you gather what the Processing Plant needs. Far sites carry
+      more, at higher Power and breakdown risk.
+  step2Hint: RESOURCES (4/5)  Tap the Rover button
   step3Lines:
   - player: 0
     mood: 1
-    text: 'Step 3: press Next Day to end the shift. Watch the Moon go from day to
-      night!'
-  step3Hint: STEP 3/3  Press Next Day
+    text: Press Next Day to finish your shift. Overnight, Luna returns with cargo
+      and solar panels recharge!
+  step3Hint: NEXT SHIFT (5/5)  Press Next Day
   doneLines:
   - player: 0
     mood: 1
-    text: Training done, {playerName}! Build the Water & O2 Plant first. The base
-      is yours!
+    text: 'Training done, {playerName}! Goal: 3 Stars. Tap the glowing Processing
+      Plant ring when you have 15 Parts and 20 Power!'
   replayLine: Welcome back, {playerName}! Day 1 again. Can you beat your last run?
   earlyWinTitle: MISSION COMPLETE
   dayCapTitle: MISSION EXTENDED
@@ -62,18 +83,20 @@ MonoBehaviour:
   gradeLines:
   - player: 0
     mood: 2
-    text: No buildings yet, but every astronaut learns by trying. Let's train again!
+    text: No buildings yet, but every astronaut learns by trying. Start with the
+      Processing Plant next time!
   - player: 0
     mood: 0
-    text: One star! Fresh water and air for the crew. Next time, aim for the Greenhouse
-      too.
+    text: "One star! Processing Plant online\u2014turning moon rocks and ice into
+      Parts and Water. Aim for the Electrolyser next!"
   - player: 0
     mood: 1
-    text: Two stars! Water, air and food. Just the Fuel Reserve left to go home on
-      our own!
+    text: Two stars! Processing Plant and Electrolyser are making Water, Parts, O2,
+      and H2 fuel. Just the Terraforming Dome left!
   - player: 0
     mood: 1
-    text: Three stars! The base runs on its own. You're a real lunar engineer, {playerName}!
+    text: "Three stars! Processing, Electrolysis, and Terraforming\u2014the base
+      lives on its own, {playerName}!"
   fastRunDay: 12
   fastRunLine:
     player: 0

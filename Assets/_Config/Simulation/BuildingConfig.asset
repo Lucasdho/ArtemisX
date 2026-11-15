@@ -13,24 +13,32 @@ MonoBehaviour:
   m_Name: BuildingConfig
   m_EditorClassIdentifier: Assembly-CSharp::ArtemisX.Simulation.BuildingConfig
   buildings:
-  - buildingId: water_o2_plant
-    displayName: Water & O2 Plant
+  - buildingId: processing_plant
+    displayName: Processing Plant
+    scienceWhy: Melts lunar ice into Water and refines moon rocks into Parts (ISRU),
+      cutting supply trips from Earth.
     partsCost: 15
     powerCost: 20
     dailyOutput:
     - resource: 1
       amount: 10
-    - resource: 2
-      amount: 12
-  - buildingId: greenhouse
-    displayName: Greenhouse
+    - resource: 4
+      amount: 4
+  - buildingId: electrolyser
+    displayName: Electrolyser
+    scienceWhy: Splits Water (H2O) with solar electricity into breathable Oxygen
+      (O2) and Hydrogen (H2) rocket fuel.
     partsCost: 25
     powerCost: 25
     dailyOutput:
-    - resource: 3
+    - resource: 2
       amount: 12
-  - buildingId: fuel_reserve
-    displayName: Fuel Reserve
+  - buildingId: terraforming
+    displayName: Terraforming Dome
+    scienceWhy: Uses spare Power for grow lights and Water for hydroponics to grow
+      fresh Food on the Moon.
     partsCost: 35
     powerCost: 30
-    dailyOutput: []
+    dailyOutput:
+    - resource: 3
+      amount: 12

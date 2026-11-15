@@ -13,6 +13,7 @@ namespace ArtemisX.Simulation
         {
             public string buildingId;
             public string displayName;
+            [TextArea(2, 4)] public string scienceWhy;
             [Min(0)] public int partsCost;
             [Min(0)] public int powerCost;
             [Tooltip("Passive gain per day once built.")]
@@ -24,18 +25,24 @@ namespace ArtemisX.Simulation
         {
             new Building
             {
-                buildingId = "water_o2_plant", displayName = "Water & O2 Plant", partsCost = 15, powerCost = 20,
-                dailyOutput = new[] { new ResourceAmount(ResourceType.Water, 10), new ResourceAmount(ResourceType.Oxygen, 12) }
+                buildingId = "processing_plant", displayName = "Processing Plant",
+                scienceWhy = "Melts lunar ice into Water and refines moon rocks into Parts (ISRU), cutting supply trips from Earth.",
+                partsCost = 15, powerCost = 20,
+                dailyOutput = new[] { new ResourceAmount(ResourceType.Water, 10), new ResourceAmount(ResourceType.Parts, 4) }
             },
             new Building
             {
-                buildingId = "greenhouse", displayName = "Greenhouse", partsCost = 25, powerCost = 25,
+                buildingId = "electrolyser", displayName = "Electrolyser",
+                scienceWhy = "Splits Water (H2O) with solar electricity into breathable Oxygen (O2) and Hydrogen (H2) rocket fuel.",
+                partsCost = 25, powerCost = 25,
+                dailyOutput = new[] { new ResourceAmount(ResourceType.Oxygen, 12) }
+            },
+            new Building
+            {
+                buildingId = "terraforming", displayName = "Terraforming Dome",
+                scienceWhy = "Uses spare Power for grow lights and Water for hydroponics to grow fresh Food on the Moon.",
+                partsCost = 35, powerCost = 30,
                 dailyOutput = new[] { new ResourceAmount(ResourceType.Food, 12) }
-            },
-            new Building
-            {
-                buildingId = "fuel_reserve", displayName = "Fuel Reserve", partsCost = 35, powerCost = 30,
-                dailyOutput = new ResourceAmount[0]
             },
         };
 

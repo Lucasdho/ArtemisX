@@ -17,6 +17,7 @@ namespace ArtemisX.UI
     {
         [SerializeField] private ScreensConfig config;
         [SerializeField] private GameplayUIConfig uiConfig;
+        [SerializeField] private PlayerRunProfile profile;
         [SerializeField] private StartScreenView startScreen;
         [SerializeField] private DialogueRunner runner;
         [SerializeField] private StoryDirector story;
@@ -36,7 +37,9 @@ namespace ArtemisX.UI
 
         private Vector3 homePosition;
         private Quaternion homeRotation;
+        private Vector3 landerRestPos;
         private Sequence cameraTween;
+        private Tween landerTween;
         private bool introDialogueDone;
         private bool cutsceneRunning;
         private DialogueSequence replaySequence;
@@ -45,6 +48,7 @@ namespace ArtemisX.UI
 
         private void Awake()
         {
+            if (introFocus != null) landerRestPos = introFocus.position;
             if (skipButton != null) skipButton.onClick.AddListener(SkipIntro);
             if (skipLabel != null && config != null) skipLabel.text = config.skipLabel;
             if (skipRoot != null) skipRoot.SetActive(false);
@@ -59,6 +63,12 @@ namespace ArtemisX.UI
 
         private void Start()
         {
+            if (profile != null)
+            {
+                profile.ApplySpeakerPortrait();
+                if (runner != null) runner.SetPlayerProfile(profile);
+            }
+
             if (hud != null) hud.Cinematic = true;
             if (startScreen != null)
             {
@@ -67,7 +77,8 @@ namespace ArtemisX.UI
             }
             else
             {
-                OnLaunch(0, null);
+                OnLaunch(profile != null ? profile.selectedCharacter : 0,
+                         profile != null ? profile.playerNickname : null);
             }
         }
 
@@ -105,23 +116,31 @@ namespace ArtemisX.UI
             introDialogueDone = false;
             if (skipRoot != null) skipRoot.SetActive(true);
 
+            if (introFocus != null && config.landerStartHeight > 0f)
+            {
+                introFocus.position = landerRestPos + Vector3.up * config.landerStartHeight;
+                landerTween = introFocus.DOMove(landerRestPos, config.landerDescentSeconds)
+                    .SetEase(Ease.OutCubic)
+                    .SetLink(gameObject);
+            }
+
             if (cameraRig != null)
             {
                 if (panController != null) panController.enabled = false;
                 homePosition = cameraRig.position;
                 homeRotation = cameraRig.rotation;
 
-                Vector3 focus = (introFocus != null ? introFocus.position : Vector3.zero) + config.introFocusOffset;
+                Vector3 startFocus = (introFocus != null ? introFocus.position : Vector3.zero) + config.introFocusOffset;
                 float yaw = homeRotation.eulerAngles.y;
-                Pose(focus, yaw + config.introStartYawOffset, config.introStartPitch, config.introStartDistance, out Vector3 p0, out Quaternion r0);
-                Pose(focus, yaw + config.introEndYawOffset, config.introEndPitch, config.introEndDistance, out Vector3 p1, out Quaternion r1);
+                Pose(startFocus, yaw + config.introStartYawOffset, config.introStartPitch, config.introStartDistance, out Vector3 p0, out Quaternion r0);
                 cameraRig.SetPositionAndRotation(p0, r0);
 
                 float t = config.introOrbitSeconds;
                 cameraTween = DOTween.Sequence().SetLink(gameObject)
                     .Append(DOVirtual.Float(0f, 1f, t, k =>
                     {
-                        // Orbit: interpolate yaw/pitch/distance around the focus instead of a straight line.
+                        // Orbit: interpolate yaw/pitch/distance around the descending lander instead of a straight line.
+                        Vector3 focus = (introFocus != null ? introFocus.position : Vector3.zero) + config.introFocusOffset;
                         float yk = Mathf.Lerp(config.introStartYawOffset, config.introEndYawOffset, k);
                         float pk = Mathf.Lerp(config.introStartPitch, config.introEndPitch, k);
                         float dk = Mathf.Lerp(config.introStartDistance, config.introEndDistance, k);
@@ -154,6 +173,7 @@ namespace ArtemisX.UI
             if (!cutsceneRunning) return;
             cutsceneRunning = false;
             cameraTween?.Kill();
+            landerTween?.Kill();
             if (runner != null && runner.IsOpen && story != null && story.Schedule != null && runner.CurrentSequence == story.Schedule.introMilestone)
                 runner.SkipCurrentSequence();
             FinishIntro();
@@ -162,6 +182,8 @@ namespace ArtemisX.UI
         private void FinishIntro()
         {
             cutsceneRunning = false;
+            landerTween?.Kill();
+            if (introFocus != null) introFocus.position = landerRestPos;
             if (cameraRig != null) cameraRig.SetPositionAndRotation(homePosition, homeRotation);
             EndCinematic();
             if (onboarding != null) onboarding.Begin();

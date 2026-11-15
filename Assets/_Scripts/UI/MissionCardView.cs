@@ -24,9 +24,16 @@ namespace ArtemisX.UI
         [SerializeField] private Row[] rows;
         [Tooltip("Optional. Rows light up on BuildingCompleted.")]
         [SerializeField] private BuildingManager buildings;
+        [Tooltip("Shown in place of the circle when a mission is completed.")]
+        [SerializeField] private Sprite checkmarkSprite;
+
+        private Sprite[] defaultCheckSprites;
+        private bool tutorialMode;
 
         private void Awake()
         {
+            CacheDefaultCheckSprites();
+            if (rows == null) return;
             for (int i = 0; i < rows.Length; i++) SetProgress(i, 0f);
         }
 
@@ -42,17 +49,18 @@ namespace ArtemisX.UI
 
         private void Start()
         {
+            if (tutorialMode) return;
             if (buildings == null || buildings.Config == null) return;
             for (int i = 0; i < rows.Length && i < buildings.Config.Count; i++)
-            {
-                if (rows[i].label != null) rows[i].label.text = "Star " + (i + 1) + ": " + buildings.Config.buildings[i].displayName;
                 SetProgress(i, buildings.IsBuilt(i) ? 1f : 0f);
-            }
+            RefreshLabels();
         }
 
         private void OnBuildingCompleted(int index)
         {
+            if (tutorialMode) return;
             SetProgress(index, 1f);
+            RefreshLabels();
             if (index >= 0 && index < rows.Length && rows[index].checkCircle != null)
             {
                 var t = rows[index].checkCircle.transform;
@@ -61,10 +69,80 @@ namespace ArtemisX.UI
             }
         }
 
+        private void RefreshLabels()
+        {
+            if (tutorialMode) return;
+            if (buildings == null || buildings.Config == null || rows == null) return;
+            for (int i = 0; i < rows.Length && i < buildings.Config.Count; i++)
+            {
+                var label = rows[i].label;
+                if (label == null) continue;
+
+                var b = buildings.Config.buildings[i];
+                bool built = buildings.IsBuilt(i);
+                bool isNext = !built && buildings.NextIndex == i;
+
+                label.resizeTextForBestFit = true;
+                label.resizeTextMinSize = 13;
+                label.resizeTextMaxSize = 24;
+                label.text = isNext
+                    ? $"NEXT: {b.displayName} ({b.partsCost}P, {b.powerCost}E)"
+                    : $"Star {i + 1}: {b.displayName}";
+                label.fontStyle = isNext ? FontStyle.Bold : FontStyle.Normal;
+                if (style != null)
+                    label.color = (!built && !isNext) ? style.mutedTextColor : style.textColor;
+            }
+        }
+
+        /// <summary>Replaces the mission rows with tutorial tasks (all unchecked).</summary>
+        public void ShowTutorial(string[] labels)
+        {
+            tutorialMode = true;
+            if (rows == null || labels == null) return;
+            for (int i = 0; i < rows.Length; i++)
+            {
+                bool used = i < labels.Length;
+                if (rows[i].label != null)
+                {
+                    rows[i].label.resizeTextForBestFit = true;
+                    rows[i].label.resizeTextMinSize = 13;
+                    rows[i].label.resizeTextMaxSize = 24;
+                    rows[i].label.fontStyle = FontStyle.Normal;
+                    if (used) rows[i].label.text = labels[i];
+                    if (style != null) rows[i].label.color = style.textColor;
+                }
+                SetProgress(i, 0f);
+            }
+        }
+
+        /// <summary>Checks off one tutorial task with a small pop animation.</summary>
+        public void CompleteTutorialTask(int index)
+        {
+            if (rows == null || index < 0 || index >= rows.Length) return;
+            SetProgress(index, 1f);
+            if (rows[index].checkCircle == null) return;
+            var t = rows[index].checkCircle.transform;
+            t.localScale = Vector3.one * 1.6f;
+            DG.Tweening.ShortcutExtensions.DOScale(t, 1f, 0.4f);
+        }
+
+        /// <summary>Tutorial finished: restores the real missions.</summary>
+        public void ShowMissions()
+        {
+            tutorialMode = false;
+            if (rows == null) return;
+            for (int i = 0; i < rows.Length; i++) SetProgress(i, 0f);
+            if (buildings != null && buildings.Config != null)
+                for (int i = 0; i < rows.Length && i < buildings.Config.Count; i++)
+                    SetProgress(i, buildings.IsBuilt(i) ? 1f : 0f);
+            RefreshLabels();
+        }
+
         /// <summary>Progress 0 to 1 for goal <paramref name="index"/>; 1 marks it done.</summary>
         public void SetProgress(int index, float progress)
         {
             if (rows == null || index < 0 || index >= rows.Length) return;
+            CacheDefaultCheckSprites();
 
             var row = rows[index];
             float p = Mathf.Clamp01(progress);
@@ -77,14 +155,39 @@ namespace ArtemisX.UI
                 row.fillMask.anchorMax = anchor;
             }
 
+            bool showCheckmark = done && checkmarkSprite != null;
+            if (row.checkCircle != null)
+            {
+                if (row.checkCircle is UnityEngine.UI.Image checkImage)
+                {
+                    Sprite fallback = defaultCheckSprites != null && index < defaultCheckSprites.Length
+                        ? defaultCheckSprites[index]
+                        : null;
+                    checkImage.sprite = showCheckmark ? checkmarkSprite : (fallback != null ? fallback : checkImage.sprite);
+                    checkImage.preserveAspect = showCheckmark;
+                }
+
+                if (showCheckmark) row.checkCircle.color = Color.white;
+                else if (style != null) row.checkCircle.color = done ? style.doneColor : style.trackColor;
+            }
+
             if (style == null) return;
             if (row.track != null) row.track.color = style.trackColor;
             if (row.fill != null) row.fill.color = style.progressColor;
-            if (row.checkCircle != null) row.checkCircle.color = done ? style.doneColor : style.trackColor;
             if (row.label != null)
             {
                 row.label.color = style.textColor;
                 if (style.font != null) row.label.font = style.font;
+            }
+        }
+
+        private void CacheDefaultCheckSprites()
+        {
+            if (rows == null || defaultCheckSprites != null) return;
+            defaultCheckSprites = new Sprite[rows.Length];
+            for (int i = 0; i < rows.Length; i++)
+            {
+                if (rows[i].checkCircle is UnityEngine.UI.Image img) defaultCheckSprites[i] = img.sprite;
             }
         }
     }

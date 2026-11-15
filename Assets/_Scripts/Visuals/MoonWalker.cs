@@ -285,6 +285,7 @@ public void LeaveShelter()
             }
             airborne = hopClock < config.hopAirSeconds;
             if (wasAirborne && !airborne) Land();
+            else if (!wasAirborne && airborne) PushOffDust();
 
             if (!arrived)
             {
@@ -372,6 +373,11 @@ public void LeaveShelter()
         private void Land()
         {
             if (landingDust != null && config.landingDustCount > 0) landingDust.Emit(config.landingDustCount);
+        }
+
+        private void PushOffDust()
+        {
+            if (landingDust != null && config.landingDustCount > 1) landingDust.Emit(Mathf.Max(1, config.landingDustCount / 3));
         }
 
         private void Arrive()

@@ -23,6 +23,8 @@ namespace ArtemisX.UI
         [SerializeField] private MorningSequenceController morning;
         [SerializeField] private Visuals.DayNightTransitionPlayer transition;
         [SerializeField] private TutorialHighlightView highlight;
+        [SerializeField] private RectTransform missionCard;
+        [SerializeField] private Transform firstBuildingSlot;
         [SerializeField] private RectTransform weatherWidget;
         [SerializeField] private RectTransform nextDayButton;
         [SerializeField] private RectTransform roverButton;
@@ -33,6 +35,7 @@ namespace ArtemisX.UI
         public event Action Finished;
 
         private bool solarClicked;
+        private MissionCardView card;
         private DialogueSequence runtimeSequence;
 
         private void LateUpdate()
@@ -64,15 +67,33 @@ namespace ArtemisX.UI
             IsRunning = true;
             if (nextDay != null) nextDay.ExternalLock = true;
 
-            // Step 1: space weather widget, then the exposed solar field.
+            card = missionCard != null ? missionCard.GetComponent<MissionCardView>() : null;
+            if (card != null) card.ShowTutorial(new[] { "Click the solar field", "Send the rover out", "Press Next Day" });
+
+            // Step 1: what is the goal (Mission Card).
+            if (missionCard != null)
+            {
+                if (highlight != null) highlight.ShowUi(missionCard, config.goalHint);
+                yield return Say(config.goalLines);
+            }
+
+            // Step 2: where to build next (Processing Plant ghost ring).
+            if (firstBuildingSlot != null)
+            {
+                if (highlight != null) highlight.ShowWorld(firstBuildingSlot, hud != null ? hud.ViewCamera : null, config.buildNextHint);
+                yield return Say(config.buildNextLines);
+            }
+
+            // Step 3: how to get Power (space weather + solar field).
             if (highlight != null) highlight.ShowUi(weatherWidget, config.step1WeatherHint);
             yield return Say(config.step1Lines);
             solarClicked = false;
             if (highlight != null) highlight.ShowWorld(solarField, hud != null ? hud.ViewCamera : null, config.step1Hint);
             yield return new WaitUntil(() => solarClicked);
+            if (card != null) card.CompleteTutorialTask(0);
             yield return WaitIdle();
 
-            // Step 2: rover map dispatch (skipped if the rover is already out or can't go).
+            // Step 4: how to get Water & Parts (rover map dispatch).
             if (rover == null || rover.Status == RoverStatus.Ready)
             {
                 // The bottom HUD buttons are hidden while Bauzer talks, so frame the Rover button once he is done.
@@ -82,8 +103,9 @@ namespace ArtemisX.UI
                 yield return new WaitUntil(() => rover == null || rover.Status != RoverStatus.Ready);
                 yield return WaitIdle();
             }
+            if (card != null) card.CompleteTutorialTask(1);
 
-            // Step 3: Next Day.
+            // Step 5: Next Day.
             if (highlight != null) highlight.ShowUi(nextDayButton, config.step3Hint);
             yield return Say(config.step3Lines);
             if (nextDay != null) nextDay.ExternalLock = false;
@@ -92,6 +114,9 @@ namespace ArtemisX.UI
                 || (resolution != null && resolution.IsMissionOver));
             if (highlight != null) highlight.Hide();
             yield return new WaitUntil(() => (days == null || days.CurrentDay > startDay) && IsIdle());
+            if (card != null) card.CompleteTutorialTask(2);
+            yield return new WaitForSeconds(0.8f);
+            if (card != null) card.ShowMissions();
             yield return Say(config.doneLines);
 
             IsRunning = false;

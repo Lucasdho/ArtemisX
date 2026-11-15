@@ -236,7 +236,7 @@ namespace ArtemisX.Simulation
         private void OnBuildingCompleted(int index)
         {
             RefreshNetRates();
-            if (index == 0 && storyDirector != null) storyDirector.TriggerFirstBuilding();
+            if (storyDirector != null) storyDirector.TriggerBuildingCompleted(index);
         }
 
         private void OnSolarStateChanged(SolarFieldState _) => RefreshNetRates();

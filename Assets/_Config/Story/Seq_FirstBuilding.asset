@@ -16,6 +16,13 @@ MonoBehaviour:
   lines:
   - speaker: {fileID: 11400000, guid: f1a52219a36a5425fbc0493a4d791c19, type: 2}
     mood: 1
-    text: The Water & O2 Plant is online, {playerName}! Fresh water and air for the
-      whole crew. Star 1!
+    text: Processing Plant online, {playerName}! Star 1 earned!
+  - speaker: {fileID: 11400000, guid: f1a52219a36a5425fbc0493a4d791c19, type: 2}
+    mood: 0
+    text: In real lunar engineering (ISRU), melting crater ice and refining regolith
+      rocks gives us Water and Parts right here on the Moon.
+  - speaker: {fileID: 11400000, guid: f1a52219a36a5425fbc0493a4d791c19, type: 2}
+    mood: 1
+    text: 'Next mission: the Electrolyser! Look for its glowing ring to turn Water
+      into breathable O2 and H2 rocket fuel.'
   choices: []

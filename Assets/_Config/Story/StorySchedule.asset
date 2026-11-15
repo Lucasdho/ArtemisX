@@ -35,6 +35,8 @@ MonoBehaviour:
   componentBrokenDebrief: {fileID: 11400000, guid: d1f878c96d9d24aea94f1427244ced34, type: 2}
   introMilestone: {fileID: 11400000, guid: a6fa51877a8f3404ebecdab304a66e26, type: 2}
   firstBuildingMilestone: {fileID: 11400000, guid: e08003f20bcb14ff285518ac99ab1c72, type: 2}
+  secondBuildingMilestone: {fileID: 11400000, guid: 6226dc0b6ddbb4894934a2d9cbac9cc8, type: 2}
+  thirdBuildingMilestone: {fileID: 11400000, guid: 094b7c636bdd74192b24b90b97440651, type: 2}
   supplyShipArrivedMilestone: {fileID: 11400000, guid: b46faab14883244aaa062ba99d6fed89, type: 2}
   missionEndMilestone: {fileID: 11400000, guid: c3f7388a22c5647698ecb6e26773107f, type: 2}
   missionEndEarlyWinMilestone: {fileID: 11400000, guid: c3f7388a22c5647698ecb6e26773107f, type: 2}

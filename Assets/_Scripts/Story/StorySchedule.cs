@@ -69,6 +69,8 @@ namespace ArtemisX.Story
         [Header("Milestones")]
         public DialogueSequence introMilestone;
         public DialogueSequence firstBuildingMilestone;
+        public DialogueSequence secondBuildingMilestone;
+        public DialogueSequence thirdBuildingMilestone;
         public DialogueSequence supplyShipArrivedMilestone;
         public DialogueSequence missionEndMilestone;
         public DialogueSequence missionEndEarlyWinMilestone;

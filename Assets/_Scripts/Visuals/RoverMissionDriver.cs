@@ -23,6 +23,7 @@ namespace ArtemisX.Visuals
         private Quaternion homeRotation;
         private bool parkAtEnd;
         private float alertTimer;
+        private ParticleSystem[] dustSystems;
 
         public bool IsDriving => nextWaypoint < waypoints.Count;
 
@@ -30,6 +31,7 @@ namespace ArtemisX.Visuals
         {
             homePosition = transform.position;
             homeRotation = transform.rotation;
+            dustSystems = wheelDust != null ? wheelDust.GetComponentsInChildren<ParticleSystem>(true) : System.Array.Empty<ParticleSystem>();
             SetDust(false);
         }
 
@@ -150,9 +152,17 @@ namespace ArtemisX.Visuals
 
         private void SetDust(bool on)
         {
-            if (wheelDust == null) return;
-            var emission = wheelDust.emission;
-            if (emission.enabled != on) emission.enabled = on;
+            if (dustSystems == null || dustSystems.Length == 0)
+            {
+                if (wheelDust == null) return;
+                dustSystems = wheelDust.GetComponentsInChildren<ParticleSystem>(true);
+            }
+            for (int i = 0; i < dustSystems.Length; i++)
+            {
+                if (dustSystems[i] == null) continue;
+                var emission = dustSystems[i].emission;
+                if (emission.enabled != on) emission.enabled = on;
+            }
         }
     }
 }

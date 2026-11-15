@@ -41,6 +41,9 @@ namespace ArtemisX.UI.StartScreen
         [Range(0, 3)] public int selectedCharacter = 0;
         public string playerNickname = "Commander";
 
+        /// <summary>Runtime 3D face snapshot captured in CharacterSelect; preferred over static roster portraits.</summary>
+        [NonSerialized] public Sprite runtimeCapturedPortrait;
+
         [Header("Optional Dialogue Speaker Binding")]
         [Tooltip("When assigned, ApplySelection updates the player speaker portrait and accent color for dialogue.")]
         public Speaker playerSpeaker;
@@ -175,20 +178,23 @@ namespace ArtemisX.UI.StartScreen
             selectedCharacter = Mathf.Clamp(characterIndex, 0, RosterCount - 1);
             ValidateAndSanitizeNickname(rawNickname, out string cleanName, out filterHint);
             playerNickname = cleanName;
-
-            var entry = GetAstronaut(selectedCharacter);
-            if (playerSpeaker != null)
-            {
-                if (entry.portrait != null)
-                {
-                    playerSpeaker.portrait = entry.portrait;
-                    playerSpeaker.happyPortrait = entry.portrait;
-                    playerSpeaker.worriedPortrait = entry.portrait;
-                }
-                playerSpeaker.accentColor = entry.accentColor;
-            }
-
+            ApplySpeakerPortrait();
             return playerNickname;
+        }
+
+        /// <summary>Updates the linked player Speaker using the runtime 3D face photo (or roster fallback) and accent color.</summary>
+        public void ApplySpeakerPortrait()
+        {
+            if (playerSpeaker == null) return;
+            var entry = GetAstronaut(selectedCharacter);
+            Sprite activePortrait = runtimeCapturedPortrait != null ? runtimeCapturedPortrait : entry.portrait;
+            if (activePortrait != null)
+            {
+                playerSpeaker.portrait = activePortrait;
+                playerSpeaker.happyPortrait = activePortrait;
+                playerSpeaker.worriedPortrait = activePortrait;
+            }
+            playerSpeaker.accentColor = entry.accentColor;
         }
     }
 
