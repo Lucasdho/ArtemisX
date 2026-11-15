@@ -106,7 +106,7 @@ namespace ArtemisX.Simulation.Tests
             s.demand.Initialize(Load<UnexpectedDemandConfig>(DemandConfigPath), s.res, s.days, s.weather);
             s.ctrl.Initialize(s.config, s.days, s.res, s.weather, s.rover, s.solar, s.buildings, s.supply, s.demand);
 
-            var r = roll ?? (() => 0.999f); // default: nothing breaks on a calm night, storms still break the rover
+            var r = roll ?? (() => 0.999f); // default: nothing breaks (calm or storm) unless a test asks for it
             s.rover.RandomValue = r;
             s.solar.RandomValue = r;
             s.demand.RandomValue = () => 0.999f; // no demands unless a test asks for them
@@ -234,9 +234,25 @@ namespace ArtemisX.Simulation.Tests
         }
 
         [Test]
-        public void Rover_AlwaysBreaksInStorm_NoHaul_RepairsFor5Parts()
+        public void Rover_StormBreakdown_UsesConfiguredChance()
         {
-            var s = Create(new[] { 1 }, () => 0.999f);
+            var siteConfig = Load<ExpeditionSiteConfig>(SiteConfigPath);
+            Assert.AreEqual(0.3f, siteConfig.stormBreakdownChance, 0.0001f, "GDD: 30% storm breakdown");
+
+            // Roll just above the storm chance: the rover survives the storm and brings its haul.
+            var safe = Create(new[] { 1 }, () => siteConfig.stormBreakdownChance + 0.01f);
+            Assert.IsTrue(safe.rover.TryDispatchRover(FarMinerals));
+            safe.ctrl.EndDay();
+            Assert.AreEqual(RoverStatus.Ready, safe.rover.Status);
+            Assert.IsTrue(safe.ctrl.LastReport.rover.stormHit);
+            Assert.AreEqual(20 + 16, safe.res.Get(ResourceType.Parts));
+        }
+
+        [Test]
+        public void Rover_CanBreakInStorm_NoHaul_RepairsFor5Parts()
+        {
+            var siteConfig = Load<ExpeditionSiteConfig>(SiteConfigPath);
+            var s = Create(new[] { 1 }, () => siteConfig.stormBreakdownChance - 0.01f); // above Far's calm 25%, below storm 30%
             var brokenEvents = new List<BaseComponent>();
             s.rover.ComponentBroken += brokenEvents.Add;
 
@@ -303,12 +319,24 @@ namespace ArtemisX.Simulation.Tests
             Assert.AreEqual(5, s.res.GetNetRate(ResourceType.Power));
 
             s.ctrl.EndDay(); // storm
-            Assert.AreEqual(SolarFieldState.Retracted, s.solar.State);
             Assert.IsFalse(s.ctrl.LastReport.solarBroken);
             Assert.AreEqual(65, s.res.Get(ResourceType.Power));
 
-            Assert.IsTrue(s.solar.ToggleRetract());
+            // Next morning the field deploys again by itself.
+            Assert.AreEqual(SolarFieldState.Active, s.solar.State);
+            Assert.IsTrue(s.ctrl.LastReport.solarRedeployed);
             Assert.AreEqual(25, s.res.GetNetRate(ResourceType.Power));
+        }
+
+        [Test]
+        public void Solar_BrokenFieldStaysBroken_NoAutoRedeploy()
+        {
+            var s = Create(new[] { 1 }, () => 0f);
+            s.ctrl.EndDay(); // storm, Active -> Broken
+            Assert.AreEqual(SolarFieldState.Broken, s.solar.State);
+            Assert.IsFalse(s.ctrl.LastReport.solarRedeployed);
+            s.ctrl.EndDay(); // calm night: still broken
+            Assert.AreEqual(SolarFieldState.Broken, s.solar.State);
         }
 
         // ---------- Crew restriction ----------
@@ -451,7 +479,8 @@ namespace ArtemisX.Simulation.Tests
             Assert.AreEqual(SolarFieldState.Retracted, s.solar.State);
             Assert.AreEqual(ActionBlockReason.AlreadyChosen, s.weather.CanApplyWeatherChoice(WeatherChoice.KeepFullPower));
             s.ctrl.EndDay();
-            Assert.AreEqual(SolarFieldState.Retracted, s.solar.State);
+            Assert.IsFalse(s.ctrl.LastReport.solarBroken);
+            Assert.AreEqual(SolarFieldState.Active, s.solar.State, "Retracted field redeploys at dawn");
 
             Assert.IsTrue(s.weather.ApplyWeatherChoice(WeatherChoice.KeepFullPower));
             Assert.AreEqual(SolarFieldState.Active, s.solar.State);
@@ -521,6 +550,27 @@ namespace ArtemisX.Simulation.Tests
             s.ctrl.EndDay(); // Day 3 is a DONKI event day: the weather card has priority
             Assert.IsFalse(s.ctrl.LastReport.demandRolled);
             Assert.AreEqual(WeatherEventType.SolarStorm, s.ctrl.LastReport.todayWeather);
+        }
+
+        [Test]
+        public void Demand_Pending_BlocksEndDay_UntilAnswered()
+        {
+            var s = Create(new int[0]);
+            s.demand.RandomValue = () => 0f;
+            int signals = 0;
+            s.ctrl.EndDayAvailabilityChanged += () => signals++;
+            s.ctrl.EndDay(); // Day 2, demand rolled
+            Assert.IsTrue(s.demand.HasActiveDemand);
+            Assert.AreEqual(ActionBlockReason.DemandPending, s.ctrl.CanEndDay());
+            Assert.IsFalse(s.ctrl.EndDay());
+            Assert.AreEqual(2, s.days.CurrentDay);
+            Assert.IsTrue(s.demand.HasActiveDemand, "An unanswered demand is never discarded");
+
+            Assert.IsTrue(s.demand.ResolveDemandChoice(1));
+            Assert.AreEqual(ActionBlockReason.None, s.ctrl.CanEndDay());
+            Assert.AreEqual(2, signals);
+            Assert.IsTrue(s.ctrl.EndDay());
+            Assert.AreEqual(3, s.days.CurrentDay);
         }
 
         [Test]
