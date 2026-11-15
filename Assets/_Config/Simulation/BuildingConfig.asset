@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9951de48a61454b1db08d65d578bd152, type: 3}
+  m_Name: BuildingConfig
+  m_EditorClassIdentifier: Assembly-CSharp::ArtemisX.Simulation.BuildingConfig
+  buildings:
+  - buildingId: water_o2_plant
+    displayName: Water & O2 Plant
+    partsCost: 15
+    powerCost: 20
+    dailyOutput:
+    - resource: 1
+      amount: 10
+    - resource: 2
+      amount: 12
+  - buildingId: greenhouse
+    displayName: Greenhouse
+    partsCost: 25
+    powerCost: 25
+    dailyOutput:
+    - resource: 3
+      amount: 12
+  - buildingId: fuel_reserve
+    displayName: Fuel Reserve
+    partsCost: 35
+    powerCost: 30
+    dailyOutput: []
