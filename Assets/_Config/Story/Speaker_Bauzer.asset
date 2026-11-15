@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: Speaker_Bauzer
   m_EditorClassIdentifier: Assembly-CSharp::ArtemisX.Story.Speaker
   speakerId: bauzer
-  displayName: Bauzer
+  displayName: Kepler
   usePlayerName: 0
-  portrait: {fileID: 21300000, guid: bac0521eee1994aed80fb9a64c550a0d, type: 3}
-  happyPortrait: {fileID: 21300000, guid: dcc46cf72c838478bae896afdf7ceb8c, type: 3}
-  worriedPortrait: {fileID: 21300000, guid: 6b2ccf794f0aa43bd8d852f36d8ff3f0, type: 3}
-  accentColor: {r: 0.24, g: 0.72, b: 0.96, a: 1}
+  portrait: {fileID: 21300000, guid: 68442c9f97d234530ba08332b5a0d18c, type: 3}
+  happyPortrait: {fileID: 21300000, guid: 68442c9f97d234530ba08332b5a0d18c, type: 3}
+  worriedPortrait: {fileID: 21300000, guid: 68442c9f97d234530ba08332b5a0d18c, type: 3}
+  accentColor: {r: 1, g: 1, b: 1, a: 1}

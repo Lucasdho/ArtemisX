@@ -73,7 +73,7 @@ namespace ArtemisX.UI
             {
                 if (stars[i] == null) continue;
                 stars[i].texture = i < run.stars ? starOn : starOff;
-                stars[i].color = i < run.stars ? Color.white : new Color(1f, 1f, 1f, 0.35f);
+                stars[i].color = i < run.stars ? Color.white : new Color(1f, 1f, 1f, 0.20f);
             }
 
             var grade = PickGrade(run);
@@ -204,7 +204,7 @@ namespace ArtemisX.UI
                     label.fontSize = 16;
                     label.alignment = TextAnchor.LowerCenter;
                     label.horizontalOverflow = HorizontalWrapMode.Overflow;
-                    label.color = new Color(0.8f, 0.85f, 0.9f);
+                    label.color = new Color(0.337f, 0.396f, 0.498f);
                     label.raycastTarget = false;
                     label.text = extended ? config.extendedBarLabel : day.ToString();
                     var lrt = label.rectTransform;

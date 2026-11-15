@@ -25,7 +25,7 @@ MonoBehaviour:
   step1Lines:
   - player: 0
     mood: 0
-    text: 'Step 1: space weather! This panel shows today and tomorrow, using real
+    text: 'Step 1: space weather! This panel shows the forecast for today, using real
       NASA DONKI data.'
   - player: 0
     mood: 0
@@ -85,5 +85,5 @@ MonoBehaviour:
   onlineText: '{0} runs so far. Your bar is highlighted!'
   extendedBarLabel: EXT
   playAgainLabel: PLAY AGAIN
-  barColor: {r: 0.22, g: 0.74, b: 0.97, a: 0.55}
-  ownBarColor: {r: 0.96, g: 0.62, b: 0.04, a: 1}
+  barColor: {r: 0.5803922, g: 0.6392157, b: 0.72156864, a: 0.7}
+  ownBarColor: {r: 1, g: 0.3529412, b: 0.12156863, a: 1}

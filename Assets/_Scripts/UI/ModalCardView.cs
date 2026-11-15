@@ -69,7 +69,8 @@ namespace ArtemisX.UI
             if (bannerBackground != null)
             {
                 bannerBackground.gameObject.SetActive(!string.IsNullOrEmpty(content.banner));
-                bannerBackground.color = content.bannerColor.a > 0f ? content.bannerColor : (style != null ? style.progressColor : Color.gray);
+                if (bannerBackground.enabled)
+                    bannerBackground.color = content.bannerColor.a > 0f ? content.bannerColor : (style != null ? style.progressColor : Color.gray);
             }
             if (titleText != null) titleText.text = content.title ?? string.Empty;
             if (bodyText != null)
@@ -151,7 +152,7 @@ namespace ArtemisX.UI
                 }
                 if (cell.amount != null)
                 {
-                    cell.amount.text = value > 0 ? "+" + value : value < 0 ? "−" + Mathf.Abs(value) : "0";
+                    cell.amount.text = value > 0 ? "▲+" + value : value < 0 ? "▼−" + Mathf.Abs(value) : "0";
                     if (style != null) cell.amount.color = style.DeltaColor(value);
                 }
             }
@@ -166,7 +167,7 @@ namespace ArtemisX.UI
                 bauzerText.transform.parent.gameObject.SetActive(show);
                 bauzerText.text = show ? (runner != null ? runner.FormatText(line) : line) : string.Empty;
             }
-            if (bauzerName != null) bauzerName.text = speaker != null ? speaker.displayName : "Bauzer";
+            if (bauzerName != null) bauzerName.text = speaker != null ? speaker.displayName : "Kepler";
             if (bauzerPortrait != null)
             {
                 bauzerPortrait.sprite = speaker != null ? speaker.GetPortrait(mood) : null;
@@ -176,8 +177,6 @@ namespace ArtemisX.UI
 
         private void ApplyFonts()
         {
-            if (style == null || style.font == null) return;
-            foreach (var t in GetComponentsInChildren<Text>(true)) t.font = style.font;
         }
     }
 }

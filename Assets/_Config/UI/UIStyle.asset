@@ -12,26 +12,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2595c37c343f241a7b2c9041cb58925d, type: 3}
   m_Name: UIStyle
   m_EditorClassIdentifier: Assembly-CSharp::ArtemisX.UI.UIStyle
-  font: {fileID: 12800000, guid: 6991fdde796fe4f189d9246a3beba022, type: 3}
-  textColor: {r: 0.973, g: 0.98, b: 0.988, a: 1}
-  mutedTextColor: {r: 0.58, g: 0.639, b: 0.722, a: 1}
-  positiveColor: {r: 0.133, g: 0.773, b: 0.369, a: 1}
-  negativeColor: {r: 0.937, g: 0.267, b: 0.267, a: 1}
-  neutralColor: {r: 0.58, g: 0.639, b: 0.722, a: 1}
-  panelColor: {r: 0.118, g: 0.161, b: 0.231, a: 0.95}
-  trackColor: {r: 0.2, g: 0.255, b: 0.333, a: 1}
-  progressColor: {r: 0.22, g: 0.741, b: 0.973, a: 1}
-  doneColor: {r: 0.133, g: 0.773, b: 0.369, a: 1}
+  font: {fileID: 12800000, guid: 294145074dfb8411a8507ad97619f294, type: 3}
+  textColor: {r: 0.015686275, g: 0.015686275, b: 0.20784314, a: 1}
+  mutedTextColor: {r: 0.3372549, g: 0.39607844, b: 0.49803922, a: 1}
+  positiveColor: {r: 0.18431373, g: 0.79607844, b: 0.30588236, a: 1}
+  negativeColor: {r: 1, g: 0.23137255, b: 0.1882353, a: 1}
+  neutralColor: {r: 0.3372549, g: 0.39607844, b: 0.49803922, a: 1}
+  panelColor: {r: 1, g: 1, b: 1, a: 1}
+  trackColor: {r: 0.8901961, g: 0.9098039, b: 0.9411765, a: 1}
+  progressColor: {r: 1, g: 0.3529412, b: 0.12156863, a: 1}
+  doneColor: {r: 0.18431373, g: 0.79607844, b: 0.30588236, a: 1}
   resources:
   - type: 0
     tint: {r: 0.059, g: 0.09, b: 0.165, a: 0.902}
     accent: {r: 0.961, g: 0.62, b: 0.043, a: 1}
-    icon: {fileID: 21300000, guid: 143da5203b5b2454db2417c99fb6e434, type: 3}
+    icon: {fileID: 21300000, guid: e2086594159434b40a7440baa89dfe73, type: 3}
     letter: P
   - type: 1
     tint: {r: 0.059, g: 0.09, b: 0.165, a: 0.902}
     accent: {r: 0.22, g: 0.741, b: 0.973, a: 1}
-    icon: {fileID: 21300000, guid: 2e5a092d8f9f24ac7997b095a16d006e, type: 3}
+    icon: {fileID: 21300000, guid: 148fa4967c43e40089b1b119c7b413dc, type: 3}
     letter: W
   - type: 2
     tint: {r: 0.059, g: 0.09, b: 0.165, a: 0.902}
@@ -41,10 +41,10 @@ MonoBehaviour:
   - type: 3
     tint: {r: 0.059, g: 0.09, b: 0.165, a: 0.902}
     accent: {r: 0.133, g: 0.773, b: 0.369, a: 1}
-    icon: {fileID: 21300000, guid: 6c2560b2608fb426b8ee6e9550babf6c, type: 3}
+    icon: {fileID: 21300000, guid: 4bb33e37ac8f74e90845707b099b7b93, type: 3}
     letter: F
   - type: 4
     tint: {r: 0.059, g: 0.09, b: 0.165, a: 0.902}
     accent: {r: 0.984, g: 0.573, b: 0.235, a: 1}
-    icon: {fileID: 21300000, guid: 4bb35e547426543d1acb81da1481ab05, type: 3}
+    icon: {fileID: 21300000, guid: 4b9a8578d009a4dae98c18e5a0252f3e, type: 3}
     letter: Pt

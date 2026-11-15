@@ -24,6 +24,12 @@ namespace ArtemisX.UI
         [SerializeField] private Graphic alertBadge;
         [SerializeField] private float alertPulsePeriod = 0.8f;
 
+        [Header("Toy UI Bar")]
+        [SerializeField] private RectTransform fillMask;
+        [SerializeField] private GameObject fillShine;
+        [SerializeField] private Sprite trackNormalSprite;
+        [SerializeField] private Sprite trackLowSprite;
+
         private bool alertActive;
 
         private void Awake()
@@ -60,6 +66,17 @@ namespace ArtemisX.UI
         {
             if (style == null) return;
 
+            if (fillMask != null)
+            {
+                if (style.TryGetLook(type, out var toyLook) && iconImage != null && toyLook.icon != null)
+                {
+                    iconImage.sprite = toyLook.icon;
+                    iconImage.enabled = true;
+                }
+                if (amountLabel != null) amountLabel.color = Color.white;
+                return;
+            }
+
             if (style.TryGetLook(type, out var look))
             {
                 bool hasIcon = look.icon != null;
@@ -90,6 +107,19 @@ namespace ArtemisX.UI
         {
             if (changed != type) return;
             if (amountLabel != null) amountLabel.text = current.ToString();
+
+            if (fillMask != null)
+            {
+                float capacity = type == ResourceType.Parts ? 60f : 100f;
+                float fraction = Mathf.Clamp01(current / capacity);
+                var anchor = fillMask.anchorMax;
+                anchor.x = fraction;
+                fillMask.anchorMax = anchor;
+                if (fillShine != null) fillShine.SetActive(fraction >= 0.45f && fraction <= 0.60f);
+                if (pillBackground is Image trackImg && trackNormalSprite != null && trackLowSprite != null)
+                    trackImg.sprite = (fraction <= 0.25f || current <= 0) ? trackLowSprite : trackNormalSprite;
+            }
+
             bool alert = current <= 0 && (type == ResourceType.Oxygen || type == ResourceType.Food);
             if (alert == alertActive) return;
             alertActive = alert;
@@ -103,7 +133,10 @@ namespace ArtemisX.UI
         private void OnNetRateChanged(ResourceType changed, int perDay)
         {
             if (changed != type || deltaLabel == null) return;
-            deltaLabel.text = perDay > 0 ? "+" + perDay : perDay < 0 ? "−" + Mathf.Abs(perDay) : "0";
+            if (fillMask != null)
+                deltaLabel.text = perDay > 0 ? "▲+" + perDay : perDay < 0 ? "▼−" + Mathf.Abs(perDay) : "0";
+            else
+                deltaLabel.text = perDay > 0 ? "+" + perDay : perDay < 0 ? "−" + Mathf.Abs(perDay) : "0";
             if (style != null) deltaLabel.color = style.DeltaColor(perDay);
         }
     }

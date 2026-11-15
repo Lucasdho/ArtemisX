@@ -16,7 +16,7 @@ MonoBehaviour:
   lines:
   - speaker: {fileID: 11400000, guid: f1a52219a36a5425fbc0493a4d791c19, type: 2}
     mood: 1
-    text: Touchdown! Welcome to the Moon, {playerName}. I'm Bauzer, the computer
+    text: Touchdown! Welcome to the Moon, {playerName}. I'm Kepler, the computer
       that runs Artemis X Base.
   - speaker: {fileID: 11400000, guid: f1a52219a36a5425fbc0493a4d791c19, type: 2}
     mood: 0
@@ -32,7 +32,7 @@ MonoBehaviour:
       and Parts are all limited.'
   - speaker: {fileID: 11400000, guid: e9491b65d8a9c4edfa921bee9056b201, type: 2}
     mood: 0
-    text: Ready for duty, Bauzer! Show me around.
+    text: Ready for duty, Kepler! Show me around.
   - speaker: {fileID: 11400000, guid: f1a52219a36a5425fbc0493a4d791c19, type: 2}
     mood: 1
     text: Let's start with a quick training day!

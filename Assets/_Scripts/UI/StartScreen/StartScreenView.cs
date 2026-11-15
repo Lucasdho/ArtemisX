@@ -167,10 +167,9 @@ namespace ArtemisX.UI.StartScreen
             if (validationHintLabel != null)
             {
                 validationHintLabel.text = hint;
-                if (theme != null)
-                    validationHintLabel.color = clean ? theme.textSecondary : theme.amberHighlight;
-                else
-                    validationHintLabel.color = clean ? new Color(0.58f, 0.64f, 0.72f, 1f) : new Color(0.96f, 0.62f, 0.04f, 1f);
+                validationHintLabel.color = clean
+                    ? new Color(0.337f, 0.396f, 0.498f, 1f)
+                    : new Color(1f, 0.353f, 0.122f, 1f);
             }
 
             return clean;

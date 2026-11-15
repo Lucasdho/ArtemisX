@@ -65,7 +65,7 @@ namespace ArtemisX.UI
             }
             if (label != null)
             {
-                label.text = amount > 0 ? "+" + amount : amount < 0 ? "−" + Mathf.Abs(amount) : "0";
+                label.text = amount > 0 ? "▲+" + amount : amount < 0 ? "▼−" + Mathf.Abs(amount) : "0";
                 if (style != null) label.color = style.DeltaColor(amount);
             }
         }

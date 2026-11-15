@@ -143,7 +143,7 @@ namespace ArtemisX.UI
                 if (cell.amount != null)
                 {
                     cell.amount.text = cost.amount > 0 ? "+" + cost.amount : cost.amount < 0 ? "−" + Mathf.Abs(cost.amount) : "0";
-                    if (style != null) cell.amount.color = style.DeltaColor(cost.amount);
+                    cell.amount.color = Color.white;
                 }
             }
         }
@@ -177,36 +177,6 @@ namespace ArtemisX.UI
 
         private void ApplyStyle()
         {
-            if (style == null) return;
-            if (panel != null && panel.TryGetComponent(out Image bg)) bg.color = style.panelColor;
-            if (titleText != null)
-            {
-                titleText.color = style.textColor;
-                if (style.font != null) titleText.font = style.font;
-            }
-            if (descriptionText != null)
-            {
-                descriptionText.color = style.mutedTextColor;
-                if (style.font != null) descriptionText.font = style.font;
-            }
-            if (confirmButton != null && confirmButton.TryGetComponent(out Image confirmBg))
-                confirmBg.color = style.progressColor;
-            if (confirmButtonText != null && style.font != null)
-                confirmButtonText.font = style.font;
-            if (cancelButton != null && cancelButton.TryGetComponent(out Image cancelBg))
-                cancelBg.color = style.trackColor;
-            if (cancelButton != null)
-            {
-                Text cancelText = cancelButton.GetComponentInChildren<Text>();
-                if (cancelText != null)
-                {
-                    cancelText.color = style.textColor;
-                    if (style.font != null) cancelText.font = style.font;
-                }
-            }
-            if (costCells == null) return;
-            foreach (var cell in costCells)
-                if (cell != null && cell.amount != null && style.font != null) cell.amount.font = style.font;
         }
 
         private void HideImmediate()

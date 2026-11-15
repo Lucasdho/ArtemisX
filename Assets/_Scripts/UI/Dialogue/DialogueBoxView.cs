@@ -146,8 +146,8 @@ namespace ArtemisX.UI.Dialogue
             }
 
             Color accent = speaker != null ? speaker.accentColor : DefaultAccentColor;
-            if (portraitFrame != null) portraitFrame.color = accent;
-            if (speakerNameBanner != null) speakerNameBanner.color = accent;
+            if (portraitFrame != null && portraitFrame.enabled) portraitFrame.color = accent;
+            if (speakerNameBanner != null && speakerNameBanner.color != Color.white) speakerNameBanner.color = Color.white;
         }
 
         private void OnVisibleTextChanged(string visibleText)

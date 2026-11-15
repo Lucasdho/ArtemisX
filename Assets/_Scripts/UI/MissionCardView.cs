@@ -79,7 +79,7 @@ namespace ArtemisX.UI
 
             if (style == null) return;
             if (row.track != null) row.track.color = style.trackColor;
-            if (row.fill != null) row.fill.color = done ? style.doneColor : style.progressColor;
+            if (row.fill != null) row.fill.color = style.progressColor;
             if (row.checkCircle != null) row.checkCircle.color = done ? style.doneColor : style.trackColor;
             if (row.label != null)
             {

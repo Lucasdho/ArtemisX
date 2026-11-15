@@ -71,17 +71,12 @@ namespace ArtemisX.UI.StartScreen
 
             if (selectionBorder != null)
             {
-                selectionBorder.color = selected
-                    ? new Color(accentColor.r, accentColor.g, accentColor.b, 1f)
-                    : new Color(0.220f, 0.741f, 0.973f, 0.25f);
+                selectionBorder.enabled = selected;
+                selectionBorder.color = new Color(1f, 0.353f, 0.122f, 1f);
             }
 
             if (cardBackground != null)
-            {
-                cardBackground.color = selected
-                    ? new Color(0.13f, 0.20f, 0.34f, 0.98f)
-                    : new Color(0.07f, 0.11f, 0.20f, 0.90f);
-            }
+                cardBackground.color = Color.white;
 
             if (selectedTagPill != null)
                 selectedTagPill.SetActive(selected);
