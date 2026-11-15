@@ -25,6 +25,7 @@ namespace ArtemisX.Story
 
         private static readonly int ResourceTypeCount = Enum.GetValues(typeof(ResourceType)).Length;
         private readonly int[] startOfDayResources = new int[ResourceTypeCount];
+        private int[] pendingOvernightBaseline;
 
         private bool introPlayed;
         private bool firstStormPlayed;
@@ -78,6 +79,15 @@ namespace ArtemisX.Story
 
             if (CurrentDay >= MissionLength && !missionEnded)
                 TriggerMissionEnd(MissionEndReason.DayCap, 1);
+        }
+
+        /// <summary>
+        /// Simulation hook: resources as they were before the night. The next DayAdvanced uses them as the
+        /// start-of-day snapshot, so the Morning Briefing's {power_delta} etc. report the overnight change.
+        /// </summary>
+        public void SetOvernightBaseline(int[] resourcesBeforeNight)
+        {
+            pendingOvernightBaseline = resourcesBeforeNight;
         }
 
         /// <summary>Milestone hook for the first completed building.</summary>
@@ -290,8 +300,14 @@ namespace ArtemisX.Story
         {
             if (resourceManager == null) return;
 
+            var baseline = pendingOvernightBaseline;
+            pendingOvernightBaseline = null;
             for (int i = 0; i < ResourceTypeCount; i++)
-                startOfDayResources[i] = resourceManager.Get((ResourceType)i);
+            {
+                startOfDayResources[i] = baseline != null && i < baseline.Length
+                    ? baseline[i]
+                    : resourceManager.Get((ResourceType)i);
+            }
         }
 
         private BaseBriefingState EvaluateBriefingState()

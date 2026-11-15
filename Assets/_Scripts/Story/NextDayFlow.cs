@@ -4,18 +4,35 @@ using UnityEngine.UI;
 
 namespace ArtemisX.Story
 {
-    /// <summary>Coordinates Next Day clicks: evening debrief, day advance up to missionLength, and input blocking.</summary>
+    /// <summary>
+    /// Coordinates Next Day clicks and input blocking. With a DayResolutionController in the scene, Next Day runs the
+    /// simulation's Day -> Storm -> Night resolution (Bauzer reports it in the Morning Briefing). Without one it falls
+    /// back to the Run 2A evening debrief + day advance.
+    /// </summary>
     public class NextDayFlow : MonoBehaviour
     {
         [SerializeField] private DayManager dayManager;
         [SerializeField] private StoryDirector storyDirector;
         [SerializeField] private DialogueRunner dialogueRunner;
         [SerializeField] private Button nextDayButton;
+        [Tooltip("Optional. Found in the scene if left empty.")]
+        [SerializeField] private DayResolutionController dayResolution;
 
         private bool isTransitioning;
 
+        private void Awake()
+        {
+            if (dayResolution == null) dayResolution = FindAnyObjectByType<DayResolutionController>();
+        }
+
         private void OnEnable()
         {
+            if (dayResolution != null)
+            {
+                dayResolution.NightResolved += OnNightResolved;
+                dayResolution.MorningReady += OnMorningReady;
+            }
+
             if (dialogueRunner != null)
             {
                 dialogueRunner.DialogueStarted += OnDialogueStateChanged;
@@ -30,6 +47,12 @@ namespace ArtemisX.Story
 
         private void OnDisable()
         {
+            if (dayResolution != null)
+            {
+                dayResolution.NightResolved -= OnNightResolved;
+                dayResolution.MorningReady -= OnMorningReady;
+            }
+
             if (dialogueRunner != null)
             {
                 dialogueRunner.DialogueStarted -= OnDialogueStateChanged;
@@ -49,6 +72,16 @@ namespace ArtemisX.Story
 
             isTransitioning = true;
             RefreshButtonState();
+
+            if (dayResolution != null)
+            {
+                if (!dayResolution.EndDay())
+                {
+                    isTransitioning = false;
+                    RefreshButtonState();
+                }
+                return;
+            }
 
             if (storyDirector != null)
             {
@@ -71,6 +104,21 @@ namespace ArtemisX.Story
             RefreshButtonState();
         }
 
+        private void OnNightResolved(DailyReportData _)
+        {
+            if (dayResolution != null && dayResolution.IsMissionOver)
+            {
+                isTransitioning = false;
+                RefreshButtonState();
+            }
+        }
+
+        private void OnMorningReady(DailyReportData _)
+        {
+            isTransitioning = false;
+            RefreshButtonState();
+        }
+
         private void OnDialogueStateChanged(DialogueSequence _) => RefreshButtonState();
         private void OnMissionEnded(MissionEndReason _, int __) => RefreshButtonState();
 
@@ -79,7 +127,8 @@ namespace ArtemisX.Story
             if (nextDayButton == null) return;
             bool blocked = isTransitioning ||
                 (dialogueRunner != null && dialogueRunner.IsOpen) ||
-                (storyDirector != null && storyDirector.IsMissionEnded);
+                (storyDirector != null && storyDirector.IsMissionEnded) ||
+                (dayResolution != null && (dayResolution.IsResolving || dayResolution.IsMissionOver));
             nextDayButton.interactable = !blocked;
         }
     }
