@@ -49,6 +49,12 @@ namespace ArtemisX.UI
             public string publishableKey = "";
         }
 
+        [Serializable]
+        private class JwtRolePayload
+        {
+            public string role;
+        }
+
         [SerializeField] private LeaderboardConfig config;
 
         public bool IsConfigured => ResolveCredentials(out _, out _);
@@ -56,6 +62,13 @@ namespace ArtemisX.UI
         /// <summary>Submits the run, then fetches the histogram. done(online, rows); rows is null when offline.</summary>
         public void SubmitAndFetch(RunPayload payload, Action<bool, HistogramRow[]> done)
         {
+            if (payload == null)
+            {
+                Debug.Log("[Leaderboard] Null run payload: skipping submission.", this);
+                done?.Invoke(false, null);
+                return;
+            }
+
             if (!ResolveCredentials(out string projectUrl, out string publishableKey))
             {
                 Debug.Log("[Leaderboard] No Supabase URL/key configured: offline mode.", this);
@@ -74,7 +87,7 @@ namespace ArtemisX.UI
                 return false;
             }
 
-            if (config.IsConfigured)
+            if (config.IsConfigured && IsSafeClientKey(config.publishableKey))
             {
                 projectUrl = config.projectUrl.Trim();
                 publishableKey = config.publishableKey.Trim();
@@ -95,6 +108,45 @@ namespace ArtemisX.UI
             return false;
         }
 
+        public static bool IsSafeClientKey(string key)
+        {
+            if (string.IsNullOrWhiteSpace(key))
+                return false;
+
+            string trimmed = key.Trim();
+            if (trimmed.StartsWith("sb_secret_", StringComparison.OrdinalIgnoreCase))
+                return false;
+
+            int firstDot = trimmed.IndexOf('.');
+            if (firstDot > 0)
+            {
+                int secondDot = trimmed.IndexOf('.', firstDot + 1);
+                if (secondDot > firstDot + 1 && trimmed.IndexOf('.', secondDot + 1) < 0)
+                {
+                    string payloadPart = trimmed.Substring(firstDot + 1, secondDot - firstDot - 1)
+                        .Replace('-', '+')
+                        .Replace('_', '/');
+                    int mod = payloadPart.Length % 4;
+                    if (mod == 2) payloadPart += "==";
+                    else if (mod == 3) payloadPart += "=";
+
+                    try
+                    {
+                        string json = Encoding.UTF8.GetString(Convert.FromBase64String(payloadPart));
+                        var claims = JsonUtility.FromJson<JwtRolePayload>(json);
+                        if (claims != null && string.Equals(claims.role, "service_role", StringComparison.OrdinalIgnoreCase))
+                            return false;
+                    }
+                    catch (Exception)
+                    {
+                        // Non-JSON or malformed segment; allow caller/server to validate if not a service_role JWT.
+                    }
+                }
+            }
+
+            return true;
+        }
+
         public static bool TryParseCredentialsJson(string json, out string projectUrl, out string publishableKey)
         {
             projectUrl = string.Empty;
@@ -104,7 +156,7 @@ namespace ArtemisX.UI
             try
             {
                 var creds = JsonUtility.FromJson<RuntimeCredentials>(json);
-                if (creds == null || string.IsNullOrWhiteSpace(creds.projectUrl) || string.IsNullOrWhiteSpace(creds.publishableKey))
+                if (creds == null || string.IsNullOrWhiteSpace(creds.projectUrl) || !IsSafeClientKey(creds.publishableKey))
                     return false;
 
                 projectUrl = creds.projectUrl.Trim();
@@ -127,7 +179,7 @@ namespace ArtemisX.UI
         {
             string envUrl = Environment.GetEnvironmentVariable(EnvProjectUrl);
             string envKey = Environment.GetEnvironmentVariable(EnvPublishableKey);
-            if (!string.IsNullOrWhiteSpace(envUrl) && !string.IsNullOrWhiteSpace(envKey))
+            if (!string.IsNullOrWhiteSpace(envUrl) && IsSafeClientKey(envKey))
             {
                 projectUrl = envUrl.Trim();
                 publishableKey = envKey.Trim();

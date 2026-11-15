@@ -31,7 +31,11 @@ namespace ArtemisX.UI.EditorTools
 
             var config = AssetDatabase.LoadAssetAtPath<LeaderboardConfig>(LeaderboardConfigPath);
             if (config != null && config.IsConfigured)
+            {
+                if (!LeaderboardClient.IsSafeClientKey(config.publishableKey))
+                    Debug.LogError("[Leaderboard] Refusing secret/service_role key in LeaderboardConfig.asset!");
                 return;
+            }
 
             if (!LeaderboardClient.TryResolveEditorOverrides(out string projectUrl, out string publishableKey))
             {
@@ -39,12 +43,25 @@ namespace ArtemisX.UI.EditorTools
                 return;
             }
 
+            if (!LeaderboardClient.IsSafeClientKey(publishableKey))
+            {
+                Debug.LogError("[Leaderboard] Refusing to inject secret/service_role key into player build.");
+                return;
+            }
+
             WriteRuntimeConfig(projectUrl, publishableKey);
+            EditorApplication.delayCall += CleanupAfterBuildIfIdle;
         }
 
         public void OnPostprocessBuild(BuildReport report)
         {
             CleanupInjectedResource();
+        }
+
+        private static void CleanupAfterBuildIfIdle()
+        {
+            if (!BuildPipeline.isBuildingPlayer)
+                CleanupInjectedResource();
         }
 
         public static void WriteRuntimeConfig(string projectUrl, string publishableKey)

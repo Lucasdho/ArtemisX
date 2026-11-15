@@ -136,5 +136,82 @@ namespace ArtemisX.UI.Tests
                 Environment.SetEnvironmentVariable(LeaderboardClient.EnvPublishableKey, prevKey);
             }
         }
+
+        [Test]
+        public void IsSafeClientKey_RejectsSecretAndServiceRoleKeys()
+        {
+            Assert.IsFalse(LeaderboardClient.IsSafeClientKey(null));
+            Assert.IsFalse(LeaderboardClient.IsSafeClientKey("   "));
+            Assert.IsFalse(LeaderboardClient.IsSafeClientKey("sb_secret_12345"));
+            Assert.IsFalse(LeaderboardClient.IsSafeClientKey("SB_SECRET_UPPER"));
+
+            // {"alg":"HS256","typ":"JWT"}.{"role":"service_role"}.sig
+            const string serviceJwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoic2VydmljZV9yb2xlIn0.sig";
+            // {"alg":"HS256","typ":"JWT"}.{"role":"anon"}.sig
+            const string anonJwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiJ9.sig";
+
+            Assert.IsFalse(LeaderboardClient.IsSafeClientKey(serviceJwt));
+            Assert.IsTrue(LeaderboardClient.IsSafeClientKey(anonJwt));
+            Assert.IsTrue(LeaderboardClient.IsSafeClientKey("sb_publishable_abc123"));
+
+            Assert.IsFalse(LeaderboardClient.TryParseCredentialsJson(
+                "{\"projectUrl\":\"https://example.supabase.co\",\"publishableKey\":\"sb_secret_nope\"}",
+                out _, out _));
+            Assert.IsFalse(LeaderboardClient.TryParseCredentialsJson(
+                "{\"projectUrl\":\"https://example.supabase.co\",\"publishableKey\":\"" + serviceJwt + "\"}",
+                out _, out _));
+        }
+
+        [Test]
+        public void SubmitAndFetch_HandlesNullPayloadSafely()
+        {
+            var go = new GameObject("TestLeaderboardClient_NullPayload");
+            created.Add(go);
+            var client = go.AddComponent<LeaderboardClient>();
+
+            bool called = false;
+            bool wasOnline = true;
+            LeaderboardClient.HistogramRow[] rows = new LeaderboardClient.HistogramRow[0];
+            client.SubmitAndFetch(null, (online, r) =>
+            {
+                called = true;
+                wasOnline = online;
+                rows = r;
+            });
+
+            Assert.IsTrue(called);
+            Assert.IsFalse(wasOnline);
+            Assert.IsNull(rows);
+        }
+
+        [Test]
+        public void BuildInjector_PreprocessAndPostprocess_InjectsAndCleansUp()
+        {
+            string prevUrl = Environment.GetEnvironmentVariable(LeaderboardClient.EnvProjectUrl);
+            string prevKey = Environment.GetEnvironmentVariable(LeaderboardClient.EnvPublishableKey);
+            try
+            {
+                Environment.SetEnvironmentVariable(LeaderboardClient.EnvProjectUrl, "https://prepost.supabase.co");
+                Environment.SetEnvironmentVariable(LeaderboardClient.EnvPublishableKey, "sb_publishable_prepost");
+
+                var injector = new LeaderboardBuildInjector();
+                injector.OnPreprocessBuild(null);
+
+                var injected = Resources.Load<TextAsset>(LeaderboardClient.RuntimeResourceName);
+                Assert.IsNotNull(injected);
+                Assert.IsTrue(LeaderboardClient.TryParseCredentialsJson(injected.text, out string url, out string key));
+                Assert.AreEqual("https://prepost.supabase.co", url);
+                Assert.AreEqual("sb_publishable_prepost", key);
+
+                injector.OnPostprocessBuild(null);
+                Resources.UnloadUnusedAssets();
+                Assert.IsNull(AssetDatabase.LoadAssetAtPath<TextAsset>("Assets/Resources/" + LeaderboardClient.RuntimeResourceName + ".json"));
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable(LeaderboardClient.EnvProjectUrl, prevUrl);
+                Environment.SetEnvironmentVariable(LeaderboardClient.EnvPublishableKey, prevKey);
+            }
+        }
     }
 }

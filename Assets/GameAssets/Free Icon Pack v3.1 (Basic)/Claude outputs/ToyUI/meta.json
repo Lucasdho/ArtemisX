@@ -1,0 +1,383 @@
+{
+ "button-primary": {
+  "png": [
+   256,
+   142
+  ],
+  "border": [
+   64,
+   36,
+   36,
+   50
+  ],
+  "note": "Button face 64 px tall + lip. Sprite Swap: normal \u2192 pressed."
+ },
+ "button-primary-pressed": {
+  "png": [
+   256,
+   142
+  ],
+  "border": [
+   64,
+   46,
+   36,
+   40
+  ],
+  "note": "Button face 64 px tall + lip. Sprite Swap: normal \u2192 pressed."
+ },
+ "button-secondary": {
+  "png": [
+   256,
+   142
+  ],
+  "border": [
+   64,
+   36,
+   36,
+   50
+  ],
+  "note": "Button face 64 px tall + lip. Sprite Swap: normal \u2192 pressed."
+ },
+ "button-secondary-pressed": {
+  "png": [
+   256,
+   142
+  ],
+  "border": [
+   64,
+   46,
+   36,
+   40
+  ],
+  "note": "Button face 64 px tall + lip. Sprite Swap: normal \u2192 pressed."
+ },
+ "button-danger": {
+  "png": [
+   256,
+   142
+  ],
+  "border": [
+   64,
+   36,
+   36,
+   50
+  ],
+  "note": "Button face 64 px tall + lip. Sprite Swap: normal \u2192 pressed."
+ },
+ "button-danger-pressed": {
+  "png": [
+   256,
+   142
+  ],
+  "border": [
+   64,
+   46,
+   36,
+   40
+  ],
+  "note": "Button face 64 px tall + lip. Sprite Swap: normal \u2192 pressed."
+ },
+ "button-success": {
+  "png": [
+   256,
+   142
+  ],
+  "border": [
+   64,
+   36,
+   36,
+   50
+  ],
+  "note": "Button face 64 px tall + lip. Sprite Swap: normal \u2192 pressed."
+ },
+ "button-success-pressed": {
+  "png": [
+   256,
+   142
+  ],
+  "border": [
+   64,
+   46,
+   36,
+   40
+  ],
+  "note": "Button face 64 px tall + lip. Sprite Swap: normal \u2192 pressed."
+ },
+ "button-disabled": {
+  "png": [
+   256,
+   142
+  ],
+  "border": [
+   64,
+   36,
+   36,
+   50
+  ],
+  "note": "Button face 64 px tall + lip. Sprite Swap: normal \u2192 pressed."
+ },
+ "button-disabled-pressed": {
+  "png": [
+   256,
+   142
+  ],
+  "border": [
+   64,
+   46,
+   36,
+   40
+  ],
+  "note": "Button face 64 px tall + lip. Sprite Swap: normal \u2192 pressed."
+ },
+ "button-next": {
+  "png": [
+   200,
+   112
+  ],
+  "border": [
+   56,
+   32,
+   32,
+   44
+  ],
+  "note": "Kepler bubble Next button, 50 px tall."
+ },
+ "loss-sticker": {
+  "png": [
+   96,
+   70
+  ],
+  "border": [
+   32,
+   30,
+   32,
+   36
+  ],
+  "note": "Cost sticker on a button: put a 26 px icon + Luckiest Guy 19 number inside."
+ },
+ "panel": {
+  "png": [
+   240,
+   292
+  ],
+  "border": [
+   48,
+   128,
+   48,
+   58
+  ],
+  "note": "Header-band panel: 58 px header on top (do not stretch it vertically), white body stretches."
+ },
+ "recipe-tray": {
+  "png": [
+   96,
+   96
+  ],
+  "border": [
+   32,
+   32,
+   32,
+   32
+  ],
+  "note": "Tray behind a recipe."
+ },
+ "recipe-arrow": {
+  "png": [
+   92,
+   60
+  ],
+  "border": null,
+  "note": "Simple sprite."
+ },
+ "banner-day": {
+  "png": [
+   400,
+   182
+  ],
+  "border": [
+   84,
+   88,
+   84,
+   90
+  ],
+  "note": "Toy pill banner, 84 px tall: stretch horizontally only. Icon breaks out on the left."
+ },
+ "banner-alert": {
+  "png": [
+   400,
+   182
+  ],
+  "border": [
+   84,
+   88,
+   84,
+   90
+  ],
+  "note": "Toy pill banner, 84 px tall: stretch horizontally only. Icon breaks out on the left."
+ },
+ "ribbon-plate": {
+  "png": [
+   240,
+   212
+  ],
+  "border": [
+   40,
+   100,
+   40,
+   110
+  ],
+  "note": "Achievement plate: stretch horizontally only. Tails behind it, star on top, rays behind the star."
+ },
+ "ribbon-tail-left": {
+  "png": [
+   152,
+   132
+  ],
+  "border": null,
+  "note": "Simple sprite, 34 px outside the plate, 24 px below its top."
+ },
+ "ribbon-tail-right": {
+  "png": [
+   152,
+   132
+  ],
+  "border": null,
+  "note": "Simple sprite, 34 px outside the plate, 24 px below its top."
+ },
+ "rays": {
+  "png": [
+   440,
+   440
+  ],
+  "border": null,
+  "note": "Simple sprite behind the star; rotate one turn per 8 s."
+ },
+ "bubble": {
+  "png": [
+   240,
+   254
+  ],
+  "border": [
+   60,
+   60,
+   60,
+   84
+  ],
+  "note": "Kepler speech bubble."
+ },
+ "bubble-tail": {
+  "png": [
+   80,
+   108
+  ],
+  "border": null,
+  "note": "Simple sprite, overlap the bubble's left edge by 6 px, 30 px above its bottom."
+ },
+ "name-plate": {
+  "png": [
+   160,
+   86
+  ],
+  "border": [
+   28,
+   40,
+   28,
+   44
+  ],
+  "note": "Kepler name plate: stretch horizontally only."
+ },
+ "kepler": {
+  "png": [
+   512,
+   512
+  ],
+  "border": null,
+  "note": "Kepler at 256 (512 px PNG). Simple sprite."
+ },
+ "hud-track": {
+  "png": [
+   192,
+   106
+  ],
+  "border": [
+   48,
+   48,
+   48,
+   58
+  ],
+  "note": "Resource bar track, 48 px tall."
+ },
+ "hud-track-low": {
+  "png": [
+   192,
+   106
+  ],
+  "border": [
+   48,
+   48,
+   48,
+   58
+  ],
+  "note": "Track with the loss outline, for a low resource."
+ },
+ "hud-fill-power": {
+  "png": [
+   128,
+   84
+  ],
+  "border": [
+   42,
+   42,
+   42,
+   42
+  ],
+  "note": "Power fill, already colored: width = value / capacity, under a RectMask2D."
+ },
+ "hud-fill-water": {
+  "png": [
+   128,
+   84
+  ],
+  "border": [
+   42,
+   42,
+   42,
+   42
+  ],
+  "note": "Water fill, already colored: width = value / capacity, under a RectMask2D."
+ },
+ "hud-fill-food": {
+  "png": [
+   128,
+   84
+  ],
+  "border": [
+   42,
+   42,
+   42,
+   42
+  ],
+  "note": "Food fill, already colored: width = value / capacity, under a RectMask2D."
+ },
+ "hud-fill-parts": {
+  "png": [
+   128,
+   84
+  ],
+  "border": [
+   42,
+   42,
+   42,
+   42
+  ],
+  "note": "Parts fill, already colored: width = value / capacity, under a RectMask2D."
+ },
+ "hud-shine": {
+  "png": [
+   32,
+   20
+  ],
+  "border": null,
+  "note": "Shine at the fill end when the fill is 45-60% long."
+ }
+}
