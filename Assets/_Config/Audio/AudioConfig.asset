@@ -1,0 +1,97 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1458da197ce934f008f36e4850fb371f, type: 3}
+  m_Name: AudioConfig
+  m_EditorClassIdentifier: Assembly-CSharp::ArtemisX.Audio.AudioConfig
+  masterVolume: 1
+  muted: 0
+  entries:
+  - cue: 0
+    clip: {fileID: 8300000, guid: a90a1c3352086408484585f0e302ed50, type: 3}
+    volume: 0.85
+    pitchMin: 0.96
+    pitchMax: 1.04
+  - cue: 1
+    clip: {fileID: 8300000, guid: 16ba1439b1b7d4b6ea75a05ff6ca0fdd, type: 3}
+    volume: 0.85
+    pitchMin: 0.97
+    pitchMax: 1.03
+  - cue: 2
+    clip: {fileID: 8300000, guid: 7c4e008e8c92543ddb8022101220b91b, type: 3}
+    volume: 0.85
+    pitchMin: 0.97
+    pitchMax: 1.03
+  - cue: 3
+    clip: {fileID: 8300000, guid: ccd41ea8355db4cb688afbe85ff590ed, type: 3}
+    volume: 0.85
+    pitchMin: 0.95
+    pitchMax: 1.05
+  - cue: 4
+    clip: {fileID: 8300000, guid: 50607f04c774541ad80e8e5385fb1d6e, type: 3}
+    volume: 0.95
+    pitchMin: 0.98
+    pitchMax: 1.02
+  - cue: 5
+    clip: {fileID: 8300000, guid: d5b5c8649ddea426aa20a4b094aa6a5d, type: 3}
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1.05
+  - cue: 6
+    clip: {fileID: 8300000, guid: b59d393849a1d463384bc4a3e78e344c, type: 3}
+    volume: 0.9
+    pitchMin: 0.96
+    pitchMax: 1.04
+  - cue: 7
+    clip: {fileID: 8300000, guid: 7d79efb0f70864ccc970a975501c21aa, type: 3}
+    volume: 0.9
+    pitchMin: 0.96
+    pitchMax: 1.04
+  - cue: 8
+    clip: {fileID: 8300000, guid: a89c253cadc194ae18a577173c438578, type: 3}
+    volume: 0.95
+    pitchMin: 0.95
+    pitchMax: 1.06
+  - cue: 9
+    clip: {fileID: 8300000, guid: 5a8535e74eaea40438dbdce8271d63b9, type: 3}
+    volume: 0.95
+    pitchMin: 0.96
+    pitchMax: 1.02
+  - cue: 10
+    clip: {fileID: 8300000, guid: 54fbacd8edbef4f71974f7103a3d96f8, type: 3}
+    volume: 0.95
+    pitchMin: 0.94
+    pitchMax: 1
+  - cue: 11
+    clip: {fileID: 8300000, guid: 5988012861004415282d0f1a02594df7, type: 3}
+    volume: 0.9
+    pitchMin: 0.98
+    pitchMax: 1.04
+  - cue: 12
+    clip: {fileID: 8300000, guid: 6bacf595c30124e7d8204a4daaf9a405, type: 3}
+    volume: 0.85
+    pitchMin: 0.95
+    pitchMax: 1.02
+  - cue: 13
+    clip: {fileID: 8300000, guid: 18b735f3dbf0344238d1a03a64f38a4e, type: 3}
+    volume: 0.9
+    pitchMin: 0.98
+    pitchMax: 1.03
+  - cue: 14
+    clip: {fileID: 8300000, guid: 940ddf3ec2aab4f80a9bdd425a96ae26, type: 3}
+    volume: 0.85
+    pitchMin: 0.96
+    pitchMax: 1.04
+  - cue: 15
+    clip: {fileID: 8300000, guid: 8330971ba504c4427addb49be73c3505, type: 3}
+    volume: 1
+    pitchMin: 1
+    pitchMax: 1.06
