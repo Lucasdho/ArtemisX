@@ -75,3 +75,25 @@ Do in this order:
 5. Optional: Supabase project + paste URL/key (Fail 4); otherwise say "offline histogram" in the video.
 6. Optional: raise building Parts costs for a ~12-day run (Fail 5); fix the stale audio test (Fail 7); label the Next Day button (Fail 6).
 7. Commit `Free Icon Pack` + screenshots from the Mac with git-lfs; record the video on a real mouse run.
+
+## 5. Fixes after review
+
+Branch `fix/rover-button-audio`. Checked in Play Mode in Lucas's Editor; clicks simulated through the UI's own code paths
+(`Button.onClick`, `WorldClickRouter.Click(screenPoint)`, `DialogueRunner.AdvanceOrSkip`, popup confirm button).
+
+- **Fail 1 (rover click), Lucas's decision: the rover is operated only from the HUD Rover button (GDD §6).**
+  `RoverInteractable.OnWorldClicked` is now a no-op, so clicking the 3D rover does nothing (model, collider, `RoverMissionDriver`
+  and routes untouched). The HUD button still calls `RoverInteractable.Activate()`: Ready -> rover map, Broken -> Repair (5 Parts)
+  card (kept anchored over the rover, readable next to the button), On Mission / Radiation / crew restricted -> Bauzer tip.
+  Day 1 step 2 now frames the HUD Rover button (`Day1Onboarding.roverButton`, replaces `roverTarget`) after Bauzer's line,
+  because the bottom buttons are hidden while he talks. Copy: step 2 line "Tap the Rover button, then pick a site...",
+  hint "STEP 2/3  Tap the Rover button", `?` help "Use the Rover button for Water and Parts".
+  Verified: rover click -> nothing opens; step 2 frame sits on the button (alpha 1, interactable); button -> map -> pin dispatch;
+  On Mission tip; Broken card -> repair; crew restricted -> "Locked" + tip.
+- **Fail 3 (audio):** `AudioManager.prefab` added to `HandMadeBase.unity` (root), `SimulationAudioBridge` scene references
+  assigned explicitly. Duplicates removed: `GameplayHud.PlaySfx` and the `DialogueBoxView` advance click now skip when an
+  `AudioManager` is present (fallback kept for scenes without it); blocked actions play `ActionBlocked`.
+  Heard in Play Mode: UiOpen/UiClick/UiClose, ToggleSwitch, RoverDispatch, ComponentBroken, DayAdvance, ComponentRepaired,
+  ActionBlocked, BuildSuccess, StarEarned, MissionWin; StormAlert and RoverReturn checked by raising the scene managers' events.
+- **Fail 7 (stale test):** `AudioTests` forces `rover.RandomValue = () => 0f` before the storm return. EditMode 31/31 pass.
+- Console after the run: 0 errors / 0 warnings from game scripts.
