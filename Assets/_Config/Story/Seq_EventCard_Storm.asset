@@ -10,13 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 793928e1aac8946ba974934098abc7b9, type: 3}
-  m_Name: 'Seq_EventCard_Storm_[PLACEHOLDER]'
+  m_Name: Seq_EventCard_Storm
   m_EditorClassIdentifier: Assembly-CSharp::ArtemisX.Story.DialogueSequence
   sequenceId: event_storm_placeholder
   lines:
   - speaker: {fileID: 11400000, guid: f1a52219a36a5425fbc0493a4d791c19, type: 2}
     mood: 2
-    text: '[PLACEHOLDER] Dust storm ahead! Retract solar panels or ride it out?'
+    text: Solar storm ahead! Retract the panels, or keep them out and hope for the
+      best?
   choices:
   - choiceId: retract_panels
     label: Retract (-10 Power)
@@ -26,7 +27,7 @@ MonoBehaviour:
     fixesBrokenComponent: 0
     outcomeSummary: Retracting panels saved Parts today at a small Power cost.
   - choiceId: keep_deployed
-    label: Ride Out (-10 Parts)
+    label: Keep Out (-10 Parts)
     resourceDeltas:
     - resource: 4
       delta: -10

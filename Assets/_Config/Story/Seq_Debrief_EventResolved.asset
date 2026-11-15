@@ -10,14 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 793928e1aac8946ba974934098abc7b9, type: 3}
-  m_Name: 'Seq_Briefing_Day1_[PLACEHOLDER]'
+  m_Name: Seq_Debrief_EventResolved
   m_EditorClassIdentifier: Assembly-CSharp::ArtemisX.Story.DialogueSequence
-  sequenceId: briefing_day1
+  sequenceId: debrief_event_resolved
   lines:
   - speaker: {fileID: 11400000, guid: f1a52219a36a5425fbc0493a4d791c19, type: 2}
-    mood: 1
-    text: '[PLACEHOLDER] Day 1, {playerName}! We have 30 days to hit all 3 goals.'
-  - speaker: {fileID: 11400000, guid: f1a52219a36a5425fbc0493a4d791c19, type: 2}
     mood: 0
-    text: '[PLACEHOLDER] Keep Power, Water, O2, Food, and Parts healthy each shift!'
+    text: 'Day {day} done: {event_name} handled (Power {power_delta}, Parts {parts_delta}).'
+  - speaker: {fileID: 11400000, guid: f1a52219a36a5425fbc0493a4d791c19, type: 2}
+    mood: 1
+    text: '{outcome_summary}'
   choices: []

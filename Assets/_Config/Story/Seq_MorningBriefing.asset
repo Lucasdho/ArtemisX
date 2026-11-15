@@ -10,11 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 793928e1aac8946ba974934098abc7b9, type: 3}
-  m_Name: 'Seq_Pool_LowWater_1_[PLACEHOLDER]'
+  m_Name: Seq_MorningBriefing
   m_EditorClassIdentifier: Assembly-CSharp::ArtemisX.Story.DialogueSequence
-  sequenceId: pool_low_water_1
+  sequenceId: briefing_default
   lines:
   - speaker: {fileID: 11400000, guid: f1a52219a36a5425fbc0493a4d791c19, type: 2}
-    mood: 2
-    text: "[PLACEHOLDER] Water tanks are running thin\u2014check ice extraction!"
+    mood: 0
+    text: Good morning, {playerName}! All systems are running.
+  - speaker: {fileID: 11400000, guid: f1a52219a36a5425fbc0493a4d791c19, type: 2}
+    mood: 1
+    text: Check the space weather, send the rover, and build when you have the Parts.
   choices: []

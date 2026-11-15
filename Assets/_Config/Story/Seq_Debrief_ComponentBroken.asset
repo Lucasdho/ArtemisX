@@ -10,15 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 793928e1aac8946ba974934098abc7b9, type: 3}
-  m_Name: 'Seq_MissionEnd_DayCap_[PLACEHOLDER]'
+  m_Name: Seq_Debrief_ComponentBroken
   m_EditorClassIdentifier: Assembly-CSharp::ArtemisX.Story.DialogueSequence
-  sequenceId: milestone_end_day_cap
+  sequenceId: debrief_component_broken
   lines:
   - speaker: {fileID: 11400000, guid: f1a52219a36a5425fbc0493a4d791c19, type: 2}
-    mood: 0
-    text: '[PLACEHOLDER] Day {days_taken} reached, {playerName}! Rating: {stars}
-      stars.'
+    mood: 2
+    text: Day {day} done. Something is still broken (Parts {parts_delta}).
   - speaker: {fileID: 11400000, guid: f1a52219a36a5425fbc0493a4d791c19, type: 2}
-    mood: 1
-    text: "[PLACEHOLDER] Mission extended\u2014logging your result to the leaderboard!"
+    mood: 0
+    text: Fixing it costs Parts, but broken gear costs us every day it waits.
   choices: []

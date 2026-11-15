@@ -10,14 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 793928e1aac8946ba974934098abc7b9, type: 3}
-  m_Name: 'Seq_EveningDebrief_[PLACEHOLDER]'
+  m_Name: Seq_MissionEnd_DayCap
   m_EditorClassIdentifier: Assembly-CSharp::ArtemisX.Story.DialogueSequence
-  sequenceId: debrief_normal
+  sequenceId: milestone_end_day_cap
   lines:
   - speaker: {fileID: 11400000, guid: f1a52219a36a5425fbc0493a4d791c19, type: 2}
     mood: 0
-    text: '[PLACEHOLDER] Day {day}: Power {power_delta}, Water {water_delta} ({event_name}).'
+    text: Day {days_taken} is over, {playerName}. We earned {stars} of 3 stars.
   - speaker: {fileID: 11400000, guid: f1a52219a36a5425fbc0493a4d791c19, type: 2}
     mood: 1
-    text: '[PLACEHOLDER] Playing it safe kept the crew steady instead of rushing.'
+    text: The base isn't fully independent yet, so Earth is extending the mission.
+      Great effort!
   choices: []

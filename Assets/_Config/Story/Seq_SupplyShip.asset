@@ -10,11 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 793928e1aac8946ba974934098abc7b9, type: 3}
-  m_Name: 'Seq_Pool_LowPower_1_[PLACEHOLDER]'
+  m_Name: Seq_SupplyShip
   m_EditorClassIdentifier: Assembly-CSharp::ArtemisX.Story.DialogueSequence
-  sequenceId: pool_low_power_1
+  sequenceId: milestone_supply_ship
   lines:
   - speaker: {fileID: 11400000, guid: f1a52219a36a5425fbc0493a4d791c19, type: 2}
-    mood: 2
-    text: "[PLACEHOLDER] Power reserves are getting cozy\u2014time to boost solar!"
+    mood: 1
+    text: Touchdown, {playerName}! The supply capsule from Earth landed right on
+      time.
+  - speaker: {fileID: 11400000, guid: f1a52219a36a5425fbc0493a4d791c19, type: 2}
+    mood: 0
+    text: Tap the cargo on the landing pad to collect Food and Parts.
   choices: []
