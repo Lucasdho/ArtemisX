@@ -9,7 +9,7 @@ namespace ArtemisX.Visuals
     {
         [SerializeField] private Light targetLight;
         [SerializeField] private float nightIntensity = -1f;
-        [SerializeField] private float stormFactor = 0.35f;
+        [SerializeField] private float stormFactor = 0.85f;
 
         private float maxIntensity;
 

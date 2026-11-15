@@ -28,6 +28,7 @@ namespace ArtemisX.Visuals
         private float[] nextEmote = Array.Empty<float>();
         private float[] nextGreet = Array.Empty<float>();
         private float nextSleep;
+        private MoodState appliedMood = MoodState.Normal;
 
         public event Action<MoodState> MoodChanged;
 
@@ -37,13 +38,15 @@ namespace ArtemisX.Visuals
         {
             nextEmote = new float[walkers.Length];
             nextGreet = new float[walkers.Length * walkers.Length];
+            appliedMood = mood;
             Apply();
         }
 
         public void SetMood(MoodState newMood)
         {
-            if (mood == newMood) return;
+            if (mood == newMood && appliedMood == newMood) return;
             mood = newMood;
+            appliedMood = newMood;
             if (Application.isPlaying) Apply();
             MoodChanged?.Invoke(mood);
         }
@@ -120,6 +123,13 @@ namespace ArtemisX.Visuals
 
         private void Update()
         {
+            if (mood != appliedMood)
+            {
+                appliedMood = mood;
+                Apply();
+                MoodChanged?.Invoke(mood);
+            }
+
             if (mood == MoodState.Normal)
             {
                 Greetings();

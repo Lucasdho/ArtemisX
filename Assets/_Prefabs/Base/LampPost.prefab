@@ -232,7 +232,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ArtemisX.Visuals.NightLightPool
   targetLight: {fileID: 0}
   nightIntensity: 8.5
-  stormFactor: 0.35
+  stormFactor: 0.28
 --- !u!1 &9201880669067036761
 GameObject:
   m_ObjectHideFlags: 0
