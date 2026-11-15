@@ -20,8 +20,27 @@ namespace ArtemisX.UI
         [SerializeField] private Text iconLetter;
         [SerializeField] private Text amountLabel;
         [SerializeField] private Text deltaLabel;
+        [Tooltip("Optional red badge that pulses while this resource is at 0 (Oxygen and Food restrict the crew).")]
+        [SerializeField] private Graphic alertBadge;
+        [SerializeField] private float alertPulsePeriod = 0.8f;
 
-        private void Awake() => ApplyStyle();
+        private bool alertActive;
+
+        private void Awake()
+        {
+            ApplyStyle();
+            if (alertBadge != null) alertBadge.gameObject.SetActive(false);
+        }
+
+        private void Update()
+        {
+            if (!alertActive || alertBadge == null) return;
+            float wave = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime / Mathf.Max(0.1f, alertPulsePeriod) * Mathf.PI * 2f);
+            alertBadge.transform.localScale = Vector3.one * (0.9f + 0.25f * wave);
+            var c = alertBadge.color;
+            c.a = 0.6f + 0.4f * wave;
+            alertBadge.color = c;
+        }
 
         private void OnEnable()
         {
@@ -69,8 +88,16 @@ namespace ArtemisX.UI
 
         private void OnResourceChanged(ResourceType changed, int current, int max)
         {
-            if (changed != type || amountLabel == null) return;
-            amountLabel.text = current.ToString();
+            if (changed != type) return;
+            if (amountLabel != null) amountLabel.text = current.ToString();
+            bool alert = current <= 0 && (type == ResourceType.Oxygen || type == ResourceType.Food);
+            if (alert == alertActive) return;
+            alertActive = alert;
+            if (alertBadge != null)
+            {
+                alertBadge.gameObject.SetActive(alert);
+                alertBadge.transform.localScale = Vector3.one;
+            }
         }
 
         private void OnNetRateChanged(ResourceType changed, int perDay)

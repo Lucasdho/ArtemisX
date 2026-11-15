@@ -1,3 +1,4 @@
+using System;
 using ArtemisX.Core;
 using DG.Tweening;
 using UnityEngine;
@@ -5,9 +6,25 @@ using UnityEngine.UI;
 
 namespace ArtemisX.UI
 {
-    /// <summary>Contextual confirmation pop-up anchored near the clicked building/slot in screen space.</summary>
+    /// <summary>Contextual confirmation pop-up anchored near the clicked object in screen space, with optional resource cost chips.</summary>
     public class ContextConfirmPopupView : MonoBehaviour
     {
+        [Serializable]
+        public class CostCell
+        {
+            public GameObject root;
+            public Image icon;
+            public Text amount;
+        }
+
+        /// <summary>One resource cost (or gain) chip on the card.</summary>
+        public struct Cost
+        {
+            public ResourceType type;
+            public int amount;
+            public Cost(ResourceType type, int amount) { this.type = type; this.amount = amount; }
+        }
+
         [SerializeField] private UIStyle style;
         [SerializeField] private RectTransform panel;
         [SerializeField] private CanvasGroup canvasGroup;
@@ -16,22 +33,25 @@ namespace ArtemisX.UI
         [SerializeField] private Button confirmButton;
         [SerializeField] private Text confirmButtonText;
         [SerializeField] private Button cancelButton;
+        [SerializeField] private CostCell[] costCells = Array.Empty<CostCell>();
         [SerializeField] private Vector2 screenOffset = new Vector2(0f, 18f);
         [SerializeField] private float edgePadding = 20f;
 
-        private ClickableBuilding currentTarget;
+        private Func<Vector3> anchor;
+        private Action onConfirm;
         private Camera viewCamera;
         private RectTransform canvasRect;
 
-        public bool IsOpen => currentTarget != null;
+        public bool IsOpen => anchor != null;
 
         private void Awake()
         {
-            canvasRect = GetComponentInParent<Canvas>()?.GetComponent<RectTransform>();
+            canvasRect = GetComponentInParent<Canvas>()?.rootCanvas.GetComponent<RectTransform>();
             if (confirmButton != null) confirmButton.onClick.AddListener(OnConfirmClicked);
             if (cancelButton != null) cancelButton.onClick.AddListener(Close);
             ApplyStyle();
-            HideImmediate();
+            // Awake runs on the first Open when the object starts inactive; don't hide it then.
+            if (!IsOpen) HideImmediate();
         }
 
         private void OnDestroy()
@@ -40,15 +60,31 @@ namespace ArtemisX.UI
             if (cancelButton != null) cancelButton.onClick.RemoveListener(Close);
         }
 
+        /// <summary>Legacy entry point for static ClickableBuilding objects.</summary>
         public void Open(ClickableBuilding target, Camera cam)
         {
             if (target == null) return;
-            currentTarget = target;
+            Open(() => target.AnchorWorldPosition, target.Title, target.Description, target.ConfirmLabel, true, target.Confirm, null, cam);
+        }
+
+        /// <summary>Opens the card next to a moving world anchor. Confirm runs <paramref name="confirm"/> then closes.</summary>
+        public void Open(Func<Vector3> worldAnchor, string title, string description, string confirmLabel, bool canConfirm,
+            Action confirm, Cost[] costs, Camera cam)
+        {
+            if (worldAnchor == null) return;
+            anchor = worldAnchor;
+            onConfirm = confirm;
             viewCamera = cam != null ? cam : Camera.main;
 
-            if (titleText != null) titleText.text = target.Title;
-            if (descriptionText != null) descriptionText.text = target.Description;
-            if (confirmButtonText != null) confirmButtonText.text = target.ConfirmLabel;
+            if (titleText != null) titleText.text = title;
+            if (descriptionText != null) descriptionText.text = description;
+            if (confirmButtonText != null) confirmButtonText.text = confirmLabel;
+            if (confirmButton != null)
+            {
+                confirmButton.gameObject.SetActive(confirm != null);
+                confirmButton.interactable = canConfirm;
+            }
+            ApplyCosts(costs);
 
             gameObject.SetActive(true);
             UpdatePosition();
@@ -69,29 +105,56 @@ namespace ArtemisX.UI
 
         public void Close()
         {
-            currentTarget = null;
+            anchor = null;
+            onConfirm = null;
             HideImmediate();
         }
 
         private void LateUpdate()
         {
-            if (currentTarget != null) UpdatePosition();
+            if (anchor != null) UpdatePosition();
         }
 
         private void OnConfirmClicked()
         {
-            ClickableBuilding target = currentTarget;
+            Action action = onConfirm;
             Close();
-            if (target != null) target.Confirm();
+            action?.Invoke();
+        }
+
+        private void ApplyCosts(Cost[] costs)
+        {
+            if (costCells == null) return;
+            int count = costs != null ? costs.Length : 0;
+            for (int i = 0; i < costCells.Length; i++)
+            {
+                var cell = costCells[i];
+                if (cell == null || cell.root == null) continue;
+                bool show = i < count;
+                cell.root.SetActive(show);
+                if (!show) continue;
+
+                var cost = costs[i];
+                if (cell.icon != null && style != null && style.TryGetLook(cost.type, out var look))
+                {
+                    cell.icon.sprite = look.icon;
+                    cell.icon.color = look.icon != null ? Color.white : look.accent;
+                }
+                if (cell.amount != null)
+                {
+                    cell.amount.text = cost.amount > 0 ? "+" + cost.amount : cost.amount < 0 ? "−" + Mathf.Abs(cost.amount) : "0";
+                    if (style != null) cell.amount.color = style.DeltaColor(cost.amount);
+                }
+            }
         }
 
         private void UpdatePosition()
         {
-            if (panel == null || canvasRect == null || currentTarget == null) return;
+            if (panel == null || canvasRect == null || anchor == null) return;
             if (viewCamera == null) viewCamera = Camera.main;
             if (viewCamera == null) return;
 
-            Vector3 screenPos = viewCamera.WorldToScreenPoint(currentTarget.AnchorWorldPosition);
+            Vector3 screenPos = viewCamera.WorldToScreenPoint(anchor());
             if (screenPos.z < 0f) return;
 
             Canvas parentCanvas = canvasRect.GetComponent<Canvas>();
@@ -101,11 +164,11 @@ namespace ArtemisX.UI
             {
                 localPos += screenOffset;
                 Vector2 halfCanvas = canvasRect.rect.size * 0.5f;
-                Vector2 halfPanel = panel.rect.size * 0.5f;
-                float minX = -halfCanvas.x + halfPanel.x + edgePadding;
-                float maxX = halfCanvas.x - halfPanel.x - edgePadding;
-                float minY = -halfCanvas.y + halfPanel.y + edgePadding;
-                float maxY = halfCanvas.y - halfPanel.y - edgePadding;
+                Vector2 size = panel.rect.size;
+                float minX = -halfCanvas.x + size.x * panel.pivot.x + edgePadding;
+                float maxX = halfCanvas.x - size.x * (1f - panel.pivot.x) - edgePadding;
+                float minY = -halfCanvas.y + size.y * panel.pivot.y + edgePadding;
+                float maxY = halfCanvas.y - size.y * (1f - panel.pivot.y) - edgePadding;
                 localPos.x = Mathf.Clamp(localPos.x, minX, maxX);
                 localPos.y = Mathf.Clamp(localPos.y, minY, maxY);
                 panel.anchoredPosition = localPos;
@@ -141,6 +204,9 @@ namespace ArtemisX.UI
                     if (style.font != null) cancelText.font = style.font;
                 }
             }
+            if (costCells == null) return;
+            foreach (var cell in costCells)
+                if (cell != null && cell.amount != null && style.font != null) cell.amount.font = style.font;
         }
 
         private void HideImmediate()
