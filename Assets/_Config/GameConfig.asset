@@ -13,24 +13,31 @@ MonoBehaviour:
   m_Name: GameConfig
   m_EditorClassIdentifier: Assembly-CSharp::ArtemisX.Core.GameConfig
   startDay: 1
+  missionLength: 30
   resources:
   - type: 0
     startValue: 60
     maxValue: 100
-    netPerDay: 12
+    dailyBaseChange: 5
   - type: 1
     startValue: 40
     maxValue: 100
-    netPerDay: -5
+    dailyBaseChange: -8
   - type: 2
     startValue: 70
     maxValue: 100
-    netPerDay: -3
+    dailyBaseChange: -8
   - type: 3
     startValue: 50
     maxValue: 100
-    netPerDay: -6
+    dailyBaseChange: -8
   - type: 4
     startValue: 20
     maxValue: 50
-    netPerDay: -2
+    dailyBaseChange: 0
+  solarFieldPowerPerDay: 20
+  solarStormBreakChance: 0.75
+  repairPartsCost: 5
+  supplyInterval: 5
+  supplyFood: 30
+  supplyParts: 15
