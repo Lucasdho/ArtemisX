@@ -58,6 +58,14 @@ namespace ArtemisX.Simulation
             return true;
         }
 
+        /// <summary>Start of a new day: a Retracted field deploys again by itself. Broken stays broken. True if it changed.</summary>
+        public bool AutoRedeploy()
+        {
+            if (State != SolarFieldState.Retracted) return false;
+            SetState(SolarFieldState.Active);
+            return true;
+        }
+
         public ActionBlockReason CanRepair()
         {
             if (InputLocked) return ActionBlockReason.InputLocked;

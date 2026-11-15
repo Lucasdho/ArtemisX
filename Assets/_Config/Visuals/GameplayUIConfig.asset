@@ -1,0 +1,75 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e493b71e15a014364bf7672b57c83fd0, type: 3}
+  m_Name: GameplayUIConfig
+  m_EditorClassIdentifier: Assembly-CSharp::ArtemisX.UI.GameplayUIConfig
+  bauzer: {fileID: 11400000, guid: f1a52219a36a5425fbc0493a4d791c19, type: 2}
+  reportLines:
+  - key: crew_restricted
+    mood: 2
+    text: Oxygen or Food hit zero. No building or rover trips until we restock!
+  - key: solar_broken
+    mood: 2
+    text: Storm rocks hit the solar panels. Repair them with 5 Parts to get Power
+      back.
+  - key: rover_broken
+    mood: 2
+    text: The rover came back broken. Repair it with 5 Parts before the next trip.
+  - key: supply_arrived
+    mood: 1
+    text: A supply capsule from Earth landed! Tap the pile on the landing pad.
+  - key: rover_haul
+    mood: 1
+    text: The rover is home with fresh cargo. Nice trip, {playerName}!
+  - key: storm_safe
+    mood: 1
+    text: We made it through the space weather safely. Good call!
+  - key: calm
+    mood: 0
+    text: Quiet night on the Moon. Let's keep building toward self-sufficiency.
+  demandLine: Something needs a quick decision, {playerName}. Pick one!
+  stormLine: A solar storm hits tonight. Retract the panels to keep them safe, or
+    keep full Power and risk rocks?
+  radiationLine: Solar radiation today! Shelter the crew and keep the rover docked,
+    or spend Power on shields.
+  stormFallbackNote: Solar storms shake Earth's and the Moon's space environment.
+    Exposed equipment can get damaged.
+  radiationFallbackNote: Fast particles from the Sun can harm astronauts outside
+    shelter. Shields or walls keep them safe.
+  tipCrewRestricted: Need Oxygen and Food first! Restock before building or sending
+    the rover.
+  tipNotEnoughPower: Not enough Power for that. Keep the solar panels out to recharge.
+  tipNotEnoughParts: Not enough Parts. Mineral trips and supply capsules bring more.
+  tipRoverOnMission: The rover is out on a trip. It comes back tomorrow morning.
+  tipRoverBroken: The rover is broken. Repair it with 5 Parts first.
+  tipRoverLocked: Radiation today! The rover stays docked to keep the crew safe.
+  tipBuildOrder: 'Build in order: Water & O2 Plant, then Greenhouse, then Fuel Reserve.'
+  tipGeneric: That can't be done right now.
+  helpText: Tap glowing objects to act. Send the rover for Water and Parts, then
+    build the next module. Press Next Day when ready!
+  startDayLabel: Start Day
+  shieldLabel: Shield & Retract
+  keepPowerLabel: Keep Full Power
+  shelterLabel: Shelter Crew & Lock Rover
+  overclockLabelFormat: Overclock Shields (-{0} Power)
+  mapTransitionSeconds: 0.8
+  mapPitch: 80
+  mapMargin: 9
+  markerHeight: 1.5
+  flyIconCount: 5
+  flyIconSeconds: 0.7
+  flyIconStagger: 0.06
+  alertPulsePeriod: 0.8
+  buildClip: {fileID: 8300000, guid: 0f3c80fd4e0974bf7a7dca983374eb81, type: 3}
+  collectClip: {fileID: 8300000, guid: 7d79efb0f70864ccc970a975501c21aa, type: 3}
+  errorClip: {fileID: 8300000, guid: 3c9eaf5fdd4e84270aadfda265a13985, type: 3}
+  confirmClip: {fileID: 8300000, guid: aaa5db8aacebd4539b030b96bab41011, type: 3}

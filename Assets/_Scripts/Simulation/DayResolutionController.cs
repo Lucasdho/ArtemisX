@@ -42,6 +42,9 @@ namespace ArtemisX.Simulation
         /// <summary>The run is over: (reason, stars). StoryDirector.TriggerMissionEnd is also called if wired.</summary>
         public event Action<MissionEndReason, int> MissionFinished;
 
+        /// <summary>CanEndDay() may have changed (an Unexpected Demand was rolled or answered).</summary>
+        public event Action EndDayAvailabilityChanged;
+
         private static readonly int ResourceTypeCount = Enum.GetValues(typeof(ResourceType)).Length;
 
         public bool IsResolving { get; private set; }
@@ -100,10 +103,18 @@ namespace ArtemisX.Simulation
                 resources.SetNetRate((ResourceType)i, GetPassiveDelta((ResourceType)i));
         }
 
-        /// <summary>Player pressed End Day / Next Day. Returns false if a night is already resolving or the run is over.</summary>
+        /// <summary>Why End Day can't run now: InputLocked while resolving or after the run, DemandPending until the demand is answered.</summary>
+        public ActionBlockReason CanEndDay()
+        {
+            if (IsResolving || IsMissionOver || dayManager == null || resources == null) return ActionBlockReason.InputLocked;
+            if (demands != null && demands.HasActiveDemand) return ActionBlockReason.DemandPending;
+            return ActionBlockReason.None;
+        }
+
+        /// <summary>Player pressed End Day / Next Day. Returns false if a night is resolving, the run is over or a demand is unanswered.</summary>
         public bool EndDay()
         {
-            if (IsResolving || IsMissionOver || dayManager == null || resources == null) return false;
+            if (CanEndDay() != ActionBlockReason.None) return false;
 
             IsResolving = true;
             SetInputLocked(true);
@@ -123,7 +134,6 @@ namespace ArtemisX.Simulation
             int day = CurrentDay;
             var summary = new DailyReportData { day = day, newDay = day };
             var before = SnapshotResources();
-            if (demands != null) demands.ClearActiveDemand();
 
             summary.nightWeather = weather != null ? weather.TodayWeather : WeatherEventType.Calm;
             summary.stormHit = summary.nightWeather == WeatherEventType.SolarStorm;
@@ -166,6 +176,8 @@ namespace ArtemisX.Simulation
             NightResolved?.Invoke(summary);
 
             SetInputLocked(false);
+            // A retracted field deploys again by itself each morning (broken stays broken).
+            if (solar != null) summary.solarRedeployed = solar.AutoRedeploy();
             if (storyDirector != null) storyDirector.SetOvernightBaseline(before);
             dayManager.AdvanceDay(); // Weather, supply and StoryDirector listen to DayAdvanced.
 
@@ -228,12 +240,19 @@ namespace ArtemisX.Simulation
         }
 
         private void OnSolarStateChanged(SolarFieldState _) => RefreshNetRates();
+        private void OnDemandRolled(UnexpectedDemandConfig.Demand _) => EndDayAvailabilityChanged?.Invoke();
+        private void OnDemandResolved(string _, int __) => EndDayAvailabilityChanged?.Invoke();
 
         private void Subscribe()
         {
             if (subscribed) return;
             if (buildings != null) buildings.BuildingCompleted += OnBuildingCompleted;
             if (solar != null) solar.SolarStateChanged += OnSolarStateChanged;
+            if (demands != null)
+            {
+                demands.DemandRolled += OnDemandRolled;
+                demands.DemandResolved += OnDemandResolved;
+            }
             subscribed = true;
         }
 
@@ -242,6 +261,11 @@ namespace ArtemisX.Simulation
             if (!subscribed) return;
             if (buildings != null) buildings.BuildingCompleted -= OnBuildingCompleted;
             if (solar != null) solar.SolarStateChanged -= OnSolarStateChanged;
+            if (demands != null)
+            {
+                demands.DemandRolled -= OnDemandRolled;
+                demands.DemandResolved -= OnDemandResolved;
+            }
             subscribed = false;
         }
     }

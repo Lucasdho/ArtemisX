@@ -12,6 +12,8 @@ namespace ArtemisX.Story
         [SerializeField] private ResourceManager resourceManager;
         [SerializeField] private DialogueRunner runner;
         [SerializeField] private StorySchedule schedule;
+        [Tooltip("Queue a Bauzer briefing (and supply milestone) every morning. Off when the Daily Report card carries Bauzer's line.")]
+        [SerializeField] private bool queueDailyBriefings = true;
 
         public event Action<MissionEndReason, int> MissionEnded;
         public event Action<MissionRunRecord> LeaderboardHandoffRequested;
@@ -247,13 +249,17 @@ namespace ArtemisX.Story
                 runner.Enqueue(schedule.introMilestone, null, DialogueQueueSlot.Intro);
             }
 
-            var briefingState = EvaluateBriefingState();
-            var briefing = schedule.GetBriefingForDay(day, MissionLength, SupplyInterval, briefingState);
-            if (briefing != null)
-                runner.Enqueue(briefing, null, DialogueQueueSlot.MorningBriefing);
+            // With the Run 3B Daily Report card, Bauzer's morning line lives on the card: skip the briefing after Day 1.
+            if (day == 1 || queueDailyBriefings)
+            {
+                var briefingState = EvaluateBriefingState();
+                var briefing = schedule.GetBriefingForDay(day, MissionLength, SupplyInterval, briefingState);
+                if (briefing != null)
+                    runner.Enqueue(briefing, null, DialogueQueueSlot.MorningBriefing);
 
-            if (day > 0 && SupplyInterval > 0 && day % SupplyInterval == 0)
-                TriggerSupplyShipArrived();
+                if (day > 0 && SupplyInterval > 0 && day % SupplyInterval == 0)
+                    TriggerSupplyShipArrived();
+            }
         }
 
         private void OnChoiceMade(string sequenceId, string choiceId)

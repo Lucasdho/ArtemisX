@@ -94,7 +94,7 @@ namespace ArtemisX.Simulation
             return true;
         }
 
-        /// <summary>Drops an unanswered demand (called when the day ends).</summary>
+        /// <summary>Drops an unanswered demand. Not used by End Day any more: a pending demand blocks End Day instead.</summary>
         public void ClearActiveDemand() => HasActiveDemand = false;
 
         private UnexpectedDemandConfig.Demand Pick(float roll)
