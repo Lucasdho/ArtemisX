@@ -19,6 +19,14 @@ namespace ArtemisX.Story
         [SerializeField] private DayResolutionController dayResolution;
 
         private bool isTransitioning;
+        private bool externalLock;
+
+        /// <summary>Keeps Next Day locked (e.g. during the Day 1 onboarding until its last step).</summary>
+        public bool ExternalLock
+        {
+            get => externalLock;
+            set { externalLock = value; RefreshButtonState(); }
+        }
 
         private void Awake()
         {
@@ -68,7 +76,7 @@ namespace ArtemisX.Story
         /// <summary>Plays evening debrief, then advances DayManager if not yet at the mission cap.</summary>
         public void OnNextDayClicked()
         {
-            if (isTransitioning) return;
+            if (isTransitioning || externalLock) return;
             if (dialogueRunner != null && dialogueRunner.IsOpen) return;
             if (storyDirector != null && storyDirector.IsMissionEnded) return;
 
@@ -127,7 +135,7 @@ namespace ArtemisX.Story
         private void RefreshButtonState()
         {
             if (nextDayButton == null) return;
-            bool blocked = isTransitioning ||
+            bool blocked = isTransitioning || externalLock ||
                 (dialogueRunner != null && dialogueRunner.IsOpen) ||
                 (storyDirector != null && storyDirector.IsMissionEnded) ||
                 (dayResolution != null && dayResolution.CanEndDay() != ActionBlockReason.None);

@@ -14,6 +14,8 @@ namespace ArtemisX.Story
         [SerializeField] private StorySchedule schedule;
         [Tooltip("Queue a Bauzer briefing (and supply milestone) every morning. Off when the Daily Report card carries Bauzer's line.")]
         [SerializeField] private bool queueDailyBriefings = true;
+        [Tooltip("Queue the intro and Day 1 briefing when Day 1 starts. Off when a start screen / intro cutscene plays them.")]
+        [SerializeField] private bool playDay1IntroOnStart = true;
 
         public event Action<MissionEndReason, int> MissionEnded;
         public event Action<MissionRunRecord> LeaderboardHandoffRequested;
@@ -23,6 +25,7 @@ namespace ArtemisX.Story
         public bool HasBrokenComponent { get; private set; }
         public bool HasTriggeredEventToday => lastEventCardDay == CurrentDay;
         public DialogueConfig Config => runner != null ? runner.Config : null;
+        public StorySchedule Schedule => schedule;
         public int MissionLength => Config != null ? Mathf.Max(1, Config.missionLength) : 30;
 
         private static readonly int ResourceTypeCount = Enum.GetValues(typeof(ResourceType)).Length;
@@ -121,7 +124,7 @@ namespace ArtemisX.Story
             missionEnded = true;
 
             bool allGoalsMet = achievedGoalsCount >= 3 || reason == MissionEndReason.EarlyWin;
-            int stars = reason == MissionEndReason.EarlyWin ? 3 : Mathf.Clamp(achievedGoalsCount, 1, 3);
+            int stars = reason == MissionEndReason.EarlyWin ? 3 : Mathf.Clamp(achievedGoalsCount, 0, 3);
             int daysTaken = Mathf.Clamp(CurrentDay, 1, MissionLength);
 
             var record = new MissionRunRecord
@@ -242,6 +245,9 @@ namespace ArtemisX.Story
             todayEventName = "nominal shift";
             todayOutcomeSummary = "Steady operations today traded speed for safe reserves.";
             SyncTemplateTokens();
+
+            // The start screen + intro cutscene play Day 1's intro themselves.
+            if (day == 1 && !playDay1IntroOnStart) return;
 
             if (day == 1 && !introPlayed && schedule.introMilestone != null)
             {

@@ -30,6 +30,10 @@ namespace ArtemisX.UI
             new KeyedLine { key = "calm", mood = SpeakerMood.Neutral, text = "Quiet night on the Moon. Let's keep building toward self-sufficiency." },
         };
 
+        [Tooltip("Replaces the Daily Report line on Day 25.")]
+        public KeyedLine day25Line = new KeyedLine { key = "day25", mood = SpeakerMood.Worried, text = "Day 25, {playerName}! Only 5 days left. Let's finish those buildings!" };
+        [Tooltip("Replaces the Daily Report line on the last mission day.")]
+        public KeyedLine finalDayLine = new KeyedLine { key = "final_day", mood = SpeakerMood.Worried, text = "Last day of the mission! Give it your best shot, {playerName}." };
         [TextArea(1, 2)] public string demandLine = "Something needs a quick decision, {playerName}. Pick one!";
         [TextArea(1, 2)] public string stormLine = "A solar storm hits tonight. Retract the panels to keep them safe, or keep full Power and risk rocks?";
         [TextArea(1, 2)] public string radiationLine = "Solar radiation today! Shelter the crew and keep the rover docked, or spend Power on shields.";

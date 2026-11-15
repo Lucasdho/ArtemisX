@@ -13,6 +13,9 @@ namespace ArtemisX.UI
         [SerializeField] private LayerMask interactableMask = ~0;
         [SerializeField] private float maxDistance = 300f;
 
+        /// <summary>Raised after a world object was clicked (used by the Day 1 onboarding).</summary>
+        public static event System.Action<WorldInteractable> Clicked;
+
         private bool pressedOnUi;
         private bool wasPrimaryPressed;
 
@@ -56,6 +59,7 @@ namespace ArtemisX.UI
                 if (target != null)
                 {
                     target.OnWorldClicked();
+                    Clicked?.Invoke(target);
                     return true;
                 }
             }

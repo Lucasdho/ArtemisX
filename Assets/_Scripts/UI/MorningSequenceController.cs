@@ -71,6 +71,11 @@ namespace ArtemisX.UI
         private void ShowReport(DailyReportData report)
         {
             var line = config != null ? config.GetReportLine(report.bauzerSummaryKey) : default;
+            if (config != null && resolution != null)
+            {
+                if (report.newDay >= resolution.MissionLength && !string.IsNullOrEmpty(config.finalDayLine.text)) line = config.finalDayLine;
+                else if (report.newDay == 25 && !string.IsNullOrEmpty(config.day25Line.text)) line = config.day25Line;
+            }
             card.Show(new ModalCardContent
             {
                 banner = "DAILY REPORT",

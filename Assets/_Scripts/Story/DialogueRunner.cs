@@ -221,6 +221,13 @@ namespace ArtemisX.Story
             CompleteCurrentSequence();
         }
 
+        /// <summary>Closes the current sequence at once (e.g. a skipped cutscene). Ignored while a choice is waiting.</summary>
+        public void SkipCurrentSequence()
+        {
+            if (!IsOpen || currentSequence == null || IsWaitingForChoice) return;
+            CompleteCurrentSequence();
+        }
+
         private void InsertOrdered(QueuedEntry entry)
         {
             int insertIndex = pendingQueue.Count;
