@@ -1,0 +1,52 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e12f336bf2f6f4f649ba59af4d5e1b7f, type: 3}
+  m_Name: ExpeditionSiteConfig
+  m_EditorClassIdentifier: Assembly-CSharp::ArtemisX.Simulation.ExpeditionSiteConfig
+  roverName: Luna
+  stormBreakdownChance: 1
+  sites:
+  - siteId: Hotspot_Ice_NW
+    displayName: Ice Site A
+    distance: 0
+    powerCost: 10
+    waterReward: 18
+    partsReward: 0
+    calmBreakdownChance: 0.05
+  - siteId: Hotspot_Ice_SW
+    displayName: Ice Site B
+    distance: 2
+    powerCost: 18
+    waterReward: 32
+    partsReward: 0
+    calmBreakdownChance: 0.25
+  - siteId: Hotspot_Minerals_SSE
+    displayName: Mineral Site A
+    distance: 0
+    powerCost: 10
+    waterReward: 0
+    partsReward: 8
+    calmBreakdownChance: 0.05
+  - siteId: Hotspot_Minerals_NE
+    displayName: Mineral Site B
+    distance: 2
+    powerCost: 18
+    waterReward: 0
+    partsReward: 16
+    calmBreakdownChance: 0.25
+  - siteId: Hotspot_Rocks_East
+    displayName: Balanced Site
+    distance: 1
+    powerCost: 14
+    waterReward: 16
+    partsReward: 8
+    calmBreakdownChance: 0.15
