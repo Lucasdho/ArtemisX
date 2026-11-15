@@ -19,6 +19,8 @@ namespace ArtemisX.Visuals
         [Tooltip("Where the sleep bubble shows while astronauts are indoors, e.g. above the habitat.")]
         [SerializeField] private Transform sleepAnchor;
         [SerializeField] private MoonWalker[] walkers = Array.Empty<MoonWalker>();
+        [Tooltip("Optional, one per walker (same order). That walker's own door: it goes inside there at night and waits there in a storm, instead of the shared door/shelter. Leave empty to use the shared points.")]
+        [SerializeField] private Transform[] walkerHomes = Array.Empty<Transform>();
         [SerializeField] private RoverDriver[] rovers = Array.Empty<RoverDriver>();
         [Tooltip("Where rovers park in a storm, e.g. the rover garage slot.")]
         [SerializeField] private Transform garage;
@@ -55,7 +57,8 @@ namespace ArtemisX.Visuals
             {
                 if (walkers[i] == null) continue;
                 walkers[i].Cheer();
-                EmoteBubble.Show(walkers[i].EmoteAnchor, EmoteKind.Happy, config.emoteSeconds);
+                // Someone busy inside a building can't be seen, so no bubble for them.
+                if (!walkers[i].IsIndoors) EmoteBubble.Show(walkers[i].EmoteAnchor, EmoteKind.Happy, config.emoteSeconds);
             }
         }
 
@@ -78,13 +81,16 @@ namespace ArtemisX.Visuals
                 switch (mood)
                 {
                     case MoodState.Night:
-                        walker.SpeedMultiplier = config.nightSpeedMultiplier;
-                        if (door != null) walker.GoToShelter(door.position, true);
-                        else walker.LeaveShelter();
+                        // Night: everyone heads into the nearest building on their route and stays still inside until morning.
+                        walker.SpeedMultiplier = config.stormSpeedMultiplier; // hurry in
+                        Transform home = Home(i);
+                        Vector3 fallback = home != null ? home.position : door != null ? door.position : walker.transform.position;
+                        walker.GoIndoorsForNight(fallback);
                         break;
                     case MoodState.Storm:
                         walker.SpeedMultiplier = config.stormSpeedMultiplier;
-                        if (shelter != null) walker.GoToShelter(ShelterPoint(i), false);
+                        if (Home(i) != null) walker.GoToShelter(Home(i).position, false);
+                        else if (shelter != null) walker.GoToShelter(ShelterPoint(i), false);
                         EmoteBubble.Show(walker.EmoteAnchor, EmoteKind.Alert, config.emoteSeconds);
                         break;
                     default:
@@ -103,6 +109,8 @@ namespace ArtemisX.Visuals
                 else rovers[i].ResumeLoop();
             }
         }
+
+        private Transform Home(int index) => index < walkerHomes.Length ? walkerHomes[index] : null;
 
         private Vector3 ShelterPoint(int index)
         {

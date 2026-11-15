@@ -22,6 +22,8 @@ namespace ArtemisX.Visuals
         [Tooltip("Optional. Found in children when left empty.")]
         [SerializeField] private Animator animator;
         [SerializeField] private ParticleSystem landingDust;
+        [Tooltip("Optional. When set, the walker follows this collider's surface instead of keeping the height of its path points.")]
+        [SerializeField] private Collider ground;
 
         private State state;
         private int targetIndex;
@@ -42,11 +44,15 @@ namespace ArtemisX.Visuals
         private Vector3 visualBasePosition;
         private Vector3 visualBaseScale;
         private string currentAnimation;
+        private bool insideBuilding;
 
         /// <summary>Scales walking speed. AmbientMood lowers it at night and raises it in a storm.</summary>
         public float SpeedMultiplier { get; set; } = 1f;
 
         public bool IsSheltered => state == State.Sheltered;
+
+        /// <summary>True while the walker is inside a building it entered from its path (hidden).</summary>
+        public bool IsIndoors => insideBuilding;
 
         /// <summary>Follows the hop, so a bubble stays above the head while the character jumps.</summary>
         public Transform EmoteAnchor => visual != null ? visual : transform;
@@ -90,6 +96,12 @@ namespace ArtemisX.Visuals
 
         private void FinishPause()
         {
+            if (insideBuilding)
+            {
+                // Comes back out of the building it entered.
+                insideBuilding = false;
+                SetVisible(true);
+            }
             if (shelterAfterPause && hasShelter)
             {
                 shelterAfterPause = false;
@@ -134,6 +146,7 @@ namespace ArtemisX.Visuals
             direction = reverse ? -1 : 1;
             targetIndex = path.Wrap(startIndex);
             transform.position = path.GetPoint(targetIndex);
+            SnapToGround();
             hopClock = Random.value * config.hopAirSeconds;
             NextWaypoint();
         }
@@ -169,16 +182,74 @@ namespace ArtemisX.Visuals
             else if (wasSheltered) NextWaypoint();
         }
 
-        public void LeaveShelter()
+public void LeaveShelter()
         {
             if (!hasShelter) return;
             SetVisible(true);
+            insideBuilding = false;
             hasShelter = false;
             headingToShelter = false;
             direction = reverse ? -1 : 1;
             targetIndex = path.NearestIndex(transform.position);
+            Vector3 toNode = path.GetPoint(targetIndex) - transform.position;
+            toNode.y = 0f;
+            if (toNode.magnitude <= config.arriveDistance)
+            {
+                // Standing on that node already (e.g. its door): head for the next one instead of re-entering.
+                int next = targetIndex + direction;
+                if (pingPong && (next < 0 || next >= path.Count)) { direction = -direction; next = targetIndex + direction; }
+                targetIndex = path.Wrap(next);
+            }
             target = path.GetPoint(targetIndex);
             BeginWalking();
+        }
+
+        /// <summary>
+        /// Night: goes into the nearest building on its own path (a node marked "enter building") and stays there,
+        /// hidden and still, until <see cref="LeaveShelter"/>. Already inside one? It simply stays in.
+        /// Paths without enter nodes use <paramref name="fallbackDoor"/>.
+        /// </summary>
+        public void GoIndoorsForNight(Vector3 fallbackDoor)
+        {
+            if (insideBuilding)
+            {
+                EndJump();
+                hasShelter = true;
+                headingToShelter = false;
+                hideInShelter = true;
+                shelterPoint = transform.position;
+                shelterExitIndex = targetIndex;
+                shelterAfterPause = false;
+                resumeTarget = false;
+                state = State.Sheltered;
+                Play(config.idleState);
+                SetVisible(false);
+                return;
+            }
+            int node = NearestEnterNode();
+            GoToShelter(node >= 0 ? path.GetPoint(node) : fallbackDoor, true);
+        }
+
+        /// <summary>The enter-building node closest along the path (either way round), or -1 if there is none.</summary>
+        private int NearestEnterNode()
+        {
+            int n = path.Count, best = -1;
+            float bestDistance = float.MaxValue;
+            for (int dir = -1; dir <= 1; dir += 2)
+            {
+                int index = targetIndex;
+                float distance = Vector3.Distance(transform.position, path.GetPoint(index));
+                for (int step = 0; step < n; step++)
+                {
+                    if (path.EntersBuilding(index) && distance < bestDistance) { bestDistance = distance; best = index; }
+                    int next = index + dir;
+                    if (pingPong) { if (next < 0 || next >= n) break; }
+                    else next = path.Wrap(next);
+                    distance += Vector3.Distance(path.GetPoint(index), path.GetPoint(next));
+                    index = next;
+                }
+            }
+            return best;
         }
 
         private void Update()
@@ -220,6 +291,7 @@ namespace ArtemisX.Visuals
                 float speed = config.walkSpeed * SpeedMultiplier * (airborne ? 1f : config.groundSpeedFactor);
                 Vector3 step = Vector3.ClampMagnitude(toTarget, speed * dt);
                 transform.position += step;
+                SnapToGround();
                 Quaternion look = Quaternion.LookRotation(toTarget.normalized, Vector3.up);
                 transform.rotation = Quaternion.RotateTowards(transform.rotation, look, config.walkerTurnDegreesPerSecond * dt);
             }
@@ -279,6 +351,17 @@ namespace ArtemisX.Visuals
             if (visual != null && visual.gameObject.activeSelf != visible) visual.gameObject.SetActive(visible);
         }
 
+        private void SnapToGround()
+        {
+            if (ground == null) return;
+            Vector3 p = transform.position;
+            if (ground.Raycast(new Ray(p + Vector3.up * 5f, Vector3.down), out RaycastHit hit, 20f))
+            {
+                p.y = hit.point.y;
+                transform.position = p;
+            }
+        }
+
         private void ResetPose()
         {
             if (visual == null) return;
@@ -308,6 +391,21 @@ namespace ArtemisX.Visuals
                 else
                 {
                     NextWaypoint();
+                }
+                return;
+            }
+
+            float stop = path.GetStopSeconds(targetIndex);
+            if (stop > 0f)
+            {
+                // A planned stop: wait here, or go inside the building and come back out later.
+                state = State.Pausing;
+                pauseTimer = stop * Random.Range(0.8f, 1.2f);
+                Play(config.idleState);
+                if (path.EntersBuilding(targetIndex))
+                {
+                    insideBuilding = true;
+                    SetVisible(false);
                 }
                 return;
             }

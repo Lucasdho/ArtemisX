@@ -8,8 +8,12 @@ using UnityEngine;
 namespace ArtemisX.EditorTools
 {
     /// <summary>
-    /// Sculpts the HandMadeBase scene's ground: extra relief where the base goes, and rover paths
-    /// from the base out to every DepositRing (smoothed lane in the mesh + tyre tracks in the texture).
+    /// Sculpts the HandMadeBase scene's ground:
+    ///  - extra relief where the base sits,
+    ///  - level pads for the buildings (processing plant, electrolyser + H2 generator, food farm),
+    ///  - rover lanes from the processing plant out to every DepositRing (smoothed lane + tyre tracks),
+    ///    including a trench under the garage tunnel so the hover fits underneath,
+    ///  - while keeping the ground under every hand-placed building exactly as it is.
     /// Always starts from the shared LunarGround mesh/texture and writes HandMadeBase copies, so Base.unity is untouched.
     /// Safe to re-run after tweaking the numbers below. Menu: Artemis X / Sculpt HandMadeBase Terrain.
     /// </summary>
@@ -22,46 +26,91 @@ namespace ArtemisX.EditorTools
         const string OutTex = "Assets/_Materials/T_LunarGround_HandMadeBase.png";
         const string OutMat = "Assets/_Materials/M_LunarGround_HandMadeBase.mat";
 
-        // ---------- Base relief ----------
+        // ---------- Base relief (don't change these once buildings are placed: the ground under them depends on it) ----------
         static readonly Vector2 BaseCenter = Vector2.zero;
-        const float ReliefInner = 8f;      // full strength inside this radius
-        const float ReliefOuter = 15f;     // fades to nothing here
+        const float ReliefInner = 8f, ReliefOuter = 15f;
         const float ReliefAmp = 1.5f, ReliefScale = 0.11f;
         const float ReliefDetailAmp = 0.45f, ReliefDetailScale = 0.28f;
         const int ReliefSeed = 3;
-        // Hand-placed features: x, z, radius, height (negative = dip).
-        static readonly Vector4[] Features =
+        static readonly Vector4[] Features = // x, z, radius, height
         {
-            new Vector4(-4.5f, 4.5f, 4.5f, 1.1f),   // low rise to the north-west
-            new Vector4(3.5f, 6.5f, 3f, 0.6f),      // small shoulder to the north
-            new Vector4(5f, -3.5f, 3.5f, -0.6f),    // shallow dip to the south-east
+            new Vector4(-4.5f, 4.5f, 4.5f, 1.1f),
+            new Vector4(3.5f, 6.5f, 3f, 0.6f),
+            new Vector4(5f, -3.5f, 3.5f, -0.6f),
         };
 
-        // ---------- Paths ----------
-        const float PathStartRadius = 3.5f;  // lanes start this far from the base centre
-        const float RingClearance = 2.2f;    // and stop this far from each deposit centre (ring is ~2 m)
-        const float PathBend = 0.12f;        // sideways bow as a fraction of length, alternating sides
-        const float LaneHalfWidth = 0.9f;
-        const float LaneShoulder = 1.6f;     // blend distance from lane edge back to natural ground
-        const float LaneSink = 0.05f;
-        const float ProfileSmooth = 3f;      // metres of along-path smoothing (removes bumps and small craters)
-        const float LaneTint = 0.93f, TrackTint = 0.8f;
+        // ---------- Building pads ----------
+        struct Pad
+        {
+            public string name;      // root object the pad belongs to (used to seat it); may not exist yet
+            public Vector2 center;
+            public Vector2 halfSize; // level rectangle half extents (rotated by angle)
+            public float angle;      // degrees, around Y
+            public float level;      // NaN = average of the ground under it
+            public bool seatChildren;// move the root's direct children so they sit on the pad
+        }
+
+        const float PadBlend = 1.3f;
+        static readonly Pad[] Pads =
+        {
+            new Pad { name = "ProcessingPlant", center = new Vector2(1.0f, -1.4f), halfSize = new Vector2(2.3f, 2.0f), level = float.NaN },
+            new Pad { name = "Electrolyser_H2Generator", center = new Vector2(-1.0f, -7.8f), halfSize = new Vector2(2.6f, 2.2f), level = float.NaN },
+            new Pad { name = "foodFarm", center = new Vector2(6.9f, -4.6f), halfSize = new Vector2(2.7f, 2.6f), level = float.NaN, seatChildren = true },
+        };
+
+        // ---------- Lanes ----------
+        static readonly Vector2 HubCenter = new Vector2(1.0f, -1.4f); // processing plant: every lane starts here
+        const float HubStartRadius = 2.6f;
+        const float RingClearance = 2.2f;
+        const float LaneHalfWidth = 0.9f, LaneShoulder = 1.6f, LaneSink = 0.05f, ProfileSmooth = 3f;
+        const float LaneTint = 0.93f, TrackTint = 0.8f, PadTint = 0.95f;
         const float TrackOffset = 0.42f, TrackWidth = 0.16f;
-        const float RockClearance = 1.2f;    // scatter rocks closer than this to a lane centre get pushed out
+        const float RockClearance = 1.2f;
         const float RouteNodeSpacing = 2.5f;
+
+        struct Ceiling { public Vector2 at; public float radius, maxY; }
+
+        class LaneDef
+        {
+            public Vector2[] vias = new Vector2[0];
+            public Ceiling[] ceilings = new Ceiling[0];
+            public float halfWidth = LaneHalfWidth, shoulder = LaneShoulder;
+        }
+
+        static readonly Dictionary<string, LaneDef> LaneDefs = new Dictionary<string, LaneDef>
+        {
+            // Through the gap between the garage and the gold-dome building, under the raised tunnel.
+            ["Hotspot_Ice_NW"] = new LaneDef
+            {
+                vias = new[] { new Vector2(-3.36f, 1.04f), new Vector2(-4.76f, 2.48f), new Vector2(-6.16f, 3.92f) },
+                ceilings = new[] { new Ceiling { at = new Vector2(-4.76f, 2.48f), radius = 2.2f, maxY = 0.9f } },
+                halfWidth = 0.8f, shoulder = 0.9f,
+            },
+            ["Hotspot_Ice_SW"] = new LaneDef { vias = new[] { new Vector2(-4.6f, -5.8f) } },
+            ["Hotspot_Minerals_SSE"] = new LaneDef { vias = new[] { new Vector2(3.6f, -7.0f) } },
+            ["Hotspot_Minerals_NE"] = new LaneDef { vias = new[] { new Vector2(4.6f, 0.9f) } },
+            ["Hotspot_Rocks_East"] = new LaneDef(),
+        };
+
+        // Hand-placed roots whose ground must not move. Everything else at the scene root that sits on the ground is protected too.
+        static readonly HashSet<string> NotProtected = new HashSet<string>
+        {
+            "-----------SETUP----------------", "---------MANAGERS-------------", "------------HUD-----------------",
+            "-------ENVIRONMENT-----------", "OLDBASE", "ExplorationHover", "foodFarm", "ProcessingPlant", "Electrolyser_H2Generator",
+        };
+        const float ProtectMargin = 0.45f, ProtectBlend = 0.7f; // margin > grid cell (0.6 m diagonal/2) so no triangle under a building tilts
 
         class Path
         {
             public string name;
+            public LaneDef def;
             public Vector2 target;
             public readonly List<Vector2> pts = new List<Vector2>();
             public readonly List<float> cum = new List<float>();
             public readonly List<float> prof = new List<float>();
             public Rect bounds;
-
             public float Length => cum[cum.Count - 1];
 
-            /// <summary>Distance to the polyline, along-path distance and lane height at the nearest point.</summary>
             public float Nearest(Vector2 p, out float s, out float height, out Vector2 closest)
             {
                 float best = float.MaxValue; s = 0f; height = 0f; closest = pts[0];
@@ -86,7 +135,7 @@ namespace ArtemisX.EditorTools
         class Grid
         {
             public float minX, minZ, cell;
-            public int row; // vertices per row
+            public int row;
             public float[] h;
 
             public float Sample(float x, float z)
@@ -104,65 +153,107 @@ namespace ArtemisX.EditorTools
         public static void Sculpt()
         {
             var scene = EditorSceneManager.GetActiveScene();
-            GameObject ground = null, env = null, rockScatter = null;
+            GameObject env = null;
             foreach (var root in scene.GetRootGameObjects())
-            {
                 if (root.name.Contains("ENVIRONMENT")) env = root;
-            }
             if (env == null) { Debug.LogError("[Sculptor] ENVIRONMENT root not found — open HandMadeBase.unity."); return; }
-            var gt = env.transform.Find("LunarGround");
-            var rt = env.transform.Find("RockScatter");
-            if (gt == null) { Debug.LogError("[Sculptor] LunarGround not found."); return; }
-            ground = gt.gameObject;
-            if (rt != null) rockScatter = rt.gameObject;
+            var ground = env.transform.Find("LunarGround")?.gameObject;
+            if (ground == null) { Debug.LogError("[Sculptor] LunarGround not found."); return; }
+            var rockScatter = env.transform.Find("RockScatter");
+            var collider = ground.GetComponent<MeshCollider>();
 
             var src = AssetDatabase.LoadAssetAtPath<Mesh>(SourceMesh);
             var verts = src.vertices;
             var grid = BuildGrid(verts);
 
-            // 1) Relief where the base will be.
-            for (int k = 0; k < verts.Length; k++)
-                grid.h[k] += Relief(verts[k].x, verts[k].z);
+            // Current heights (what the hand-placed buildings are standing on).
+            var currentMesh = ground.GetComponent<MeshFilter>().sharedMesh;
+            float[] current = null;
+            if (currentMesh != null && currentMesh.vertexCount == verts.Length)
+            {
+                var cv = currentMesh.vertices;
+                current = new float[cv.Length];
+                for (int k = 0; k < cv.Length; k++) current[k] = cv[k].y;
+            }
 
-            // 2) Paths to every DepositRing.
+            // 1) Relief.
+            for (int k = 0; k < verts.Length; k++) grid.h[k] += Relief(verts[k].x, verts[k].z);
+
+            // 2) Pads.
+            var levels = ApplyPads(grid, verts);
+
+            // 3) Lanes.
             var paths = BuildPaths(grid);
             CarveLanes(grid, verts, paths);
 
+            // 4) Level the ground under every hand-placed building to its base (no floating corners, no buried sides).
+            var protect = CollectProtected(scene, collider);
+            int protectedVerts = 0;
+            // (levels come from the buildings themselves)
+                for (int k = 0; k < verts.Length; k++)
+                {
+                    float w = ProtectWeight(protect, verts[k].x, verts[k].z, out float baseLevel);
+                    if (w <= 0f) continue;
+                    grid.h[k] = Mathf.Lerp(grid.h[k], baseLevel, w);
+                    protectedVerts++;
+                }
+
+            // Tunnels win over protection: the lane centre under a ceiling is always at or below it.
+            EnforceCeilings(grid, verts, paths);
+
             for (int k = 0; k < verts.Length; k++) verts[k].y = grid.h[k];
 
-            // Remember ground height under everything we'll re-seat, before the mesh changes.
-            var collider = ground.GetComponent<MeshCollider>();
+            // Remember ground under everything we re-seat, before the mesh changes.
             var seat = new List<Transform>();
-            if (rockScatter != null) foreach (Transform c in rockScatter.transform) seat.Add(c);
+            if (rockScatter != null) foreach (Transform c in rockScatter) seat.Add(c);
             var hotspots = env.transform.Find("ResourceHotspots");
             if (hotspots != null) foreach (Transform hs in hotspots) foreach (Transform c in hs) seat.Add(c);
+            var hover = FindRoot(scene, "ExplorationHover");
+            if (hover != null) seat.Add(hover.transform);
             var before = new float[seat.Count];
             for (int i = 0; i < seat.Count; i++) before[i] = GroundY(collider, seat[i].position);
 
-            Undo.RecordObjects(seat.ConvertAll(t => (Object)t).ToArray(), "Sculpt HandMadeBase Terrain");
-            Undo.RecordObject(ground.GetComponent<MeshFilter>(), "Sculpt HandMadeBase Terrain");
-            Undo.RecordObject(collider, "Sculpt HandMadeBase Terrain");
-            Undo.RecordObject(ground.GetComponent<MeshRenderer>(), "Sculpt HandMadeBase Terrain");
+            var undoObjects = new List<Object>(seat.ConvertAll(t => (Object)t));
+            undoObjects.Add(ground.GetComponent<MeshFilter>());
+            undoObjects.Add(collider);
+            undoObjects.Add(ground.GetComponent<MeshRenderer>());
+            foreach (var pad in Pads)
+            {
+                var r = FindRoot(scene, pad.name);
+                if (r != null) foreach (Transform c in r.transform) undoObjects.Add(c);
+            }
+            Undo.RecordObjects(undoObjects.ToArray(), "Sculpt HandMadeBase Terrain");
 
-            // Push scatter rocks off the lanes (hotspot rocks stay put — lanes stop at the ring).
+            // Push scatter rocks off lanes and pads.
             int pushed = 0;
             if (rockScatter != null)
-                foreach (Transform rock in rockScatter.transform)
+                foreach (Transform rock in rockScatter)
                 {
                     var p = new Vector2(rock.position.x, rock.position.z);
+                    var start = p;
                     foreach (var path in paths)
                     {
                         if (!path.bounds.Contains(p)) continue;
                         float d = path.Nearest(p, out _, out _, out var c);
-                        if (d >= RockClearance) continue;
-                        Vector2 dir = d > 1e-3f ? (p - c) / d : new Vector2(1f, 0f);
-                        p = c + dir * (RockClearance + 0.2f);
-                        rock.position = new Vector3(p.x, rock.position.y, p.y);
-                        pushed++;
+                        float clear = RockClearance + (path.def.halfWidth - LaneHalfWidth);
+                        if (d >= clear) continue;
+                        Vector2 dir = d > 1e-3f ? (p - c) / d : Vector2.right;
+                        p = c + dir * (clear + 0.2f);
                     }
+                    foreach (var pad in Pads)
+                    {
+                        var local = ToPad(pad, p);
+                        var hs = pad.halfSize + Vector2.one * 0.4f;
+                        if (Mathf.Abs(local.x) > hs.x || Mathf.Abs(local.y) > hs.y) continue;
+                        // Push out through the nearest side.
+                        if (hs.x - Mathf.Abs(local.x) < hs.y - Mathf.Abs(local.y)) local.x = Mathf.Sign(local.x == 0 ? 1 : local.x) * (hs.x + 0.3f);
+                        else local.y = Mathf.Sign(local.y == 0 ? 1 : local.y) * (hs.y + 0.3f);
+                        p = FromPad(pad, local);
+                    }
+                    if (p != start) { rock.position = new Vector3(p.x, rock.position.y, p.y); pushed++; }
                 }
 
-            // 3) Save mesh, texture and material copies, and swap them in.
+            // 5) Save mesh, texture and material copies, and swap them in.
             var mesh = new Mesh { name = "LunarGround_HandMadeBase", indexFormat = src.indexFormat };
             mesh.vertices = verts;
             mesh.uv = src.uv;
@@ -190,12 +281,38 @@ namespace ArtemisX.EditorTools
                 seat[i].position += Vector3.up * (after - before[i]);
             }
 
-            // 4) Waypoint routes for rovers, following the lanes (out and back).
+            // 6) Seat pad owners that ask for it (food farm) flat on their pad.
+            for (int p = 0; p < Pads.Length; p++)
+            {
+                if (!Pads[p].seatChildren) continue;
+                var r = FindRoot(scene, Pads[p].name);
+                if (r == null) continue;
+                foreach (Transform child in r.transform)
+                {
+                    var rs = child.GetComponentsInChildren<Renderer>();
+                    if (rs.Length == 0) continue;
+                    float minY = float.MaxValue;
+                    foreach (var rr in rs) minY = Mathf.Min(minY, rr.bounds.min.y);
+                    child.position += Vector3.up * (levels[p] - minY);
+                }
+            }
+
+            // 7) Rover routes following the lanes.
             BuildRoutes(env.transform, paths, collider);
 
             EditorSceneManager.MarkSceneDirty(scene);
             AssetDatabase.SaveAssets();
-            Debug.Log($"[Sculptor] Done: {paths.Count} paths, {pushed} rocks pushed off lanes, {seat.Count} objects re-seated.");
+            var padInfo = "";
+            for (int p = 0; p < Pads.Length; p++) padInfo += $" {Pads[p].name}@{levels[p]:F2}";
+            Debug.Log($"[Sculptor] Done: {paths.Count} lanes, pads:{padInfo}, {protect.Count} protected footprints ({protectedVerts} verts kept), {pushed} rocks pushed, {seat.Count} objects re-seated.");
+        }
+
+        // ---------------------------------------------------------------- helpers
+
+        static GameObject FindRoot(UnityEngine.SceneManagement.Scene scene, string name)
+        {
+            foreach (var r in scene.GetRootGameObjects()) if (r.name == name) return r;
+            return null;
         }
 
         static Grid BuildGrid(Vector3[] v)
@@ -209,12 +326,11 @@ namespace ArtemisX.EditorTools
             return g;
         }
 
-static float Relief(float x, float z)
+        static float Relief(float x, float z)
         {
             float r = Vector2.Distance(new Vector2(x, z), BaseCenter);
             float w = 1f - Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(ReliefInner, ReliefOuter, r));
             if (w <= 0f) return 0f;
-            // Pin the base centre to y = 0 so the camera target and anything placed at the origin stay on the ground.
             return (RawRelief(x, z) - RawRelief(BaseCenter.x, BaseCenter.y)) * w;
         }
 
@@ -232,43 +348,87 @@ static float Relief(float x, float z)
             return h;
         }
 
+        static Vector2 ToPad(Pad pad, Vector2 p)
+        {
+            float a = -pad.angle * Mathf.Deg2Rad;
+            Vector2 d = p - pad.center;
+            return new Vector2(d.x * Mathf.Cos(a) - d.y * Mathf.Sin(a), d.x * Mathf.Sin(a) + d.y * Mathf.Cos(a));
+        }
+
+        static Vector2 FromPad(Pad pad, Vector2 local)
+        {
+            float a = pad.angle * Mathf.Deg2Rad;
+            return pad.center + new Vector2(local.x * Mathf.Cos(a) - local.y * Mathf.Sin(a), local.x * Mathf.Sin(a) + local.y * Mathf.Cos(a));
+        }
+
+        /// <summary>Distance outside the pad rectangle (0 inside).</summary>
+        static float PadDistance(Pad pad, Vector2 p)
+        {
+            var l = ToPad(pad, p);
+            float dx = Mathf.Max(Mathf.Abs(l.x) - pad.halfSize.x, 0f), dz = Mathf.Max(Mathf.Abs(l.y) - pad.halfSize.y, 0f);
+            return Mathf.Sqrt(dx * dx + dz * dz);
+        }
+
+        static float[] ApplyPads(Grid grid, Vector3[] verts)
+        {
+            var levels = new float[Pads.Length];
+            for (int p = 0; p < Pads.Length; p++)
+            {
+                float level = Pads[p].level;
+                if (float.IsNaN(level))
+                {
+                    float sum = 0f; int n = 0;
+                    for (int k = 0; k < verts.Length; k++)
+                        if (PadDistance(Pads[p], new Vector2(verts[k].x, verts[k].z)) <= 0f) { sum += grid.h[k]; n++; }
+                    level = n > 0 ? Mathf.Round(sum / n * 20f) / 20f : 0f;
+                }
+                levels[p] = level;
+                for (int k = 0; k < verts.Length; k++)
+                {
+                    float d = PadDistance(Pads[p], new Vector2(verts[k].x, verts[k].z));
+                    if (d >= PadBlend) continue;
+                    float w = 1f - Mathf.SmoothStep(0f, 1f, d / PadBlend);
+                    grid.h[k] = Mathf.Lerp(grid.h[k], level, w);
+                }
+            }
+            return levels;
+        }
+
         static List<Path> BuildPaths(Grid grid)
         {
             var paths = new List<Path>();
-            var rings = new List<Transform>();
             foreach (var lr in Object.FindObjectsByType<LineRenderer>(FindObjectsSortMode.None))
-                if (lr.name == "DepositRing") rings.Add(lr.transform);
-            rings.Sort((a, b) => Angle(a.position).CompareTo(Angle(b.position)));
-
-            for (int r = 0; r < rings.Count; r++)
             {
-                var ring = rings[r];
-                var path = new Path
-                {
-                    name = ring.parent != null ? ring.parent.name : ring.name,
-                    target = new Vector2(ring.position.x, ring.position.z),
-                };
-                Vector2 dir = (path.target - BaseCenter).normalized;
-                Vector2 perp = new Vector2(-dir.y, dir.x);
-                Vector2 a = BaseCenter + dir * PathStartRadius;
-                Vector2 b = path.target - dir * RingClearance;
-                float len = Vector2.Distance(a, b);
-                Vector2 m = (a + b) * 0.5f + perp * len * PathBend * ((r & 1) == 0 ? 1f : -1f);
+                if (lr.name != "DepositRing") continue;
+                var ring = lr.transform;
+                string name = ring.parent != null ? ring.parent.name : ring.name;
+                if (!LaneDefs.TryGetValue(name, out var def)) def = new LaneDef();
+                var path = new Path { name = name, def = def, target = new Vector2(ring.position.x, ring.position.z) };
 
-                int steps = Mathf.Max(8, Mathf.CeilToInt(len / 0.25f));
-                float total = 0f;
-                for (int i = 0; i <= steps; i++)
+                var ctrl = new List<Vector2>();
+                Vector2 firstAim = def.vias.Length > 0 ? def.vias[0] : path.target;
+                ctrl.Add(HubCenter + (firstAim - HubCenter).normalized * HubStartRadius);
+                ctrl.AddRange(def.vias);
+                Vector2 lastFrom = ctrl[ctrl.Count - 1];
+                ctrl.Add(path.target - (path.target - lastFrom).normalized * RingClearance);
+
+                // Catmull-Rom through the control points.
+                for (int i = 0; i < ctrl.Count - 1; i++)
                 {
-                    float t = i / (float)steps;
-                    Vector2 p = (1 - t) * (1 - t) * a + 2 * (1 - t) * t * m + t * t * b;
-                    if (i > 0) total += Vector2.Distance(path.pts[i - 1], p);
-                    path.pts.Add(p);
-                    path.cum.Add(total);
+                    Vector2 p0 = ctrl[Mathf.Max(i - 1, 0)], p1 = ctrl[i], p2 = ctrl[i + 1], p3 = ctrl[Mathf.Min(i + 2, ctrl.Count - 1)];
+                    int steps = Mathf.Max(4, Mathf.CeilToInt(Vector2.Distance(p1, p2) / 0.25f));
+                    for (int s = (i == 0 ? 0 : 1); s <= steps; s++)
+                    {
+                        float t = s / (float)steps, t2 = t * t, t3 = t2 * t;
+                        Vector2 p = 0.5f * (2f * p1 + (-p0 + p2) * t + (2f * p0 - 5f * p1 + 4f * p2 - p3) * t2 + (-p0 + 3f * p1 - 3f * p2 + p3) * t3);
+                        path.cum.Add(path.pts.Count == 0 ? 0f : path.cum[path.cum.Count - 1] + Vector2.Distance(path.pts[path.pts.Count - 1], p));
+                        path.pts.Add(p);
+                    }
                 }
 
-                // Smoothed height profile along the path.
+                // Smoothed height profile, capped under ceilings (tunnels).
                 var raw = new float[path.pts.Count];
-                for (int i = 0; i < raw.Length; i++) raw[i] = grid.Sample(path.pts[i].x, path.pts[i].y);
+                for (int i = 0; i < raw.Length; i++) raw[i] = Mathf.Min(grid.Sample(path.pts[i].x, path.pts[i].y), CeilingAt(def, path.pts[i]));
                 float sigma = ProfileSmooth * 0.5f;
                 for (int i = 0; i < raw.Length; i++)
                 {
@@ -280,19 +440,46 @@ static float Relief(float x, float z)
                         float w = Mathf.Exp(-(d * d) / (2f * sigma * sigma));
                         sum += raw[j] * w; wsum += w;
                     }
-                    path.prof.Add(sum / wsum);
+                    path.prof.Add(Mathf.Min(sum / wsum, CeilingAt(def, path.pts[i])));
                 }
 
-                float pad = LaneHalfWidth + LaneShoulder + 0.5f;
+                float pad = def.halfWidth + def.shoulder + 0.5f;
                 float minX = float.MaxValue, minZ = float.MaxValue, maxX = float.MinValue, maxZ = float.MinValue;
                 foreach (var p in path.pts) { minX = Mathf.Min(minX, p.x); minZ = Mathf.Min(minZ, p.y); maxX = Mathf.Max(maxX, p.x); maxZ = Mathf.Max(maxZ, p.y); }
                 path.bounds = Rect.MinMaxRect(minX - pad, minZ - pad, maxX + pad, maxZ + pad);
                 paths.Add(path);
             }
+            paths.Sort((a, b) => string.CompareOrdinal(a.name, b.name));
             return paths;
         }
 
-        static float Angle(Vector3 p) => Mathf.Atan2(p.z - BaseCenter.y, p.x - BaseCenter.x);
+        static float CeilingAt(LaneDef def, Vector2 p)
+        {
+            float cap = float.MaxValue;
+            foreach (var c in def.ceilings)
+                if (Vector2.Distance(p, c.at) <= c.radius) cap = Mathf.Min(cap, c.maxY);
+            return cap;
+        }
+
+static void EnforceCeilings(Grid grid, Vector3[] verts, List<Path> paths)
+        {
+            foreach (var path in paths)
+            {
+                if (path.def.ceilings.Length == 0) continue;
+                float core = path.def.halfWidth * 0.75f;
+                for (int k = 0; k < verts.Length; k++)
+                {
+                    var p = new Vector2(verts[k].x, verts[k].z);
+                    float cap = CeilingAt(path.def, p);
+                    if (cap == float.MaxValue || grid.h[k] <= cap) continue;
+                    float d = path.Nearest(p, out _, out _, out _);
+                    if (d > core + 0.35f) continue;
+                    float w = 1f - Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(core, core + 0.35f, d));
+                    grid.h[k] = Mathf.Lerp(grid.h[k], cap, w);
+                }
+            }
+        }
+
 
         static void CarveLanes(Grid grid, Vector3[] verts, List<Path> paths)
         {
@@ -305,15 +492,110 @@ static float Relief(float x, float z)
                 {
                     if (!path.bounds.Contains(p)) continue;
                     float d = path.Nearest(p, out _, out float laneH, out _);
-                    float w = 1f - Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(LaneHalfWidth, LaneHalfWidth + LaneShoulder, d));
+                    float hw = path.def.halfWidth;
+                    float w = 1f - Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(hw, hw + path.def.shoulder, d));
                     if (w > bestW)
                     {
-                        float core = 1f - Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0f, LaneHalfWidth, d));
+                        float core = 1f - Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0f, hw, d));
                         bestW = w; bestH = laneH - LaneSink * core;
                     }
                 }
                 if (bestW > 0f) grid.h[k] = Mathf.Lerp(orig[k], bestH, bestW);
             }
+        }
+
+        /// <summary>Footprints (xz rects) of every renderer of a hand-placed root that rests on the ground.</summary>
+/// <summary>Footprints (convex hull of the mesh, in xz) of every renderer of a hand-placed root that rests on the ground.</summary>
+/// <summary>Footprints (convex hull of the mesh, in xz) of every renderer of a hand-placed root that rests on the ground, with its base height.</summary>
+        static List<Footprint> CollectProtected(UnityEngine.SceneManagement.Scene scene, MeshCollider col)
+        {
+            var list = new List<Footprint>();
+            foreach (var root in scene.GetRootGameObjects())
+            {
+                if (NotProtected.Contains(root.name) || !root.activeInHierarchy) continue;
+                foreach (var r in root.GetComponentsInChildren<Renderer>())
+                {
+                    if (r is ParticleSystemRenderer || r is LineRenderer || r is TrailRenderer) continue;
+                    var b = r.bounds;
+                    float g = GroundY(col, b.center);
+                    if (float.IsNaN(g) || b.min.y > g + 0.45f) continue; // floating (raised tunnels, dropship)
+                    var pts = new List<Vector2>();
+                    var mf = r.GetComponent<MeshFilter>();
+                    if (mf != null && mf.sharedMesh != null)
+                    {
+                        var m = r.transform.localToWorldMatrix;
+                        foreach (var v in mf.sharedMesh.vertices) { var w = m.MultiplyPoint3x4(v); pts.Add(new Vector2(w.x, w.z)); }
+                    }
+                    if (pts.Count < 3)
+                    {
+                        pts.Clear();
+                        pts.Add(new Vector2(b.min.x, b.min.z)); pts.Add(new Vector2(b.max.x, b.min.z));
+                        pts.Add(new Vector2(b.max.x, b.max.z)); pts.Add(new Vector2(b.min.x, b.max.z));
+                    }
+                    var hull = ConvexHull(pts);
+                    if (hull.Length < 3) continue;
+                    var fp = new Footprint { hull = hull, level = b.min.y - 0.02f };
+                    fp.box = Rect.MinMaxRect(b.min.x, b.min.z, b.max.x, b.max.z);
+                    list.Add(fp);
+                }
+            }
+            return list;
+        }
+
+        class Footprint { public Vector2[] hull; public Rect box; public float level; }
+
+        static Vector2[] ConvexHull(List<Vector2> pts)
+        {
+            pts.Sort((a, b) => a.x != b.x ? a.x.CompareTo(b.x) : a.y.CompareTo(b.y));
+            var h = new Vector2[pts.Count * 2];
+            int k = 0;
+            for (int i = 0; i < pts.Count; i++)
+            {
+                while (k >= 2 && Cross(h[k - 2], h[k - 1], pts[i]) <= 0f) k--;
+                h[k++] = pts[i];
+            }
+            for (int i = pts.Count - 2, t = k + 1; i >= 0; i--)
+            {
+                while (k >= t && Cross(h[k - 2], h[k - 1], pts[i]) <= 0f) k--;
+                h[k++] = pts[i];
+            }
+            var res = new Vector2[Mathf.Max(k - 1, 0)];
+            System.Array.Copy(h, res, res.Length);
+            return res;
+        }
+
+        static float Cross(Vector2 o, Vector2 a, Vector2 b) => (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x);
+
+/// <summary>How strongly (0..1) the ground at (x, z) is pulled to a building's base, and to which height.</summary>
+        static float ProtectWeight(List<Footprint> fps, float x, float z, out float level)
+        {
+            var p = new Vector2(x, z);
+            float bestW = 0f, bestD = float.MaxValue; level = 0f;
+            float reach = ProtectMargin + ProtectBlend;
+            foreach (var fp in fps)
+            {
+                if (x < fp.box.xMin - reach || x > fp.box.xMax + reach || z < fp.box.yMin - reach || z > fp.box.yMax + reach) continue;
+                bool inside = true;
+                float edge = float.MaxValue;
+                var hull = fp.hull;
+                for (int i = 0; i < hull.Length; i++)
+                {
+                    Vector2 a = hull[i], b = hull[(i + 1) % hull.Length];
+                    if (Cross(a, b, p) < 0f) inside = false;
+                    Vector2 ab = b - a;
+                    float t = Mathf.Clamp01(Vector2.Dot(p - a, ab) / Mathf.Max(ab.sqrMagnitude, 1e-8f));
+                    edge = Mathf.Min(edge, Vector2.Distance(p, a + ab * t));
+                }
+                float d = inside ? 0f : edge;
+                float w = 1f - Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((d - ProtectMargin) / ProtectBlend));
+                if (w <= 0f) continue;
+                // Highest weight wins; then the footprint the point is closest to (neighbours' margins overlap);
+                // only where the point is inside several footprints (a crate on a pad) does the lowest base win.
+                bool better = w > bestW + 1e-3f
+                    || (Mathf.Abs(w - bestW) <= 1e-3f && (d < bestD - 1e-3f || (Mathf.Abs(d - bestD) <= 1e-3f && fp.level < level)));
+                if (better) { bestW = w; bestD = d; level = fp.level; }
+            }
+            return bestW;
         }
 
         static Texture2D PaintTexture(Mesh src, List<Path> paths)
@@ -325,28 +607,33 @@ static float Relief(float x, float z)
             var b = src.bounds;
             float minX = b.min.x, minZ = b.min.z, world = b.size.x;
 
+            // Pads: compacted, slightly darker regolith.
+            foreach (var pad in Pads)
+            {
+                float reach = Mathf.Max(pad.halfSize.x, pad.halfSize.y) * 1.5f + 1f;
+                ForPixels(size, minX, minZ, world, Rect.MinMaxRect(pad.center.x - reach, pad.center.y - reach, pad.center.x + reach, pad.center.y + reach), (k, x, z) =>
+                {
+                    float d = PadDistance(pad, new Vector2(x, z));
+                    if (d > 0.6f) return;
+                    float w = 1f - Mathf.SmoothStep(0f, 1f, d / 0.6f);
+                    Mul(px, k, Mathf.Lerp(1f, PadTint, w));
+                });
+            }
+
             foreach (var path in paths)
             {
-                int i0 = Mathf.Clamp(Mathf.FloorToInt((path.bounds.xMin - minX) / world * size), 0, size - 1);
-                int i1 = Mathf.Clamp(Mathf.CeilToInt((path.bounds.xMax - minX) / world * size), 0, size - 1);
-                int j0 = Mathf.Clamp(Mathf.FloorToInt((path.bounds.yMin - minZ) / world * size), 0, size - 1);
-                int j1 = Mathf.Clamp(Mathf.CeilToInt((path.bounds.yMax - minZ) / world * size), 0, size - 1);
-                float L = path.Length;
-                for (int j = j0; j <= j1; j++)
-                    for (int i = i0; i <= i1; i++)
-                    {
-                        float x = minX + (i + 0.5f) / size * world, z = minZ + (j + 0.5f) / size * world;
-                        float d = path.Nearest(new Vector2(x, z), out float s, out _, out _);
-                        if (d > LaneHalfWidth + 0.4f) continue;
-                        float ends = Mathf.Clamp01(Mathf.Min(s, L - s) / 0.8f);
-                        float lane = 1f - Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(LaneHalfWidth - 0.2f, LaneHalfWidth + 0.4f, d));
-                        float mul = Mathf.Lerp(1f, LaneTint, lane);
-                        float track = 1f - Mathf.Clamp01((Mathf.Abs(d - TrackOffset) - TrackWidth * 0.5f) / 0.06f);
-                        mul *= Mathf.Lerp(1f, TrackTint, track * ends);
-                        int k = j * size + i;
-                        var c = px[k];
-                        px[k] = new Color32((byte)(c.r * mul), (byte)(c.g * mul), (byte)(c.b * mul), c.a);
-                    }
+                float L = path.Length, hw = path.def.halfWidth;
+                ForPixels(size, minX, minZ, world, path.bounds, (k, x, z) =>
+                {
+                    float d = path.Nearest(new Vector2(x, z), out float s, out _, out _);
+                    if (d > hw + 0.4f) return;
+                    float ends = Mathf.Clamp01(Mathf.Min(s, L - s) / 0.8f);
+                    float lane = 1f - Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(hw - 0.2f, hw + 0.4f, d));
+                    float mul = Mathf.Lerp(1f, LaneTint, lane);
+                    float track = 1f - Mathf.Clamp01((Mathf.Abs(d - TrackOffset) - TrackWidth * 0.5f) / 0.06f);
+                    mul *= Mathf.Lerp(1f, TrackTint, track * ends);
+                    Mul(px, k, mul);
+                });
             }
 
             tex.SetPixels32(px);
@@ -361,6 +648,23 @@ static float Relief(float x, float z)
             importer.maxTextureSize = 2048;
             importer.SaveAndReimport();
             return AssetDatabase.LoadAssetAtPath<Texture2D>(OutTex);
+        }
+
+        static void ForPixels(int size, float minX, float minZ, float world, Rect area, System.Action<int, float, float> fn)
+        {
+            int i0 = Mathf.Clamp(Mathf.FloorToInt((area.xMin - minX) / world * size), 0, size - 1);
+            int i1 = Mathf.Clamp(Mathf.CeilToInt((area.xMax - minX) / world * size), 0, size - 1);
+            int j0 = Mathf.Clamp(Mathf.FloorToInt((area.yMin - minZ) / world * size), 0, size - 1);
+            int j1 = Mathf.Clamp(Mathf.CeilToInt((area.yMax - minZ) / world * size), 0, size - 1);
+            for (int j = j0; j <= j1; j++)
+                for (int i = i0; i <= i1; i++)
+                    fn(j * size + i, minX + (i + 0.5f) / size * world, minZ + (j + 0.5f) / size * world);
+        }
+
+        static void Mul(Color32[] px, int k, float mul)
+        {
+            var c = px[k];
+            px[k] = new Color32((byte)(c.r * mul), (byte)(c.g * mul), (byte)(c.b * mul), c.a);
         }
 
         static Mesh SaveMesh(Mesh mesh)
@@ -397,8 +701,7 @@ static float Relief(float x, float z)
                 int count = Mathf.Max(2, Mathf.CeilToInt(path.Length / RouteNodeSpacing) + 1);
                 for (int n = 0; n < count; n++)
                 {
-                    float s = path.Length * n / (count - 1);
-                    Vector2 p = PointAt(path, s);
+                    Vector2 p = PointAt(path, path.Length * n / (count - 1));
                     float y = GroundY(col, new Vector3(p.x, 0f, p.y));
                     var node = new GameObject($"P{n:00}").transform;
                     node.SetParent(go.transform, false);

@@ -11,7 +11,10 @@ namespace ArtemisX.Visuals
         public struct Node
         {
             public Transform point;
+            [Tooltip("Rover: stop time at this node. Walker: time spent here (indoors when Enter Building is on).")]
             [Min(0f)] public float stopSeconds;
+            [Tooltip("Walkers only: the character goes inside here (disappears) for Stop Seconds, then comes back out.")]
+            public bool enterBuilding;
         }
 
         [SerializeField] private List<Node> nodes = new List<Node>();
@@ -22,6 +25,8 @@ namespace ArtemisX.Visuals
         public Vector3 GetPoint(int index) => nodes[Wrap(index)].point.position;
 
         public float GetStopSeconds(int index) => nodes[Wrap(index)].stopSeconds;
+
+        public bool EntersBuilding(int index) => nodes[Wrap(index)].enterBuilding;
 
         public void SetNodes(List<Node> newNodes) => nodes = newNodes;
 
@@ -81,7 +86,9 @@ namespace ArtemisX.Visuals
             {
                 if (nodes[i].point == null || nodes[Wrap(i + 1)].point == null) return;
                 Gizmos.DrawLine(GetPoint(i), GetPoint(i + 1));
+                Gizmos.color = nodes[i].enterBuilding ? new Color(1f, 0.6f, 0.1f, 0.9f) : gizmoColor;
                 Gizmos.DrawSphere(GetPoint(i), nodes[i].stopSeconds > 0f ? 0.12f : 0.06f);
+                Gizmos.color = gizmoColor;
             }
         }
     }
