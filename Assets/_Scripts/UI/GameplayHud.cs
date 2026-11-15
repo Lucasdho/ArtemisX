@@ -19,6 +19,7 @@ namespace ArtemisX.UI
         [SerializeField] private MorningSequenceController morning;
         [SerializeField] private RoverMapController roverMap;
         [SerializeField] private ResourceFlyFx flyFx;
+        [SerializeField] private Visuals.DayNightTransitionPlayer transition;
         [SerializeField] private AudioSource sfxSource;
         [Tooltip("Hidden while a dialogue is open or the rover map is shown.")]
         [SerializeField] private CanvasGroup[] bottomActions = new CanvasGroup[0];
@@ -38,6 +39,7 @@ namespace ArtemisX.UI
             (runner != null && runner.IsOpen) ||
             (morning != null && morning.IsShowing) ||
             (roverMap != null && roverMap.IsOpen) ||
+            (transition != null && transition.IsPlaying) ||
             (resolution != null && (resolution.IsResolving || resolution.IsMissionOver));
 
         private void Awake()

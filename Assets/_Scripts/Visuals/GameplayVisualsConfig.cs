@@ -6,11 +6,13 @@ namespace ArtemisX.Visuals
     [CreateAssetMenu(fileName = "GameplayVisualsConfig", menuName = "Artemis X/Visuals/Gameplay Visuals Config")]
     public class GameplayVisualsConfig : ScriptableObject
     {
-        [Header("Next Day transition (about 1.5-2 s total)")]
-        [Min(0f)] public float stormSeconds = 1.8f;
-        [Min(0.05f)] public float nightSeconds = 1.0f;
-        [Tooltip("Night length when there is no storm or radiation phase.")]
-        [Min(0.05f)] public float calmNightSeconds = 1.5f;
+        [Header("Next Day transition: Daylight -> Storm/Radiation -> Night -> Dawn")]
+        [Tooltip("Whole transition when the player doesn't skip (GDD: about 10 s).")]
+        [Min(0.5f)] public float transitionSeconds = 10f;
+        [Tooltip("Event day split (weights, normalised): daylight hold, storm/radiation, night, dawn.")]
+        public Vector4 eventDaySplit = new Vector4(0.1f, 0.3f, 0.35f, 0.25f);
+        [Tooltip("Calm day split (weights, normalised): daylight hold, unused, night, dawn.")]
+        public Vector4 calmDaySplit = new Vector4(0.15f, 0f, 0.55f, 0.3f);
 
         [Header("Rover trips")]
         [Min(0.1f)] public float roverDriveSpeed = 3.2f;

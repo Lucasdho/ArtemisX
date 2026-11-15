@@ -21,6 +21,10 @@ namespace ArtemisX.UI
         [SerializeField] private SpaceWeatherManager weather;
         [SerializeField] private RoverExpeditionManager rover;
         [SerializeField] private GameplayHud hud;
+        [Tooltip("Optional. The cards wait until the day-to-night-to-dawn transition has finished.")]
+        [SerializeField] private Visuals.DayNightTransitionPlayer transition;
+
+        private DailyReportData pendingReport;
 
         /// <summary>Raised after the last morning card closes.</summary>
         public event Action SequenceFinished;
@@ -35,17 +39,32 @@ namespace ArtemisX.UI
         private void OnEnable()
         {
             if (resolution != null) resolution.MorningReady += OnMorningReady;
+            if (transition != null) transition.TransitionFinished += OnTransitionFinished;
         }
 
         private void OnDisable()
         {
             if (resolution != null) resolution.MorningReady -= OnMorningReady;
+            if (transition != null) transition.TransitionFinished -= OnTransitionFinished;
         }
 
         private void OnMorningReady(DailyReportData report)
         {
             IsShowing = true;
             if (hud != null && hud.Popup != null) hud.Popup.Close();
+            if (transition != null && transition.IsPlaying)
+            {
+                pendingReport = report; // Dawn is still playing: show the cards when it ends.
+                return;
+            }
+            ShowReport(report);
+        }
+
+        private void OnTransitionFinished()
+        {
+            if (pendingReport == null) return;
+            var report = pendingReport;
+            pendingReport = null;
             ShowReport(report);
         }
 

@@ -85,7 +85,7 @@ namespace ArtemisX.UI.EditorTools
             // ---------- HUD ----------
             var hudRoot = Object.FindAnyObjectByType<MissionCardView>().transform.parent;
             var hudCanvas = hudRoot.GetComponent<Canvas>();
-            foreach (var n in new[] { "WeatherWidget", "RoverButton", "HelpButton", "MorningCard", "RoverMap", "FlyLayer" })
+            foreach (var n in new[] { "WeatherWidget", "RoverButton", "HelpButton", "MorningCard", "RoverMap", "FlyLayer", "NightSkip" })
             {
                 var old = hudRoot.Find(n);
                 if (old != null) Object.DestroyImmediate(old.gameObject);
@@ -107,6 +107,7 @@ namespace ArtemisX.UI.EditorTools
             var helpButton = BuildHelpButton(hudRoot);
             var card = BuildMorningCard(hudRoot, uiConfig, runner);
             var flyLayer = BuildStretch("FlyLayer", hudRoot);
+            var skipRoot = BuildSkipOverlay(hudRoot, dayNight);
             BuildPillBadges(hudRoot);
 
             // Pills to fly to.
@@ -172,19 +173,20 @@ namespace ArtemisX.UI.EditorTools
             // ---------- Hub ----------
             Wire(router, ("hud", hud), ("panController", camRig));
             Wire(morning, ("config", uiConfig), ("style", style), ("card", card), ("resolution", resolution), ("demands", demands),
-                ("weather", weather), ("rover", rover), ("hud", hud));
+                ("weather", weather), ("rover", rover), ("hud", hud), ("transition", dayNight));
             Wire(roverButton, ("roverInteractable", roverInteract));
             var nextDayButton = nextDayFlow != null ? new SerializedObject(nextDayFlow).FindProperty("nextDayButton").objectReferenceValue as Button : null;
             var groups = new List<CanvasGroup>();
             foreach (var go in new[] { nextDayButton != null ? nextDayButton.gameObject : null, roverButton.gameObject, helpButton.gameObject })
                 if (go != null) groups.Add(GetOrAdd<CanvasGroup>(go));
             Wire(hud, ("config", uiConfig), ("viewCamera", Camera.main), ("runner", runner), ("resolution", resolution), ("popup", popup),
-                ("morning", morning), ("roverMap", map), ("flyFx", fly), ("sfxSource", sfx), ("helpButton", helpButton));
+                ("morning", morning), ("roverMap", map), ("flyFx", fly), ("transition", dayNight), ("sfxSource", sfx), ("helpButton", helpButton));
             SetArray(hud, "bottomActions", groups.ToArray());
 
             // Morning card and fly layer on top, then dialogue above them.
             card.transform.SetAsLastSibling();
             flyLayer.SetAsLastSibling();
+            skipRoot.SetAsLastSibling();
             var dialogueCanvas = hudRoot.Find("DialogueCanvas");
             if (dialogueCanvas != null) dialogueCanvas.SetAsLastSibling();
             popup.transform.SetAsLastSibling();
@@ -525,6 +527,26 @@ namespace ArtemisX.UI.EditorTools
             so.ApplyModifiedPropertiesWithoutUndo();
             root.gameObject.SetActive(false);
             return view;
+        }
+
+        private static RectTransform BuildSkipOverlay(Transform hud, DayNightTransitionPlayer player)
+        {
+            var holder = BuildStretch("NightSkip", hud);
+            var root = BuildStretch("Root", holder);
+            var tap = root.gameObject.AddComponent<Image>();
+            tap.color = new Color(0f, 0f, 0f, 0f);
+            var tapButton = root.gameObject.AddComponent<Button>();
+            tapButton.transition = Selectable.Transition.None;
+            var row = NewUI("SkipRow", root);
+            Place(row, new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-48f, 200f), new Vector2(160f, 56f));
+            var skip = MakeButton(row, "SkipButton", "Skip  >>", new Color(1f, 1f, 1f, 0.85f), style.textColor, new Vector2(160f, 56f), out _);
+            ((RectTransform)skip.transform).anchoredPosition = Vector2.zero;
+            var hint = MakeText(root, "Hint", "Tap anywhere to skip", 16, new Color(1f, 1f, 1f, 0.7f), TextAnchor.LowerCenter, FontStyle.Normal);
+            Place((RectTransform)hint.transform, new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 24f), new Vector2(0f, 24f));
+            var view = holder.gameObject.AddComponent<NightTransitionSkipView>();
+            Wire(view, ("transition", player), ("root", root.gameObject), ("tapAnywhere", tapButton), ("skipButton", skip));
+            root.gameObject.SetActive(false);
+            return holder;
         }
 
         private static GameObject BuildRoverMap(Transform hud, RoverExpeditionManager rover, ResourceHotspot[] hotspots,
