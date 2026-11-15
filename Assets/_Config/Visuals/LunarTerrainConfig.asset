@@ -16,27 +16,9 @@ MonoBehaviour:
   halfSize: 68
   cellSize: 0.6
   seed: 7
-  plateaus:
-  - area:
-      serializedVersion: 2
-      x: -9
-      y: 4
-      width: 8
-      height: 4
-    height: 1
-  - area:
-      serializedVersion: 2
-      x: -9
-      y: -4
-      width: 2
-      height: 4
-    height: 1.07
+  plateaus: []
   plateauBlend: 0.8
-  pits:
-  - center: {x: -8, y: -3}
-    radius: 1.1
-    depth: 0.6
-    rimHeight: 0
+  pits: []
   flatZone:
     serializedVersion: 2
     x: -12

@@ -268,20 +268,7 @@ namespace ArtemisX.EditorTools
             if (terrain != null) Object.DestroyImmediate(terrain.gameObject);
 
             var outer = env.Find("TerrainOuter");
-            if (outer != null)
-            {
-                for (int i = outer.childCount - 1; i >= 0; i--)
-                {
-                    var t = outer.GetChild(i);
-                    if (t.name.StartsWith("FarRock"))
-                    {
-                        var p = t.position;
-                        p.y = shape.Evaluate(p.x, p.z).height - 0.02f;
-                        t.position = p;
-                    }
-                    else Object.DestroyImmediate(t.gameObject);
-                }
-            }
+            if (outer != null) Object.DestroyImmediate(outer.gameObject);
 
             EditorSceneManager.MarkSceneDirty(ground.gameObject.scene);
         }

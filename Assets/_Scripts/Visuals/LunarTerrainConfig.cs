@@ -30,17 +30,10 @@ namespace ArtemisX.Visuals
         [Min(0.1f)] public float cellSize = 0.6f;
         public int seed = 7;
 
-        [Header("Plateaus and pits (replace the old KayKit tile blocks)")]
-        public Plateau[] plateaus =
-        {
-            new Plateau { area = new Rect(-9f, 4f, 8f, 4f), height = 1f },
-            new Plateau { area = new Rect(-9f, -4f, 2f, 4f), height = 1.07f },
-        };
+        [Header("Plateaus and pits (optional; none at the moment, the base sits on flat ground)")]
+        public Plateau[] plateaus = { };
         [Min(0.1f)] public float plateauBlend = 0.8f;
-        public Crater[] pits =
-        {
-            new Crater { center = new Vector2(-8f, -3f), radius = 1.1f, depth = 0.6f, rimHeight = 0f },
-        };
+        public Crater[] pits = { };
 
         [Header("Build zone (kept dead flat so buildings sit level)")]
         [Tooltip("x, z of the lower-left corner, then width and depth.")]
