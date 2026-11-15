@@ -4,7 +4,7 @@ using UnityEngine.UI;
 
 namespace ArtemisX.UI
 {
-    /// <summary>HUD Rover Status button: shows Ready / On Mission / Broken / Locked and acts like clicking the rover.</summary>
+    /// <summary>HUD Rover Status button: shows Ready / On Mission / Broken / Locked; the only way to operate the rover.</summary>
     public class RoverStatusButtonView : MonoBehaviour
     {
         [SerializeField] private RoverExpeditionManager rover;

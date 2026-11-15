@@ -3,15 +3,19 @@ using ArtemisX.Simulation;
 
 namespace ArtemisX.UI
 {
-    /// <summary>The rover: Ready opens the top-down site map, Broken opens the repair card, otherwise Bauzer explains.</summary>
+    /// <summary>
+    /// Rover actions, driven only by the HUD Rover button (the 3D rover itself is not clickable, GDD §6):
+    /// Ready opens the top-down site map, Broken opens the repair card, otherwise Bauzer explains.
+    /// </summary>
     public class RoverInteractable : WorldInteractable
     {
         [UnityEngine.SerializeField] private RoverExpeditionManager rover;
         [UnityEngine.SerializeField] private ResourceManager resources;
 
-        public override void OnWorldClicked() => Activate();
+        /// <summary>Clicks on the 3D rover do nothing; the HUD Rover button is the only way to operate it.</summary>
+        public override void OnWorldClicked() { }
 
-        /// <summary>Same as clicking the rover; the HUD Rover button calls this too.</summary>
+        /// <summary>Called by the HUD Rover button.</summary>
         public void Activate()
         {
             if (rover == null || hud == null || hud.IsWorldInputBlocked) return;
