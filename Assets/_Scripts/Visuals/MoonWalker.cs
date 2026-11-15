@@ -35,6 +35,7 @@ namespace ArtemisX.Visuals
         private int jumpsLeft;
         private bool resumeTarget;
         private bool shelterAfterPause;
+        private bool hideInShelter;
         private float hopClock;
         private bool airborne;
         private float pauseTimer;
@@ -67,7 +68,7 @@ namespace ArtemisX.Visuals
         /// <summary>Happy jumps on the spot, e.g. when something good happens at the base.</summary>
         public void Cheer()
         {
-            if (!isActiveAndEnabled || state == State.Pausing) return;
+            if (!isActiveAndEnabled || state == State.Pausing || (visual != null && !visual.gameObject.activeSelf)) return;
             bool wasSheltered = state == State.Sheltered;
             Interrupt();
             resumeTarget = !wasSheltered;
@@ -141,8 +142,19 @@ namespace ArtemisX.Visuals
         /// Sends the walker to a point (e.g. the habitat door) where it waits until <see cref="LeaveShelter"/>.
         /// It follows its own path to the node nearest that point first, so it doesn't cut through buildings.
         /// </summary>
-        public void GoToShelter(Vector3 point)
+        public void GoToShelter(Vector3 point) => GoToShelter(point, false);
+
+        /// <summary>Same, and with <paramref name="goInside"/> the character disappears on arrival (it went indoors).</summary>
+        public void GoToShelter(Vector3 point, bool goInside)
         {
+            hideInShelter = goInside;
+            if (state == State.Sheltered && hasShelter && (point - shelterPoint).sqrMagnitude < 0.0001f)
+            {
+                SetVisible(!goInside);
+                return;
+            }
+            bool wasSheltered = state == State.Sheltered;
+            if (wasSheltered) SetVisible(true);
             hasShelter = true;
             headingToShelter = false;
             shelterPoint = point;
@@ -153,13 +165,14 @@ namespace ArtemisX.Visuals
                 int ahead = path.Wrap(shelterExitIndex - targetIndex);
                 direction = ahead <= path.Count - ahead ? 1 : -1;
             }
-            if (state == State.Sheltered) return;
             if (state == State.Pausing) { EndJump(); FinishPause(); }
+            else if (wasSheltered) NextWaypoint();
         }
 
         public void LeaveShelter()
         {
             if (!hasShelter) return;
+            SetVisible(true);
             hasShelter = false;
             headingToShelter = false;
             direction = reverse ? -1 : 1;
@@ -261,6 +274,11 @@ namespace ArtemisX.Visuals
             ResetPose();
         }
 
+        private void SetVisible(bool visible)
+        {
+            if (visual != null && visual.gameObject.activeSelf != visible) visual.gameObject.SetActive(visible);
+        }
+
         private void ResetPose()
         {
             if (visual == null) return;
@@ -285,6 +303,7 @@ namespace ArtemisX.Visuals
                 {
                     state = State.Sheltered;
                     Play(config.idleState);
+                    SetVisible(!hideInShelter);
                 }
                 else
                 {
@@ -352,7 +371,7 @@ namespace ArtemisX.Visuals
         /// <summary>Cross-fades to an Animator state by name and returns its length. Safe when the model has no such state.</summary>
         private float Play(string stateName)
         {
-            if (animator == null || string.IsNullOrEmpty(stateName)) return config.fallbackActionSeconds;
+            if (animator == null || !animator.isActiveAndEnabled || string.IsNullOrEmpty(stateName)) return config.fallbackActionSeconds;
             int hash = Animator.StringToHash(stateName);
             if (!animator.HasState(0, hash)) return config.fallbackActionSeconds;
             if (currentAnimation != stateName || stateName != config.walkState)

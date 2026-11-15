@@ -43,7 +43,7 @@ MonoBehaviour:
   jumpHeight: 0.32
   jumpAirSeconds: 1.15
   jumpCount: 2
-  nightSpeedMultiplier: 0.45
+  nightSpeedMultiplier: 0.8
   stormSpeedMultiplier: 1.6
   shelterSpread: 0.7
   greetDistance: 1

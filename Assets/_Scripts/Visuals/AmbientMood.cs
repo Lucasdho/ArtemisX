@@ -14,6 +14,10 @@ namespace ArtemisX.Visuals
         [SerializeField] private MoodState mood = MoodState.Normal;
         [Tooltip("Where astronauts gather in a storm, e.g. the habitat door.")]
         [SerializeField] private Transform shelter;
+        [Tooltip("Where astronauts go indoors at night. They disappear on arrival.")]
+        [SerializeField] private Transform door;
+        [Tooltip("Where the sleep bubble shows while astronauts are indoors, e.g. above the habitat.")]
+        [SerializeField] private Transform sleepAnchor;
         [SerializeField] private MoonWalker[] walkers = Array.Empty<MoonWalker>();
         [SerializeField] private RoverDriver[] rovers = Array.Empty<RoverDriver>();
         [Tooltip("Where rovers park in a storm, e.g. the rover garage slot.")]
@@ -21,6 +25,7 @@ namespace ArtemisX.Visuals
 
         private float[] nextEmote = Array.Empty<float>();
         private float[] nextGreet = Array.Empty<float>();
+        private float nextSleep;
 
         public event Action<MoodState> MoodChanged;
 
@@ -74,11 +79,12 @@ namespace ArtemisX.Visuals
                 {
                     case MoodState.Night:
                         walker.SpeedMultiplier = config.nightSpeedMultiplier;
-                        walker.LeaveShelter();
+                        if (door != null) walker.GoToShelter(door.position, true);
+                        else walker.LeaveShelter();
                         break;
                     case MoodState.Storm:
                         walker.SpeedMultiplier = config.stormSpeedMultiplier;
-                        if (shelter != null) walker.GoToShelter(ShelterPoint(i));
+                        if (shelter != null) walker.GoToShelter(ShelterPoint(i), false);
                         EmoteBubble.Show(walker.EmoteAnchor, EmoteKind.Alert, config.emoteSeconds);
                         break;
                     default:
@@ -112,9 +118,22 @@ namespace ArtemisX.Visuals
                 return;
             }
 
+            if (mood == MoodState.Night && sleepAnchor != null && Time.time >= nextSleep)
+            {
+                // Once someone is indoors, the habitat itself snores.
+                bool anyInside = false;
+                for (int i = 0; i < walkers.Length; i++) anyInside |= walkers[i] != null && walkers[i].IsSheltered;
+                if (anyInside)
+                {
+                    EmoteBubble.Show(sleepAnchor, EmoteKind.Sleep, config.emoteSeconds, 0f);
+                    nextSleep = Time.time + UnityEngine.Random.Range(config.sleepEmoteInterval.x, config.sleepEmoteInterval.y);
+                }
+            }
+
             for (int i = 0; i < walkers.Length; i++)
             {
                 if (walkers[i] == null || Time.time < nextEmote[i]) continue;
+                if (walkers[i].IsSheltered && mood == MoodState.Night) continue;
 
                 bool night = mood == MoodState.Night;
                 EmoteKind kind = night ? EmoteKind.Sleep : (UnityEngine.Random.value < 0.5f ? EmoteKind.Scared : EmoteKind.Alert);
