@@ -1402,7 +1402,7 @@ ParticleSystem:
         m_RotationOrder: 4
     randomizeRotationDirection: 0
     gravitySource: 0
-    maxNumParticles: 2479
+    maxNumParticles: 1546
     customEmitterVelocity: {x: 0, y: 0, z: 0}
     size3D: 0
     rotation3D: 0
@@ -1668,7 +1668,7 @@ ParticleSystem:
     rateOverTime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 850
+      scalar: 530
       minScalar: 10
       maxCurve:
         serializedVersion: 2
@@ -1778,7 +1778,7 @@ ParticleSystem:
       countCurve:
         serializedVersion: 2
         minMaxState: 0
-        scalar: 298
+        scalar: 186
         minScalar: 30
         maxCurve:
           serializedVersion: 2
@@ -1829,7 +1829,7 @@ ParticleSystem:
           m_PostInfinity: 2
           m_RotationOrder: 4
       cycleCount: 1
-      repeatInterval: 0.01
+      repeatInterval: 0.0001
       probability: 1
   SizeModule:
     enabled: 0
@@ -9808,7 +9808,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 63590185834795981, guid: cf3a7f01f1e7d46c28ca271b28d6b0d6, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 63590185834795981, guid: cf3a7f01f1e7d46c28ca271b28d6b0d6, type: 3}
       propertyPath: m_AnchorMin.x
@@ -9816,15 +9816,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 63590185834795981, guid: cf3a7f01f1e7d46c28ca271b28d6b0d6, type: 3}
       propertyPath: m_AnchorMin.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 63590185834795981, guid: cf3a7f01f1e7d46c28ca271b28d6b0d6, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 564
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 63590185834795981, guid: cf3a7f01f1e7d46c28ca271b28d6b0d6, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -30
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 924591555587467332, guid: cf3a7f01f1e7d46c28ca271b28d6b0d6, type: 3}
       propertyPath: m_AnchorMax.x
@@ -9832,7 +9832,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 924591555587467332, guid: cf3a7f01f1e7d46c28ca271b28d6b0d6, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 924591555587467332, guid: cf3a7f01f1e7d46c28ca271b28d6b0d6, type: 3}
       propertyPath: m_AnchorMin.x
@@ -9840,15 +9840,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 924591555587467332, guid: cf3a7f01f1e7d46c28ca271b28d6b0d6, type: 3}
       propertyPath: m_AnchorMin.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 924591555587467332, guid: cf3a7f01f1e7d46c28ca271b28d6b0d6, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 948
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 924591555587467332, guid: cf3a7f01f1e7d46c28ca271b28d6b0d6, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -30
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3018295282039122623, guid: cf3a7f01f1e7d46c28ca271b28d6b0d6, type: 3}
       propertyPath: m_Pivot.x
@@ -9956,7 +9956,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6992895612753569820, guid: cf3a7f01f1e7d46c28ca271b28d6b0d6, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6992895612753569820, guid: cf3a7f01f1e7d46c28ca271b28d6b0d6, type: 3}
       propertyPath: m_AnchorMin.x
@@ -9964,15 +9964,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6992895612753569820, guid: cf3a7f01f1e7d46c28ca271b28d6b0d6, type: 3}
       propertyPath: m_AnchorMin.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6992895612753569820, guid: cf3a7f01f1e7d46c28ca271b28d6b0d6, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 180
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6992895612753569820, guid: cf3a7f01f1e7d46c28ca271b28d6b0d6, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -30
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -15260,7 +15260,7 @@ ParticleSystem:
     startLifetime:
       serializedVersion: 2
       minMaxState: 3
-      scalar: 1.25
+      scalar: 1.15
       minScalar: 0.65
       maxCurve:
         serializedVersion: 2
@@ -15431,8 +15431,8 @@ ParticleSystem:
     startSize:
       serializedVersion: 2
       minMaxState: 3
-      scalar: 0.11
-      minScalar: 0.04
+      scalar: 0.12
+      minScalar: 0.045
       maxCurve:
         serializedVersion: 2
         m_Curve:
@@ -15748,7 +15748,7 @@ ParticleSystem:
         m_RotationOrder: 4
     randomizeRotationDirection: 0
     gravitySource: 0
-    maxNumParticles: 17788
+    maxNumParticles: 7631
     customEmitterVelocity: {x: 0, y: 0, z: 0}
     size3D: 0
     rotation3D: 0
@@ -16014,7 +16014,7 @@ ParticleSystem:
     rateOverTime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 9000
+      scalar: 4400
       minScalar: 10
       maxCurve:
         serializedVersion: 2
@@ -16124,7 +16124,7 @@ ParticleSystem:
       countCurve:
         serializedVersion: 2
         minMaxState: 0
-        scalar: 2600
+        scalar: 800
         minScalar: 1
         maxCurve:
           serializedVersion: 2
@@ -16175,7 +16175,7 @@ ParticleSystem:
           m_PostInfinity: 2
           m_RotationOrder: 4
       cycleCount: 1
-      repeatInterval: 0.01
+      repeatInterval: 0.0001
       probability: 1
   SizeModule:
     enabled: 0
@@ -20219,7 +20219,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1455839297111741165, guid: 6849c0068cabc4ad8b34e489adcfce6f, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1455839297111741165, guid: 6849c0068cabc4ad8b34e489adcfce6f, type: 3}
       propertyPath: m_AnchorMin.x
@@ -20227,7 +20227,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1455839297111741165, guid: 6849c0068cabc4ad8b34e489adcfce6f, type: 3}
       propertyPath: m_AnchorMin.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1455839297111741165, guid: 6849c0068cabc4ad8b34e489adcfce6f, type: 3}
       propertyPath: m_SizeDelta.x
@@ -20267,11 +20267,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1455839297111741165, guid: 6849c0068cabc4ad8b34e489adcfce6f, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 359
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1455839297111741165, guid: 6849c0068cabc4ad8b34e489adcfce6f, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -32
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1455839297111741165, guid: 6849c0068cabc4ad8b34e489adcfce6f, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -34842,7 +34842,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1455839297111741165, guid: 6849c0068cabc4ad8b34e489adcfce6f, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1455839297111741165, guid: 6849c0068cabc4ad8b34e489adcfce6f, type: 3}
       propertyPath: m_AnchorMin.x
@@ -34850,7 +34850,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1455839297111741165, guid: 6849c0068cabc4ad8b34e489adcfce6f, type: 3}
       propertyPath: m_AnchorMin.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1455839297111741165, guid: 6849c0068cabc4ad8b34e489adcfce6f, type: 3}
       propertyPath: m_SizeDelta.x
@@ -34890,11 +34890,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1455839297111741165, guid: 6849c0068cabc4ad8b34e489adcfce6f, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 603
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1455839297111741165, guid: 6849c0068cabc4ad8b34e489adcfce6f, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -32
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1455839297111741165, guid: 6849c0068cabc4ad8b34e489adcfce6f, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -37336,7 +37336,7 @@ MonoBehaviour:
     m_FontStyle: 1
     m_BestFit: 1
     m_MinSize: 9
-    m_MaxSize: 13
+    m_MaxSize: 15
     m_Alignment: 3
     m_AlignByGeometry: 0
     m_RichText: 1
@@ -39063,7 +39063,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1455839297111741165, guid: 6849c0068cabc4ad8b34e489adcfce6f, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1455839297111741165, guid: 6849c0068cabc4ad8b34e489adcfce6f, type: 3}
       propertyPath: m_AnchorMin.x
@@ -39071,7 +39071,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1455839297111741165, guid: 6849c0068cabc4ad8b34e489adcfce6f, type: 3}
       propertyPath: m_AnchorMin.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1455839297111741165, guid: 6849c0068cabc4ad8b34e489adcfce6f, type: 3}
       propertyPath: m_SizeDelta.x
@@ -39111,11 +39111,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1455839297111741165, guid: 6849c0068cabc4ad8b34e489adcfce6f, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 115
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1455839297111741165, guid: 6849c0068cabc4ad8b34e489adcfce6f, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -32
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1455839297111741165, guid: 6849c0068cabc4ad8b34e489adcfce6f, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -40005,7 +40005,7 @@ MonoBehaviour:
     m_FontStyle: 1
     m_BestFit: 1
     m_MinSize: 9
-    m_MaxSize: 13
+    m_MaxSize: 15
     m_Alignment: 3
     m_AlignByGeometry: 0
     m_RichText: 1
@@ -46133,7 +46133,7 @@ ParticleSystem:
         m_RotationOrder: 4
     randomizeRotationDirection: 0
     gravitySource: 0
-    maxNumParticles: 11194
+    maxNumParticles: 4927
     customEmitterVelocity: {x: 0, y: 0, z: 0}
     size3D: 0
     rotation3D: 0
@@ -46399,7 +46399,7 @@ ParticleSystem:
     rateOverTime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 4500
+      scalar: 2050
       minScalar: 10
       maxCurve:
         serializedVersion: 2
@@ -46509,7 +46509,7 @@ ParticleSystem:
       countCurve:
         serializedVersion: 2
         minMaxState: 0
-        scalar: 1170
+        scalar: 360
         minScalar: 30
         maxCurve:
           serializedVersion: 2
@@ -46560,7 +46560,7 @@ ParticleSystem:
           m_PostInfinity: 2
           m_RotationOrder: 4
       cycleCount: 1
-      repeatInterval: 0.01
+      repeatInterval: 0.0001
       probability: 1
   SizeModule:
     enabled: 0
@@ -62137,7 +62137,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1455839297111741165, guid: 6849c0068cabc4ad8b34e489adcfce6f, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1455839297111741165, guid: 6849c0068cabc4ad8b34e489adcfce6f, type: 3}
       propertyPath: m_AnchorMin.x
@@ -62145,7 +62145,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1455839297111741165, guid: 6849c0068cabc4ad8b34e489adcfce6f, type: 3}
       propertyPath: m_AnchorMin.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1455839297111741165, guid: 6849c0068cabc4ad8b34e489adcfce6f, type: 3}
       propertyPath: m_SizeDelta.x
@@ -62185,11 +62185,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1455839297111741165, guid: 6849c0068cabc4ad8b34e489adcfce6f, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 1091
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1455839297111741165, guid: 6849c0068cabc4ad8b34e489adcfce6f, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -32
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1455839297111741165, guid: 6849c0068cabc4ad8b34e489adcfce6f, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -64354,7 +64354,7 @@ ParticleSystem:
         m_RotationOrder: 4
     randomizeRotationDirection: 0
     gravitySource: 0
-    maxNumParticles: 5860
+    maxNumParticles: 3304
     customEmitterVelocity: {x: 0, y: 0, z: 0}
     size3D: 0
     rotation3D: 0
@@ -64620,7 +64620,7 @@ ParticleSystem:
     rateOverTime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 4200
+      scalar: 2600
       minScalar: 10
       maxCurve:
         serializedVersion: 2
@@ -64730,7 +64730,7 @@ ParticleSystem:
       countCurve:
         serializedVersion: 2
         minMaxState: 0
-        scalar: 1040
+        scalar: 320
         minScalar: 30
         maxCurve:
           serializedVersion: 2
@@ -64781,7 +64781,7 @@ ParticleSystem:
           m_PostInfinity: 2
           m_RotationOrder: 4
       cycleCount: 1
-      repeatInterval: 0.01
+      repeatInterval: 0.0001
       probability: 1
   SizeModule:
     enabled: 0
@@ -68967,7 +68967,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1455839297111741165, guid: 6849c0068cabc4ad8b34e489adcfce6f, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1455839297111741165, guid: 6849c0068cabc4ad8b34e489adcfce6f, type: 3}
       propertyPath: m_AnchorMin.x
@@ -68975,7 +68975,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1455839297111741165, guid: 6849c0068cabc4ad8b34e489adcfce6f, type: 3}
       propertyPath: m_AnchorMin.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1455839297111741165, guid: 6849c0068cabc4ad8b34e489adcfce6f, type: 3}
       propertyPath: m_SizeDelta.x
@@ -69015,11 +69015,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1455839297111741165, guid: 6849c0068cabc4ad8b34e489adcfce6f, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 847
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1455839297111741165, guid: 6849c0068cabc4ad8b34e489adcfce6f, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -32
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1455839297111741165, guid: 6849c0068cabc4ad8b34e489adcfce6f, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -88768,7 +88768,7 @@ ParticleSystem:
         m_RotationOrder: 4
     randomizeRotationDirection: 0
     gravitySource: 0
-    maxNumParticles: 3877
+    maxNumParticles: 1687
     customEmitterVelocity: {x: 0, y: 0, z: 0}
     size3D: 0
     rotation3D: 0
@@ -89034,7 +89034,7 @@ ParticleSystem:
     rateOverTime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 1800
+      scalar: 960
       minScalar: 10
       maxCurve:
         serializedVersion: 2
@@ -89144,7 +89144,7 @@ ParticleSystem:
       countCurve:
         serializedVersion: 2
         minMaxState: 0
-        scalar: 1690
+        scalar: 520
         minScalar: 30
         maxCurve:
           serializedVersion: 2
@@ -89195,7 +89195,7 @@ ParticleSystem:
           m_PostInfinity: 2
           m_RotationOrder: 4
       cycleCount: 1
-      repeatInterval: 0.01
+      repeatInterval: 0.0001
       probability: 1
   SizeModule:
     enabled: 0

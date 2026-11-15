@@ -85,13 +85,13 @@ MonoBehaviour:
   stormFogDensity: 0.016
   stormSparkMaterial: {fileID: 2100000, guid: 64412595a7e534e45ba0eaf41322dd97, type: 2}
   stormDustMaterial: {fileID: 2100000, guid: 28dbeaf1b65d84180942730219928a05, type: 2}
-  stormMaxParticles: 16000
-  stormEmissionRate: 9000
-  stormBurstCount: 2600
+  stormMaxParticles: 5000
+  stormEmissionRate: 4400
+  stormBurstCount: 800
   stormBoxCenter: {x: -2.5, y: 3.6, z: -1.5}
   stormBoxScale: {x: 30, y: 7.5, z: 26}
-  stormParticleLifetime: {x: 0.65, y: 1.25}
-  stormParticleSize: {x: 0.04, y: 0.11}
+  stormParticleLifetime: {x: 0.65, y: 1.15}
+  stormParticleSize: {x: 0.045, y: 0.12}
   stormVelocityX: {x: 20, y: 32}
   stormVelocityY: {x: -3.5, y: -1}
   stormVelocityZ: {x: -8, y: -3}
@@ -101,14 +101,14 @@ MonoBehaviour:
   stormNoiseFrequency: 0.72
   stormStretchVelocityScale: 0.032
   stormStretchLengthScale: 1.55
-  stormGaleEmissionRate: 1800
+  stormGaleEmissionRate: 960
   stormIonStreakColorMin: {r: 0.32, g: 0.85, b: 1.55, a: 0.55}
   stormIonStreakColorMax: {r: 1.45, g: 0.88, b: 0.42, a: 0.75}
-  stormDustEmissionRate: 4500
-  stormForegroundEmissionRate: 4200
+  stormDustEmissionRate: 2050
+  stormForegroundEmissionRate: 2600
   stormForegroundCenterOffset: {x: 1.5, y: -0.5, z: -4.5}
   stormForegroundBoxScale: {x: 22, y: 5.5, z: 18}
-  stormDustCloudEmissionRate: 850
+  stormDustCloudEmissionRate: 530
   stormDustCloudSize: {x: 1.5, y: 3.4}
   stormDustCloudColorMin: {r: 0.62, g: 0.28, b: 0.18, a: 0.09}
   stormDustCloudColorMax: {r: 0.92, g: 0.48, b: 0.26, a: 0.15}
