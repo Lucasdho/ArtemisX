@@ -17,6 +17,8 @@ namespace ArtemisX.Simulation
         public WeatherEventType nightWeather;
         public bool stormHit;
         public bool solarBroken;
+        /// <summary>The field was Retracted and deployed again by itself at dawn.</summary>
+        public bool solarRedeployed;
         public bool crewRestricted;
         public bool missionEnded;
 

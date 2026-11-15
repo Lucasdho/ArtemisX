@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: ExpeditionSiteConfig
   m_EditorClassIdentifier: Assembly-CSharp::ArtemisX.Simulation.ExpeditionSiteConfig
   roverName: Luna
-  stormBreakdownChance: 1
+  stormBreakdownChance: 0.3
   sites:
   - siteId: Hotspot_Ice_NW
     displayName: Ice Site A

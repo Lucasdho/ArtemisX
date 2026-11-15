@@ -23,8 +23,8 @@ namespace ArtemisX.Simulation
 
         public string roverName = "Luna";
 
-        [Tooltip("Chance the rover comes back broken if a storm hits while it is out. GDD: always.")]
-        [Range(0f, 1f)] public float stormBreakdownChance = 1f;
+        [Tooltip("Chance the rover comes back broken if a solar storm hits while it is out (GDD: 30%).")]
+        [Range(0f, 1f)] public float stormBreakdownChance = 0.3f;
 
         public Site[] sites =
         {

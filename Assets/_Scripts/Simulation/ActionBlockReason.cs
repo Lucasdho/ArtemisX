@@ -17,6 +17,8 @@ namespace ArtemisX.Simulation
         NothingToCollect,
         WrongWeather,
         AlreadyChosen,
-        NoActiveDemand
+        NoActiveDemand,
+        /// <summary>An Unexpected Demand must be answered before End Day.</summary>
+        DemandPending
     }
 }
