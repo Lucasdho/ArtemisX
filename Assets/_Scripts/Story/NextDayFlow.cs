@@ -31,6 +31,7 @@ namespace ArtemisX.Story
             {
                 dayResolution.NightResolved += OnNightResolved;
                 dayResolution.MorningReady += OnMorningReady;
+                dayResolution.EndDayAvailabilityChanged += RefreshButtonState;
             }
 
             if (dialogueRunner != null)
@@ -51,6 +52,7 @@ namespace ArtemisX.Story
             {
                 dayResolution.NightResolved -= OnNightResolved;
                 dayResolution.MorningReady -= OnMorningReady;
+                dayResolution.EndDayAvailabilityChanged -= RefreshButtonState;
             }
 
             if (dialogueRunner != null)
@@ -128,7 +130,7 @@ namespace ArtemisX.Story
             bool blocked = isTransitioning ||
                 (dialogueRunner != null && dialogueRunner.IsOpen) ||
                 (storyDirector != null && storyDirector.IsMissionEnded) ||
-                (dayResolution != null && (dayResolution.IsResolving || dayResolution.IsMissionOver));
+                (dayResolution != null && dayResolution.CanEndDay() != ActionBlockReason.None);
             nextDayButton.interactable = !blocked;
         }
     }
