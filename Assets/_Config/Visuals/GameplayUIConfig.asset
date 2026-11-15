@@ -36,6 +36,14 @@ MonoBehaviour:
   - key: calm
     mood: 0
     text: Quiet night on the Moon. Let's keep building toward self-sufficiency.
+  day25Line:
+    key: day25
+    mood: 2
+    text: Day 25, {playerName}! Only 5 days left. Let's finish those buildings!
+  finalDayLine:
+    key: final_day
+    mood: 2
+    text: Last day of the mission! Give it your best shot, {playerName}.
   demandLine: Something needs a quick decision, {playerName}. Pick one!
   stormLine: A solar storm hits tonight. Retract the panels to keep them safe, or
     keep full Power and risk rocks?
