@@ -39,10 +39,10 @@ namespace ArtemisX.UI
         public string step1Hint = "STEP 1/3  Tap the solar panels";
         public Line[] step2Lines =
         {
-            new Line { mood = SpeakerMood.Happy, text = "Step 2: exploring! Tap the rover, then pick a site on the map to send it out." },
+            new Line { mood = SpeakerMood.Happy, text = "Step 2: exploring! Tap the Rover button, then pick a site on the map to send it out." },
             new Line { mood = SpeakerMood.Neutral, text = "Far sites bring more, but cost more Power and break down more often. Your call!" },
         };
-        public string step2Hint = "STEP 2/3  Send the rover to a site";
+        public string step2Hint = "STEP 2/3  Tap the Rover button";
         public Line[] step3Lines =
         {
             new Line { mood = SpeakerMood.Happy, text = "Step 3: press Next Day to end the shift. Watch the Moon go from day to night!" },

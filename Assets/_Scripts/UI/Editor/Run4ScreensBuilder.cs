@@ -177,7 +177,7 @@ namespace ArtemisX.UI.EditorTools
             Set(onboarding, "weatherWidget", Find("WeatherWidget")?.GetComponent<RectTransform>());
             Set(onboarding, "nextDayButton", Find("NextDayButton")?.GetComponent<RectTransform>());
             Set(onboarding, "solarField", Find("solarFarm")?.transform);
-            Set(onboarding, "roverTarget", Find("ExplorationHover")?.transform);
+            Set(onboarding, "roverButton", Find("RoverButton")?.GetComponent<RectTransform>());
             Set(onboarding, "playerSpeaker", profile != null ? profile.playerSpeaker : null);
 
             Set(gameFlow, "config", screens);

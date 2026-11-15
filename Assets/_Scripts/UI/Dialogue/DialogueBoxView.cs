@@ -204,6 +204,7 @@ namespace ArtemisX.UI.Dialogue
 
         private void OnStepFeedbackTriggered()
         {
+            if (ArtemisX.Audio.AudioManager.Instance != null) return; // AudioManager plays UiClick for this step
             if (audioSource != null && advanceClickSound != null)
                 audioSource.PlayOneShot(advanceClickSound);
         }

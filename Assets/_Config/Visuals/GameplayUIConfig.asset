@@ -62,8 +62,8 @@ MonoBehaviour:
   tipRoverLocked: Radiation today! The rover stays docked to keep the crew safe.
   tipBuildOrder: 'Build in order: Water & O2 Plant, then Greenhouse, then Fuel Reserve.'
   tipGeneric: That can't be done right now.
-  helpText: Tap glowing objects to act. Send the rover for Water and Parts, then
-    build the next module. Press Next Day when ready!
+  helpText: Tap glowing objects to act. Use the Rover button for Water and Parts,
+    then build. Press Next Day when ready!
   startDayLabel: Start Day
   shieldLabel: Shield & Retract
   keepPowerLabel: Keep Full Power

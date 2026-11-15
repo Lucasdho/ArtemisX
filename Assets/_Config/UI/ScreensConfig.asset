@@ -36,13 +36,13 @@ MonoBehaviour:
   step2Lines:
   - player: 0
     mood: 1
-    text: 'Step 2: exploring! Tap the rover, then pick a site on the map to send
-      it out.'
+    text: 'Step 2: exploring! Tap the Rover button, then pick a site on the map to
+      send it out.'
   - player: 0
     mood: 0
     text: Far sites bring more, but cost more Power and break down more often. Your
       call!
-  step2Hint: STEP 2/3  Send the rover to a site
+  step2Hint: STEP 2/3  Tap the Rover button
   step3Lines:
   - player: 0
     mood: 1

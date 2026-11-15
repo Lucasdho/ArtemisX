@@ -197,6 +197,7 @@ namespace ArtemisX.Audio.Tests
             // 4. Rover broken + repaired
             rover.TryDispatchRover(siteConfig.sites[0].siteId);
             rover.NotifyStorm();
+            rover.RandomValue = () => 0f; // 30% storm rule: force the break roll
             played.Clear();
             rover.ResolveReturn();
             CollectionAssert.Contains(played, SoundCue.ComponentBroken);

@@ -25,8 +25,8 @@ namespace ArtemisX.UI
         [SerializeField] private TutorialHighlightView highlight;
         [SerializeField] private RectTransform weatherWidget;
         [SerializeField] private RectTransform nextDayButton;
+        [SerializeField] private RectTransform roverButton;
         [SerializeField] private Transform solarField;
-        [SerializeField] private Transform roverTarget;
         [SerializeField] private Speaker playerSpeaker;
 
         public bool IsRunning { get; private set; }
@@ -75,8 +75,10 @@ namespace ArtemisX.UI
             // Step 2: rover map dispatch (skipped if the rover is already out or can't go).
             if (rover == null || rover.Status == RoverStatus.Ready)
             {
-                if (highlight != null) highlight.ShowWorld(roverTarget, hud != null ? hud.ViewCamera : null, config.step2Hint);
+                // The bottom HUD buttons are hidden while Bauzer talks, so frame the Rover button once he is done.
+                if (highlight != null) highlight.Hide();
                 yield return Say(config.step2Lines);
+                if (highlight != null) highlight.ShowUi(roverButton, config.step2Hint);
                 yield return new WaitUntil(() => rover == null || rover.Status != RoverStatus.Ready);
                 yield return WaitIdle();
             }
