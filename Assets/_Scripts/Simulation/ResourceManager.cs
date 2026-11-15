@@ -12,8 +12,12 @@ namespace ArtemisX.Simulation
         /// <summary>Raised whenever a resource changes, and once per resource on Start.</summary>
         public event Action<ResourceType, int, int> ResourceChanged;
 
+        /// <summary>Raised when a resource's passive net change per day changes, and once per resource on Start.</summary>
+        public event Action<ResourceType, int> NetRateChanged;
+
         private readonly int[] current = new int[ResourceTypeCount];
         private readonly int[] max = new int[ResourceTypeCount];
+        private readonly int[] netRate = new int[ResourceTypeCount];
 
         private static readonly int ResourceTypeCount = Enum.GetValues(typeof(ResourceType)).Length;
 
@@ -29,6 +33,7 @@ namespace ArtemisX.Simulation
             {
                 max[(int)r.type] = r.maxValue;
                 current[(int)r.type] = Mathf.Clamp(r.startValue, 0, r.maxValue);
+                netRate[(int)r.type] = r.netPerDay;
             }
         }
 
@@ -36,7 +41,21 @@ namespace ArtemisX.Simulation
         {
             // Listeners subscribe in OnEnable, so broadcasting here gives every bar its starting value.
             for (int i = 0; i < ResourceTypeCount; i++)
+            {
                 ResourceChanged?.Invoke((ResourceType)i, current[i], max[i]);
+                NetRateChanged?.Invoke((ResourceType)i, netRate[i]);
+            }
+        }
+
+        public int GetNetRate(ResourceType type) => netRate[(int)type];
+
+        /// <summary>Sets the passive net change per day (gains minus base requirements and running costs).</summary>
+        public void SetNetRate(ResourceType type, int perDay)
+        {
+            int i = (int)type;
+            if (netRate[i] == perDay) return;
+            netRate[i] = perDay;
+            NetRateChanged?.Invoke(type, perDay);
         }
 
         public int Get(ResourceType type) => current[(int)type];

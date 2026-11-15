@@ -13,6 +13,8 @@ namespace ArtemisX.Core
             public ResourceType type;
             [Min(0)] public int startValue;
             [Min(1)] public int maxValue;
+            [Tooltip("Passive net change per day shown on the HUD (gains minus base requirements). Placeholder until the sim computes it.")]
+            public int netPerDay;
         }
 
         [Header("Mission")]
