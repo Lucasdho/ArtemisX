@@ -35,14 +35,19 @@ namespace ArtemisX.Visuals
         [Min(0.1f)] public float plateauBlend = 0.8f;
         public Crater[] pits = { };
 
-        [Header("Build zone (kept dead flat so buildings sit level)")]
-        [Tooltip("x, z of the lower-left corner, then width and depth.")]
-        public Rect flatZone = new Rect(-12f, -9f, 24f, 22f);
-        [Min(0.1f)] public float flatBlend = 6f;
+        [Header("Level ground (only under what has to sit level)")]
+        [Tooltip("Extra flat ground around the footprint of buildings, slots, props and rocks.")]
+        [Min(0f)] public float padMargin = 0.5f;
+        [Min(0.5f)] public float maxPadRadius = 3.5f;
+        [Tooltip("How far the relief takes to fade in from the level ground.")]
+        [Min(0.1f)] public float flatBlend = 3.5f;
 
         [Header("Relief")]
-        public float rollingAmplitude = 0.5f;
-        public float rollingScale = 0.07f;
+        public float rollingAmplitude = 1.5f;
+        public float rollingScale = 0.06f;
+        [Tooltip("Mid-size bumps between the big rolls and the fine detail.")]
+        public float bumpAmplitude = 0.6f;
+        public float bumpScale = 0.17f;
         public float detailAmplitude = 0.07f;
         public float detailScale = 0.45f;
         [Tooltip("Rim of hills that wraps the basin, tallest on the far (north) side.")]

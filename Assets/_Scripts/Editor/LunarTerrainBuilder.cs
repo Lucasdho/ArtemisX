@@ -24,23 +24,45 @@ namespace ArtemisX.EditorTools
             public float height, bowl, rim, hill, edge;
         }
 
+        /// <summary>A level strip (a == b gives a round pad) where the ground stays at y = 0.</summary>
+        struct Flat
+        {
+            public Vector2 a, b;
+            public float radius;
+        }
+
         class Shape
         {
             public LunarTerrainConfig cfg;
             public List<LunarTerrainConfig.Crater> craters = new List<LunarTerrainConfig.Crater>();
-            public Vector2 zoneMin, zoneMax;
+            public List<Flat> flats = new List<Flat>();
             public float offX, offZ;
+
+            /// <summary>Distance from (x, z) to the nearest level ground; 0 on it.</summary>
+            public float FlatDistance(float x, float z)
+            {
+                float best = float.MaxValue;
+                var p = new Vector2(x, z);
+                foreach (var f in flats)
+                {
+                    Vector2 ab = f.b - f.a;
+                    float len2 = ab.sqrMagnitude;
+                    float t = len2 > 1e-6f ? Mathf.Clamp01(Vector2.Dot(p - f.a, ab) / len2) : 0f;
+                    float d = Vector2.Distance(p, f.a + ab * t) - f.radius;
+                    if (d < best) best = d;
+                }
+                return Mathf.Max(best, 0f);
+            }
 
             public Sample Evaluate(float x, float z)
             {
                 var s = new Sample();
-                float dx = Mathf.Max(zoneMin.x - x, 0f, x - zoneMax.x);
-                float dz = Mathf.Max(zoneMin.y - z, 0f, z - zoneMax.y);
-                float away = Mathf.SmoothStep(0f, 1f, Mathf.Sqrt(dx * dx + dz * dz) / cfg.flatBlend);
+                float away = Mathf.SmoothStep(0f, 1f, FlatDistance(x, z) / cfg.flatBlend);
 
                 float rolling = (Mathf.PerlinNoise(x * cfg.rollingScale + offX, z * cfg.rollingScale + offZ) - 0.5f) * 2f;
                 float detail = (Mathf.PerlinNoise(x * cfg.detailScale + offZ, z * cfg.detailScale + offX) - 0.5f) * 2f;
-                float h = (rolling * cfg.rollingAmplitude + detail * cfg.detailAmplitude) * away;
+                float bump = (Mathf.PerlinNoise(x * cfg.bumpScale + offZ + 50f, z * cfg.bumpScale + offX + 50f) - 0.5f) * 2f;
+                float h = (rolling * cfg.rollingAmplitude + bump * cfg.bumpAmplitude + detail * cfg.detailAmplitude) * away;
 
                 Vector2 rel = new Vector2(x - cfg.center.x, z - cfg.center.y);
                 float r = rel.magnitude;
@@ -110,11 +132,10 @@ namespace ArtemisX.EditorTools
             var shape = new Shape
             {
                 cfg = cfg,
-                zoneMin = cfg.flatZone.min,
-                zoneMax = cfg.flatZone.max,
                 offX = 100f + cfg.seed * 13.7f,
                 offZ = 100f + cfg.seed * 7.3f,
             };
+            shape.flats = CollectFlats(cfg);
             shape.craters.AddRange(cfg.craters);
             shape.craters.AddRange(cfg.pits);
             AddSmallCraters(shape);
@@ -125,6 +146,34 @@ namespace ArtemisX.EditorTools
             ApplyToScene(env.transform, shape, mesh);
             AssetDatabase.SaveAssets();
             Debug.Log($"Lunar terrain built: {mesh.vertexCount} verts, {mesh.triangles.Length / 3} tris, {shape.craters.Count} craters.");
+        }
+
+        /// <summary>Level pads under every building, slot, prop and rock. Walker and rover routes are left to be adjusted by hand.</summary>
+        static List<Flat> CollectFlats(LunarTerrainConfig cfg)
+        {
+            var flats = new List<Flat>();
+            foreach (var rootName in new[] { "Base", "Slots", "Props", "IceField", "Rocks" })
+            {
+                var root = GameObject.Find(rootName);
+                if (root == null) continue;
+                foreach (Transform child in root.transform)
+                {
+                    var renderers = child.GetComponentsInChildren<Renderer>();
+                    float radius = 0.6f;
+                    Vector3 center = child.position;
+                    if (renderers.Length > 0)
+                    {
+                        var bounds = renderers[0].bounds;
+                        foreach (var r in renderers) bounds.Encapsulate(r.bounds);
+                        center = bounds.center;
+                        radius = Mathf.Max(bounds.extents.x, bounds.extents.z);
+                    }
+                    radius = Mathf.Min(radius + cfg.padMargin, cfg.maxPadRadius);
+                    var c = new Vector2(center.x, center.z);
+                    flats.Add(new Flat { a = c, b = c, radius = radius });
+                }
+            }
+            return flats;
         }
 
         static void AddSmallCraters(Shape shape)
@@ -138,9 +187,7 @@ namespace ArtemisX.EditorTools
                 float z = cfg.center.y + ((float)rng.NextDouble() * 2f - 1f) * (cfg.islandRadius - 4f);
                 if (Vector2.Distance(new Vector2(x, z), cfg.center) > cfg.islandRadius - 5f) continue;
                 float r = Mathf.Lerp(cfg.smallCraterRadius.x, cfg.smallCraterRadius.y, (float)rng.NextDouble());
-                float margin = r + cfg.smallCraterZoneMargin;
-                if (x > shape.zoneMin.x - margin && x < shape.zoneMax.x + margin &&
-                    z > shape.zoneMin.y - margin && z < shape.zoneMax.y + margin) continue;
+                if (shape.FlatDistance(x, z) < r + cfg.smallCraterZoneMargin) continue;
                 bool overlaps = false;
                 foreach (var c in shape.craters)
                     if (Vector2.Distance(c.center, new Vector2(x, z)) < c.radius + r + 0.8f) { overlaps = true; break; }
