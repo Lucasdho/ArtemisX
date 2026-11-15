@@ -1,0 +1,77 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f679f50a411244f74b986161cc208ef7, type: 3}
+  m_Name: UnexpectedDemandConfig
+  m_EditorClassIdentifier: Assembly-CSharp::ArtemisX.Simulation.UnexpectedDemandConfig
+  dailyChance: 0.27
+  firstDay: 2
+  demands:
+  - demandId: water_leak
+    pool: Leak / Clogged Filter
+    title: Water Leak
+    weight: 1
+    choices:
+    - label: Fix Filter (-5 Parts)
+      costs:
+      - resource: 4
+        amount: 5
+      effects: []
+    - label: Patch Later (-6 Water)
+      costs: []
+      effects:
+      - resource: 1
+        amount: -6
+  - demandId: clogged_filter
+    pool: Leak / Clogged Filter
+    title: Clogged Air Filter
+    weight: 1
+    choices:
+    - label: Fix Filter (-5 Parts)
+      costs:
+      - resource: 4
+        amount: 5
+      effects: []
+    - label: Patch Later (-6 Oxygen)
+      costs: []
+      effects:
+      - resource: 2
+        amount: -6
+  - demandId: science_food
+    pool: Earth Science Request
+    title: 'Earth Science Request: Plant Study'
+    weight: 1
+    choices:
+    - label: Run Science (-12 Power, +15 Food)
+      costs:
+      - resource: 0
+        amount: 12
+      effects:
+      - resource: 3
+        amount: 15
+    - label: Skip Today
+      costs: []
+      effects: []
+  - demandId: science_parts
+    pool: Earth Science Request
+    title: 'Earth Science Request: Moon Rock Study'
+    weight: 1
+    choices:
+    - label: Run Science (-12 Power, +10 Parts)
+      costs:
+      - resource: 0
+        amount: 12
+      effects:
+      - resource: 4
+        amount: 10
+    - label: Skip Today
+      costs: []
+      effects: []
