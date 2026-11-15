@@ -81,7 +81,10 @@ namespace ArtemisX.Audio
         private void OnDestroy()
         {
             if (instance == this)
+            {
+                AudioListener.volume = 1f;
                 instance = null;
+            }
         }
 
         /// <summary>Plays a SoundCue using a pooled 2D AudioSource with randomized pitch.</summary>
@@ -135,6 +138,7 @@ namespace ArtemisX.Audio
                 return;
 
             isMuted = muted;
+            AudioListener.volume = isMuted ? 0f : 1f;
             for (int i = 0; i < sourcePool.Count; i++)
             {
                 if (sourcePool[i] != null)
@@ -160,6 +164,7 @@ namespace ArtemisX.Audio
 
             masterVolume = Mathf.Clamp01(config.masterVolume);
             isMuted = config.muted;
+            AudioListener.volume = isMuted ? 0f : 1f;
         }
 
         private void EnsurePool()

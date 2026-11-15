@@ -33,6 +33,8 @@ namespace ArtemisX.Audio
         private int lastKnownDay = 1;
         private int lastKnownStars;
         private SolarFieldState lastSolarState = SolarFieldState.Active;
+        private bool suppressNextWeatherChoiceCue;
+        private DialogueSequence promptPlayedForSequence;
 
         public void Initialize(
             AudioManager audio,
@@ -263,12 +265,17 @@ namespace ArtemisX.Audio
 
         private void OnSolarStateChanged(SolarFieldState state)
         {
-            if (state == lastSolarState)
+            SolarFieldState previous = lastSolarState;
+            if (state == previous)
                 return;
 
             lastSolarState = state;
-            if (state != SolarFieldState.Broken)
+            if (previous != SolarFieldState.Broken && state != SolarFieldState.Broken)
+            {
+                if (spaceWeatherManager != null && spaceWeatherManager.NeedsChoiceToday)
+                    suppressNextWeatherChoiceCue = true;
                 TriggerCue(SoundCue.ToggleSwitch);
+            }
         }
 
         private void OnComponentBroken(BaseComponent _) => TriggerCue(SoundCue.ComponentBroken);
@@ -281,14 +288,25 @@ namespace ArtemisX.Audio
 
         private void OnStormIncoming(int _, WeatherEventType weather)
         {
+            suppressNextWeatherChoiceCue = false;
             if (weather != WeatherEventType.Calm)
                 TriggerCue(SoundCue.StormAlert);
         }
 
-        private void OnWeatherChoiceApplied(WeatherChoice _) => TriggerCue(SoundCue.ToggleSwitch);
+        private void OnWeatherChoiceApplied(WeatherChoice _)
+        {
+            if (suppressNextWeatherChoiceCue)
+            {
+                suppressNextWeatherChoiceCue = false;
+                return;
+            }
+
+            TriggerCue(SoundCue.ToggleSwitch);
+        }
 
         private void OnDayAdvanced(int day)
         {
+            suppressNextWeatherChoiceCue = false;
             if (day != lastKnownDay && day > 1)
                 TriggerCue(SoundCue.DayAdvance);
             lastKnownDay = day;
@@ -308,16 +326,36 @@ namespace ArtemisX.Audio
 
         private void OnDialogueStarted(DialogueSequence sequence)
         {
-            if (sequence != null && sequence.HasChoices)
+            if (sequence != null && sequence.HasChoices && sequence.lines != null && sequence.lines.Length <= 1)
+            {
+                promptPlayedForSequence = sequence;
                 TriggerCue(SoundCue.EventPrompt);
+            }
             else
+            {
+                promptPlayedForSequence = null;
                 TriggerCue(SoundCue.UiOpen);
+            }
         }
 
         private void OnDialogueStepFeedback() => TriggerCue(SoundCue.UiClick);
 
-        private void OnDialogueChoicesPresented(DialogueSequence.DialogueChoice[] _) => TriggerCue(SoundCue.EventPrompt);
+        private void OnDialogueChoicesPresented(DialogueSequence.DialogueChoice[] _)
+        {
+            DialogueSequence current = dialogueRunner != null ? dialogueRunner.CurrentSequence : null;
+            if (current != null && current == promptPlayedForSequence)
+            {
+                promptPlayedForSequence = null;
+                return;
+            }
 
-        private void OnDialogueFinished(DialogueSequence _) => TriggerCue(SoundCue.UiClose);
+            TriggerCue(SoundCue.EventPrompt);
+        }
+
+        private void OnDialogueFinished(DialogueSequence _)
+        {
+            promptPlayedForSequence = null;
+            TriggerCue(SoundCue.UiClose);
+        }
     }
 }

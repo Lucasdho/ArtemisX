@@ -116,6 +116,7 @@ namespace ArtemisX.Audio.Tests
             int countBeforeMute = manager.PlayCount;
             manager.ToggleMute();
             Assert.IsTrue(manager.IsMuted);
+            Assert.AreEqual(0f, AudioListener.volume, 0.0001f);
 
             manager.PlayCue(SoundCue.StormAlert);
             Assert.AreEqual(SoundCue.StormAlert, manager.LastPlayedCue);
@@ -123,6 +124,7 @@ namespace ArtemisX.Audio.Tests
 
             manager.ToggleMute();
             Assert.IsFalse(manager.IsMuted);
+            Assert.AreEqual(1f, AudioListener.volume, 0.0001f);
             manager.PlayCue(SoundCue.StormAlert);
             Assert.AreEqual(countBeforeMute + 1, manager.PlayCount);
 
@@ -212,22 +214,61 @@ namespace ArtemisX.Audio.Tests
             Assert.IsTrue(supply.CollectSupply());
             Assert.AreEqual(new[] { SoundCue.SupplyCollect }, played);
 
-            // 6. Storm alert on DONKI event day (Day 4 is SolarStorm)
+            // 6. Storm alert + Weather choice (ShieldAndRetract should not double-fire ToggleSwitch) + Solar break & repair
+            solar.ToggleRetract(); // back to Active
             played.Clear();
             weather.SetDay(4);
             CollectionAssert.Contains(played, SoundCue.StormAlert);
+
+            played.Clear();
+            Assert.IsTrue(weather.ApplyWeatherChoice(WeatherChoice.ShieldAndRetract));
+            Assert.AreEqual(new[] { SoundCue.ToggleSwitch }, played, "ShieldAndRetract should fire ToggleSwitch once.");
+
+            solar.ToggleRetract(); // back to Active so storm can break it
+            solar.RandomValue = () => 0f;
+            played.Clear();
+            Assert.IsTrue(solar.ResolveStorm());
+            Assert.AreEqual(new[] { SoundCue.ComponentBroken }, played);
+
+            played.Clear();
+            Assert.IsTrue(solar.TryRepairSolar());
+            Assert.AreEqual(new[] { SoundCue.ComponentRepaired }, played, "Repairing broken solar field should only fire ComponentRepaired.");
 
             // 7. Day advance
             played.Clear();
             days.AdvanceDay();
             CollectionAssert.Contains(played, SoundCue.DayAdvance);
 
-            // 8. MissionWin via StoryDirector
+            // 8. DialogueRunner 1-line choice sequence fires EventPrompt once (not twice when typing finishes)
+            var choiceSeq = ScriptableObject.CreateInstance<DialogueSequence>();
+            createdObjects.Add(choiceSeq);
+            choiceSeq.lines = new[]
+            {
+                new DialogueSequence.DialogueLine { text = "Quick decision needed!" }
+            };
+            choiceSeq.choices = new[]
+            {
+                new DialogueSequence.DialogueChoice { choiceId = "opt_a", label = "Option A" }
+            };
+
+            played.Clear();
+            runner.Enqueue(choiceSeq);
+            Assert.AreEqual(new[] { SoundCue.EventPrompt }, played);
+
+            played.Clear();
+            runner.AdvanceOrSkip(); // finishes typing line 0 -> presents choices
+            Assert.AreEqual(new[] { SoundCue.UiClick }, played, "Finishing typing on a 1-line choice card should not re-trigger EventPrompt.");
+
+            played.Clear();
+            runner.SelectChoice("opt_a");
+            CollectionAssert.Contains(played, SoundCue.UiClose);
+
+            // 9. MissionWin via StoryDirector
             played.Clear();
             story.TriggerMissionEnd(MissionEndReason.EarlyWin, 3);
             CollectionAssert.Contains(played, SoundCue.MissionWin);
 
-            // 9. Unsubscribe stops event forwarding
+            // 10. Unsubscribe stops event forwarding
             bridge.Unsubscribe();
             played.Clear();
             solar.ToggleRetract();
