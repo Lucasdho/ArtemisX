@@ -1,0 +1,56 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4c9e9ff20930b449ca7d0a7e5c1fff44, type: 3}
+  m_Name: UIThemeConfig
+  m_EditorClassIdentifier: Assembly-CSharp::ArtemisX.UI.UIThemeConfig
+  panelBackdropColor: {r: 0.059, g: 0.09, b: 0.165, a: 0.902}
+  cardSurfaceColor: {r: 0.118, g: 0.161, b: 0.231, a: 0.95}
+  cyanAccentBorder: {r: 0.22, g: 0.741, b: 0.973, a: 1}
+  amberHighlight: {r: 0.961, g: 0.62, b: 0.043, a: 1}
+  confirmGreen: {r: 0.133, g: 0.773, b: 0.369, a: 1}
+  alertRed: {r: 0.937, g: 0.267, b: 0.267, a: 1}
+  textPrimary: {r: 0.973, g: 0.98, b: 0.988, a: 1}
+  textSecondary: {r: 0.58, g: 0.639, b: 0.722, a: 1}
+  headerFont: {fileID: 12800000, guid: 6991fdde796fe4f189d9246a3beba022, type: 3}
+  bodyFont: {fileID: 12800000, guid: fe057e43d268a4d738183e5b8d223929, type: 3}
+  headerFontSize: 24
+  bodyFontSize: 18
+  buttonFontSize: 20
+  pillAmountFontSize: 26
+  pillDeltaFontSize: 18
+  panelBaseSprite: {fileID: 21300000, guid: cfba7ed901a894baeba5f003b2572f1a, type: 3}
+  panelBorderSprite: {fileID: 21300000, guid: b7b54978bd8ad4e61a6caf7026965c7f, type: 3}
+  pillBorderSprite: {fileID: 21300000, guid: 3a1c72968e1ca4fd395c4fd59818f050, type: 3}
+  portraitFrameSprite: {fileID: 21300000, guid: 55b38da00d34d4277b4d4ed6bd6841ec, type: 3}
+  cardHeaderBlueSprite: {fileID: 21300000, guid: bb8b4cbd81bae461c9c61fda3340b7d5, type: 3}
+  cardHeaderYellowSprite: {fileID: 21300000, guid: 00d5c745ea1fc4735ac5b84c17686efe, type: 3}
+  cardHeaderRedSprite: {fileID: 21300000, guid: 468541e98253b4a3e8025b83727c9fc9, type: 3}
+  pillBlueSprite: {fileID: 21300000, guid: 2348ea154b0f7488db266c2737ebdf3e, type: 3}
+  pillGreenSprite: {fileID: 21300000, guid: f8d433e9d0338470b9a61e82cfa37808, type: 3}
+  pillRedSprite: {fileID: 21300000, guid: 624fb091d35744390ac1c6bcc749e722, type: 3}
+  pillYellowSprite: {fileID: 21300000, guid: 5c374c54264fb47418bd10f915d6149e, type: 3}
+  pillGreySprite: {fileID: 21300000, guid: 1a7bac90f79564a41a416591e1b9dcad, type: 3}
+  buttonGreenNormal: {fileID: 21300000, guid: 5e4740cdeee9b4fac9c0e67d8575e0b0, type: 3}
+  buttonGreenHover: {fileID: 21300000, guid: 88fcc2061be7e4b0180e9e3bff59d831, type: 3}
+  buttonBlueNormal: {fileID: 21300000, guid: 4b9d1d1991e604a7a9d5e64916c18808, type: 3}
+  buttonBlueHover: {fileID: 21300000, guid: d24d1da66a9ef4ccab143bae89424f18, type: 3}
+  buttonRedNormal: {fileID: 21300000, guid: 66ed75cb0b26f4c37b93db1606a5d152, type: 3}
+  buttonRedHover: {fileID: 21300000, guid: 4924643b2be7c453aa039660b5686a29, type: 3}
+  buttonYellowNormal: {fileID: 21300000, guid: b67c9bb191cd54dfcbc74cb11280faca, type: 3}
+  buttonYellowHover: {fileID: 21300000, guid: 819a9a7a1f75c4bed9cb9062083b63bb, type: 3}
+  buttonDisabled: {fileID: 21300000, guid: 0ad285f4ee7c24de69e2665fecb734c8, type: 3}
+  weatherCalmIcon: {fileID: 21300000, guid: 8fa8836a0d63749dc8d697c19342878a, type: 3}
+  weatherStormIcon: {fileID: 21300000, guid: 2075c22efdbea457cb5961b656f6075a, type: 3}
+  weatherRadiationIcon: {fileID: 21300000, guid: 8b85cafc106dc41fd82c90e333772b54, type: 3}
+  alertPulseSpeed: 4.5
+  alertPulseMinScale: 0.92
+  alertPulseMaxScale: 1.14
