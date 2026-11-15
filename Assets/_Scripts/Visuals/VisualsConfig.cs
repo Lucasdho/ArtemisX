@@ -18,6 +18,7 @@ namespace ArtemisX.Visuals
         [Min(0.01f)] public float roverSpeed = 1.4f;
         [Min(0.01f)] public float roverAcceleration = 0.9f;
         [Min(1f)] public float roverTurnSharpness = 6f;
+        [Min(0.01f)] public float roverParkDistance = 0.08f;
         public float roverBounceHeight = 0.012f;
         public float roverBounceFrequency = 6f;
         public float roverWobbleDegrees = 2.5f;
@@ -52,10 +53,23 @@ namespace ArtemisX.Visuals
         [Min(0.05f)] public float nightSpeedMultiplier = 0.45f;
         [Min(0.05f)] public float stormSpeedMultiplier = 1.6f;
         [Min(0f)] public float shelterSpread = 0.35f;
-        public Vector2 happyEmoteInterval = new Vector2(6f, 14f);
+        [Tooltip("Two astronauts closer than this stop and greet each other.")]
+        [Min(0.1f)] public float greetDistance = 0.9f;
+        [Min(1f)] public float greetCooldownSeconds = 14f;
+        public string greetState = "Wave";
         public Vector2 sleepEmoteInterval = new Vector2(3f, 5f);
         public Vector2 stormEmoteInterval = new Vector2(2.5f, 4f);
-        [Range(0f, 1f)] public float ideaChance = 0.25f;
+
+        [Header("Mood lighting")]
+        [Min(0.05f)] public float moodTransitionSeconds = 1.5f;
+        public Color nightSunColor = new Color(0.55f, 0.66f, 1f);
+        [Range(0f, 2f)] public float nightSunIntensityScale = 0.45f;
+        public Color nightAmbient = new Color(0.09f, 0.11f, 0.22f);
+        public Color stormSunColor = new Color(1f, 0.7f, 0.48f);
+        [Range(0f, 2f)] public float stormSunIntensityScale = 0.9f;
+        public Color stormAmbient = new Color(0.3f, 0.15f, 0.12f);
+        [Range(0f, 0.5f)] public float stormFlicker = 0.18f;
+        [Min(0.1f)] public float stormFlickerSpeed = 7f;
 
         [Header("Emote bubbles")]
         [Min(0.01f)] public float emoteWorldSize = 0.55f;

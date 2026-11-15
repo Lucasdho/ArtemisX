@@ -26,6 +26,30 @@ namespace ArtemisX.Visuals
         private Quaternion bodyBaseRotation;
         private float noiseSeed;
 
+        private enum Mode { Loop, ToGarage, Parked, Returning }
+        private Mode mode;
+        private bool garageRequested;
+        private Vector3 garagePoint;
+        private int garageExitNode;
+
+        /// <summary>Finishes the loop up to the node nearest the garage, then drives there and parks.</summary>
+        public void GoToGarage(Vector3 point)
+        {
+            if (!enabled || path == null) return;
+            garageRequested = true;
+            garagePoint = point;
+            garageExitNode = path.NearestIndex(point);
+            stopTimer = 0f;
+            if (mode == Mode.Returning) mode = Mode.ToGarage;
+        }
+
+        /// <summary>Leaves the garage and rejoins the loop.</summary>
+        public void ResumeLoop()
+        {
+            garageRequested = false;
+            if (mode == Mode.ToGarage || mode == Mode.Parked) mode = Mode.Returning;
+        }
+
         private void Start()
         {
             if (config == null || path == null || path.Count < 3)
@@ -53,7 +77,25 @@ namespace ArtemisX.Visuals
             float dt = Time.deltaTime;
             float previousSpeed = speed;
 
-            if (stopTimer > 0f)
+            if (mode == Mode.Parked)
+            {
+                speed = 0f;
+            }
+            else if (mode == Mode.ToGarage)
+            {
+                if (DriveTo(garagePoint, dt, true)) mode = Mode.Parked;
+            }
+            else if (mode == Mode.Returning)
+            {
+                if (DriveTo(samples[garageExitNode * SamplesPerSegment], dt, false))
+                {
+                    travelled = garageExitNode == 0 ? 0f : distances[garageExitNode * SamplesPerSegment];
+                    nextNode = garageExitNode + 1;
+                    segment = 0;
+                    mode = Mode.Loop;
+                }
+            }
+            else if (stopTimer > 0f)
             {
                 stopTimer -= dt;
                 speed = 0f;
@@ -71,7 +113,7 @@ namespace ArtemisX.Visuals
         {
             float nodeDistance = NodeDistance(nextNode);
             float remaining = nodeDistance - travelled;
-            float nextStop = path.GetStopSeconds(nextNode);
+            float nextStop = garageRequested ? 0f : path.GetStopSeconds(nextNode);
 
             float targetSpeed = config.roverSpeed;
             if (nextStop > 0f)
@@ -90,6 +132,11 @@ namespace ArtemisX.Visuals
                     stopTimer = nextStop;
                     speed = 0f;
                 }
+                if (garageRequested && path.Wrap(nextNode) == garageExitNode)
+                {
+                    mode = Mode.ToGarage;
+                    return;
+                }
                 nextNode++;
                 if (nextNode > path.Count)
                 {
@@ -107,6 +154,25 @@ namespace ArtemisX.Visuals
                 Quaternion look = Quaternion.LookRotation(tangent, Vector3.up);
                 transform.rotation = Quaternion.Slerp(transform.rotation, look, 1f - Mathf.Exp(-config.roverTurnSharpness * dt));
             }
+        }
+
+        /// <summary>Drives in a straight line off the loop. Returns true on arrival.</summary>
+        private bool DriveTo(Vector3 target, float dt, bool brake)
+        {
+            Vector3 to = Flat(target - transform.position);
+            float remaining = to.magnitude;
+            if (remaining <= config.roverParkDistance)
+            {
+                if (brake) speed = 0f;
+                return true;
+            }
+            float targetSpeed = config.roverSpeed;
+            if (brake) targetSpeed = Mathf.Min(targetSpeed, Mathf.Sqrt(2f * config.roverAcceleration * remaining) + 0.05f);
+            speed = Mathf.MoveTowards(speed, targetSpeed, config.roverAcceleration * dt);
+            transform.position += to / remaining * Mathf.Min(speed * dt, remaining);
+            Quaternion look = Quaternion.LookRotation(to, Vector3.up);
+            transform.rotation = Quaternion.Slerp(transform.rotation, look, 1f - Mathf.Exp(-config.roverTurnSharpness * dt));
+            return false;
         }
 
         private float NodeDistance(int node) => node >= path.Count ? loopLength : distances[node * SamplesPerSegment];

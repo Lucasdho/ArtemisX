@@ -33,6 +33,8 @@ namespace ArtemisX.Visuals
         private int direction = 1;
         private float jumpClock = -1f;
         private int jumpsLeft;
+        private bool resumeTarget;
+        private bool shelterAfterPause;
         private float hopClock;
         private bool airborne;
         private float pauseTimer;
@@ -44,6 +46,68 @@ namespace ArtemisX.Visuals
         public float SpeedMultiplier { get; set; } = 1f;
 
         public bool IsSheltered => state == State.Sheltered;
+
+        /// <summary>Follows the hop, so a bubble stays above the head while the character jumps.</summary>
+        public Transform EmoteAnchor => visual != null ? visual : transform;
+
+        /// <summary>True while the walker is free to stop and greet someone.</summary>
+        public bool CanGreet => isActiveAndEnabled && state == State.Walking && !hasShelter;
+
+        /// <summary>Stops, turns to the other character and waves, then carries on to the same waypoint.</summary>
+        public void Greet(Vector3 other)
+        {
+            if (!CanGreet) return;
+            Vector3 to = other - transform.position;
+            to.y = 0f;
+            if (to.sqrMagnitude > 0.0001f) transform.rotation = Quaternion.LookRotation(to, Vector3.up);
+            Interrupt();
+            pauseTimer = Play(config.greetState);
+        }
+
+        /// <summary>Happy jumps on the spot, e.g. when something good happens at the base.</summary>
+        public void Cheer()
+        {
+            if (!isActiveAndEnabled || state == State.Pausing) return;
+            bool wasSheltered = state == State.Sheltered;
+            Interrupt();
+            resumeTarget = !wasSheltered;
+            shelterAfterPause = wasSheltered;
+            Play(config.jumpActionState);
+            pauseTimer = 0f;
+            jumpClock = 0f;
+            jumpsLeft = config.jumpCount;
+        }
+
+        private void Interrupt()
+        {
+            airborne = false;
+            hopClock = config.hopAirSeconds;
+            ResetPose();
+            state = State.Pausing;
+            resumeTarget = true;
+        }
+
+        private void FinishPause()
+        {
+            if (shelterAfterPause && hasShelter)
+            {
+                shelterAfterPause = false;
+                resumeTarget = false;
+                state = State.Sheltered;
+                Play(config.idleState);
+                return;
+            }
+            shelterAfterPause = false;
+            if (resumeTarget)
+            {
+                resumeTarget = false;
+                BeginWalking();
+            }
+            else
+            {
+                NextWaypoint();
+            }
+        }
 
         private void Awake()
         {
@@ -90,7 +154,7 @@ namespace ArtemisX.Visuals
                 direction = ahead <= path.Count - ahead ? 1 : -1;
             }
             if (state == State.Sheltered) return;
-            if (state == State.Pausing) { EndJump(); NextWaypoint(); }
+            if (state == State.Pausing) { EndJump(); FinishPause(); }
         }
 
         public void LeaveShelter()
@@ -115,7 +179,7 @@ namespace ArtemisX.Visuals
                 case State.Pausing:
                     pauseTimer -= dt;
                     if (jumpClock >= 0f) Jump(dt);
-                    else if (pauseTimer <= 0f) NextWaypoint();
+                    else if (pauseTimer <= 0f) FinishPause();
                     break;
             }
         }
@@ -181,7 +245,7 @@ namespace ArtemisX.Visuals
             {
                 Land();
                 jumpsLeft--;
-                if (jumpsLeft <= 0) { EndJump(); NextWaypoint(); return; }
+                if (jumpsLeft <= 0) { EndJump(); FinishPause(); return; }
                 jumpClock = 0f;
             }
             if (visual == null) return;

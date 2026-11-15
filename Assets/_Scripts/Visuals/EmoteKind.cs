@@ -8,5 +8,6 @@ namespace ArtemisX.Visuals
         Happy,
         Alert,
         Idea,
+        Greet,
     }
 }
