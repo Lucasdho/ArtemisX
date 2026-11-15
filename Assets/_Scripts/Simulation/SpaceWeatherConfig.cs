@@ -23,6 +23,16 @@ namespace ArtemisX.Simulation
         public string sourceName = "NASA DONKI (Space Weather Database Of Notifications, Knowledge, Information), CCMC";
         public string sourceUrl = "https://kauai.ccmc.gsfc.nasa.gov/DONKI/";
 
+        [Header("NASA DONKI Dataset")]
+        [Tooltip("Real DONKI records stored in the project (Assets/_Data/NASA/DONKI). The schedule below is baked from it.")]
+        public TextAsset donkiDataset;
+        [Tooltip("Real date (UTC, yyyy-MM-dd) that becomes mission Day 1. Each mission day is the next real day.")]
+        public string missionStartDate = "2024-08-01";
+        [Tooltip("Number of mission days baked into the schedule.")]
+        [Min(1)] public int scheduleLength = 30;
+        [Tooltip("A DONKI geomagnetic storm (GST) becomes a Solar Storm day when its max Kp reaches this (6 = NOAA G2).")]
+        [Min(0)] public float stormMinKp = 6f;
+
         [Header("Space Weather Choices")]
         [Tooltip("Power paid at once for 'Overclock Shields' on a Solar Radiation day.")]
         [Min(0)] public int overclockShieldsPowerCost = 15;
