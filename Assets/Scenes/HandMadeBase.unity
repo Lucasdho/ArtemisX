@@ -30234,13 +30234,46 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 72c65662cb71f4e04ac0355b9fe8cdc4, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 697255510}
   m_SourcePrefab: {fileID: 100100000, guid: 72c65662cb71f4e04ac0355b9fe8cdc4, type: 3}
 --- !u!4 &697255508 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 72c65662cb71f4e04ac0355b9fe8cdc4, type: 3}
   m_PrefabInstance: {fileID: 697255507}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &697255509 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 72c65662cb71f4e04ac0355b9fe8cdc4, type: 3}
+  m_PrefabInstance: {fileID: 697255507}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &697255510
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 697255509}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f6b82f095d22441583a764626c8fc63, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ArtemisX.Visuals.DropshipPatrol
+  orbitCenter: {fileID: 0}
+  baseCenterFallback: {x: -1.5, y: 0, z: 0.5}
+  orbitRadius: 10.5
+  cruiseHeight: 7.5
+  flySpeed: 5.5
+  clockwise: 1
+  waitRangeSeconds: {x: 10, y: 24}
+  takeoffSeconds: 2.4
+  orbitSeconds: 16
+  bankDegrees: 18
+  turnSharpness: 4
+  idleBobHeight: 0.12
+  idleBobSpeed: 1.4
 --- !u!1 &697356432
 GameObject:
   m_ObjectHideFlags: 0

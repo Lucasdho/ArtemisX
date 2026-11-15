@@ -123,3 +123,8 @@ CLAUDE.local.md
 prompts/
 GDD.md
 /Assets/Screenshots
+
+# Local-only leaderboard credentials & build-time injected resource
+.leaderboard.local.json
+/[Aa]ssets/Resources/LeaderboardRuntimeConfig.json
+/[Aa]ssets/Resources/LeaderboardRuntimeConfig.json.meta

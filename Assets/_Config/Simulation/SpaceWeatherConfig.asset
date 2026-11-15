@@ -14,7 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ArtemisX.Simulation.SpaceWeatherConfig
   sourceName: NASA DONKI (Space Weather Database Of Notifications, Knowledge, Information),
     CCMC
-  sourceUrl: https://kauai.ccmc.gsfc.nasa.gov/DONKI/
+  sourceUrl: https://ccmc.gsfc.nasa.gov/DONKI/WS/get/
+  donkiDataset: {fileID: 4900000, guid: 06456ddfb076c4ce2b369ed7c19f49ec, type: 3}
+  missionStartDate: 2024-08-01
+  scheduleLength: 30
+  stormMinKp: 6
   overclockShieldsPowerCost: 15
   days:
   - weather: 0
@@ -30,31 +34,19 @@ MonoBehaviour:
     donkiEventType: 
     note: Quiet space weather.
   - weather: 1
-    donkiDate: 2015-03-17
+    donkiDate: 2024-08-04
     donkiEventType: GST
-    note: 'St. Patrick''s Day storm: a CME from 2015-03-15 drove a G4 geomagnetic
-      storm (Kp 8).'
-  - weather: 0
-    donkiDate: 
-    donkiEventType: 
-    note: Quiet space weather.
-  - weather: 0
-    donkiDate: 
-    donkiEventType: 
-    note: Quiet space weather.
-  - weather: 0
-    donkiDate: 
-    donkiEventType: 
-    note: Quiet space weather.
-  - weather: 0
-    donkiDate: 
-    donkiEventType: 
-    note: Quiet space weather.
+    note: 'A blast of solar wind hit Earth and the Moon: Kp 6.67, a G2 (moderate)
+      geomagnetic storm.'
   - weather: 2
-    donkiDate: 2017-09-10
+    donkiDate: 2024-08-05
     donkiEventType: SEP
-    note: An X8.2 flare sent solar energetic particles to Earth and the Moon (ground
-      level event GLE 72).
+    note: A class X1.7 solar flare sent fast particles into space, measured by STEREO
+      A.
+  - weather: 0
+    donkiDate: 
+    donkiEventType: 
+    note: Quiet space weather.
   - weather: 0
     donkiDate: 
     donkiEventType: 
@@ -76,39 +68,10 @@ MonoBehaviour:
     donkiEventType: 
     note: Quiet space weather.
   - weather: 1
-    donkiDate: 2024-05-10
+    donkiDate: 2024-08-12
     donkiEventType: GST
-    note: 'Gannon storm: several CMEs from active region 13664 drove a G5 geomagnetic
-      storm (Kp 9).'
-  - weather: 0
-    donkiDate: 
-    donkiEventType: 
-    note: Quiet space weather.
-  - weather: 0
-    donkiDate: 
-    donkiEventType: 
-    note: Quiet space weather.
-  - weather: 0
-    donkiDate: 
-    donkiEventType: 
-    note: Quiet space weather.
-  - weather: 0
-    donkiDate: 
-    donkiEventType: 
-    note: Quiet space weather.
-  - weather: 0
-    donkiDate: 
-    donkiEventType: 
-    note: Quiet space weather.
-  - weather: 2
-    donkiDate: 2021-10-28
-    donkiEventType: SEP
-    note: An X1.0 flare sent solar energetic particles to Earth and the Moon (ground
-      level event GLE 73).
-  - weather: 0
-    donkiDate: 
-    donkiEventType: 
-    note: Quiet space weather.
+    note: 'A blast of solar wind hit Earth and the Moon: Kp 8, a G4 (severe) geomagnetic
+      storm.'
   - weather: 0
     donkiDate: 
     donkiEventType: 
@@ -126,9 +89,50 @@ MonoBehaviour:
     donkiEventType: 
     note: Quiet space weather.
   - weather: 1
-    donkiDate: 2023-04-23
+    donkiDate: 2024-08-17
     donkiEventType: GST
-    note: A fast CME from 2023-04-21 drove a G4 geomagnetic storm (Kp 8).
+    note: 'A blast of solar wind hit Earth and the Moon: Kp 6.67, a G2 (moderate)
+      geomagnetic storm.'
+  - weather: 0
+    donkiDate: 
+    donkiEventType: 
+    note: Quiet space weather.
+  - weather: 0
+    donkiDate: 
+    donkiEventType: 
+    note: Quiet space weather.
+  - weather: 0
+    donkiDate: 
+    donkiEventType: 
+    note: Quiet space weather.
+  - weather: 0
+    donkiDate: 
+    donkiEventType: 
+    note: Quiet space weather.
+  - weather: 0
+    donkiDate: 
+    donkiEventType: 
+    note: Quiet space weather.
+  - weather: 0
+    donkiDate: 
+    donkiEventType: 
+    note: Quiet space weather.
+  - weather: 0
+    donkiDate: 
+    donkiEventType: 
+    note: Quiet space weather.
+  - weather: 0
+    donkiDate: 
+    donkiEventType: 
+    note: Quiet space weather.
+  - weather: 0
+    donkiDate: 
+    donkiEventType: 
+    note: Quiet space weather.
+  - weather: 0
+    donkiDate: 
+    donkiEventType: 
+    note: Quiet space weather.
   - weather: 0
     donkiDate: 
     donkiEventType: 

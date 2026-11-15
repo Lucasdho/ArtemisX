@@ -62,16 +62,17 @@ Unity Engine 6000.3, Universal Render Pipeline, Cinemachine, Input System: Unity
 
 - **NASA DONKI** (Space Weather Database Of Notifications, Knowledge, Information), run by the Community Coordinated
   Modeling Center (CCMC) at NASA Goddard Space Flight Center: https://kauai.ccmc.gsfc.nasa.gov/DONKI/
-  The game embeds a pre-baked 30-day schedule (`Assets/_Config/Simulation/SpaceWeatherConfig.asset`); no live API calls.
-  Real events used (to be verified against DONKI before submission):
+  Data fetched from the DONKI web service (https://ccmc.gsfc.nasa.gov/DONKI/WS/get/) on 2026-11-15: all 2024 GST
+  (geomagnetic storm) and SEP (solar energetic particle) records, stored in `Assets/_Data/NASA/DONKI/donki_2024_events.json`.
+  The 30-day mission is 30 consecutive real days, 2024-08-01 to 2024-08-30 (Day 1 = Aug 1), baked into
+  `Assets/_Config/Simulation/SpaceWeatherConfig.asset`; no live API calls at runtime.
 
-| Game day | In-game type | DONKI date | DONKI type | Event |
-|---|---|---|---|---|
-| 4 | Solar Storm | 2015-03-17 | GST | St. Patrick's Day storm, G4 (Kp 8) |
-| 9 | Solar Radiation | 2017-09-10 | SEP | X8.2 flare, ground level event GLE 72 |
-| 15 | Solar Storm | 2024-05-10 | GST | Gannon storm, G5 (Kp 9) |
-| 21 | Solar Radiation | 2021-10-28 | SEP | X1.0 flare, ground level event GLE 73 |
-| 27 | Solar Storm | 2023-04-23 | GST | G4 (Kp 8) |
+| Game day | In-game type | DONKI date | DONKI type | Event | DONKI record |
+|---|---|---|---|---|---|
+| 4 | Solar Storm | 2024-08-04 | GST | Kp 6.67 (G2) | https://ccmc.gsfc.nasa.gov/DONKI/view/GST/32519/-1 |
+| 5 | Solar Radiation | 2024-08-05 | SEP | STEREO A, after an X1.7 flare | https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/32560/-1 |
+| 12 | Solar Storm | 2024-08-12 | GST | Kp 8 (G4) | https://ccmc.gsfc.nasa.gov/DONKI/view/GST/32722/-1 |
+| 17 | Solar Storm | 2024-08-17 | GST | Kp 6.67 (G2) | https://ccmc.gsfc.nasa.gov/DONKI/view/GST/32864/-1 |
 
 - NASA Artemis program (mission context and inspiration): https://www.nasa.gov/humans-in-space/artemis/
 
