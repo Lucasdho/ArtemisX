@@ -39,5 +39,11 @@ namespace ArtemisX.Core
         [Min(0f)] public float focusDistance = 22f;
         [Tooltip("Shifts the camera look target forward along camera yaw so the object sits slightly below center, leaving room for its banner above.")]
         public float focusForwardOffset = 1.8f;
+
+        [Header("Base overview")]
+        [Tooltip("Zoom distance used to show the whole base (building completed, End Day).")]
+        [Min(1f)] public float overviewDistance = 36f;
+        [Tooltip("Seconds the camera takes to zoom out to the base overview.")]
+        [Min(0f)] public float overviewSeconds = 1.2f;
     }
 }

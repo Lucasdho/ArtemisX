@@ -5,8 +5,8 @@ using UnityEngine.UI;
 namespace ArtemisX.UI
 {
     /// <summary>
-    /// Shown during the Next Day transition: a full-screen invisible button (tap anywhere to skip, and it keeps clicks
-    /// off the base and the HUD) plus a small Skip button.
+    /// Shown during the Next Day transition: a full-screen invisible button that only keeps clicks off the base and
+    /// the HUD (it does not skip), plus a small Skip button, the only way to skip.
     /// </summary>
     public class NightTransitionSkipView : MonoBehaviour
     {
@@ -17,14 +17,13 @@ namespace ArtemisX.UI
 
         private void Awake()
         {
-            if (tapAnywhere != null) tapAnywhere.onClick.AddListener(Skip);
+            // tapAnywhere stays as a pure input blocker: only the Skip button skips.
             if (skipButton != null) skipButton.onClick.AddListener(Skip);
             if (root != null) root.SetActive(false);
         }
 
         private void OnDestroy()
         {
-            if (tapAnywhere != null) tapAnywhere.onClick.RemoveListener(Skip);
             if (skipButton != null) skipButton.onClick.RemoveListener(Skip);
         }
 

@@ -121,6 +121,41 @@ namespace ArtemisX.Core
             focusing = true;
         }
 
+        /// <summary>
+        /// Smoothly zooms out to the home look target at the overview distance so the whole base is visible,
+        /// then calls <paramref name="onArrived"/>. Any player pan/zoom interrupts it (the callback still runs).
+        /// </summary>
+        public void ZoomOutToBase(System.Action onArrived = null)
+        {
+            if (config == null) { onArrived?.Invoke(); return; }
+            onFocusArrived = null;
+            velocity = Vector3.zero;
+            tracking = false;
+            dragging = false;
+
+            focusFromTarget = lookTarget;
+            focusLookTarget = ClampLookTarget(config.homeLookTarget);
+            focusFromDistance = distance;
+            focusToDistance = Mathf.Clamp(config.overviewDistance, config.distanceRange.x, config.distanceRange.y);
+
+            bool nearTarget = (focusLookTarget - focusFromTarget).sqrMagnitude < 0.01f;
+            bool nearZoom = Mathf.Abs(focusToDistance - focusFromDistance) < 0.1f;
+            if (nearTarget && nearZoom || config.overviewSeconds <= 0f)
+            {
+                lookTarget = focusLookTarget;
+                distance = targetDistance = focusToDistance;
+                focusing = false;
+                ApplyTransform();
+                onArrived?.Invoke();
+                return;
+            }
+
+            focusElapsed = 0f;
+            focusDuration = config.overviewSeconds;
+            onFocusArrived = onArrived;
+            focusing = true;
+        }
+
         /// <summary>Stops a running focus flight; optionally still runs its arrival callback.</summary>
         private void EndFocus(bool invokeCallback)
         {

@@ -1,3 +1,4 @@
+using ArtemisX.Core;
 using ArtemisX.Simulation;
 using UnityEngine;
 using UnityEngine.UI;
@@ -21,17 +22,29 @@ namespace ArtemisX.UI
         }
 
         [SerializeField] private UIStyle style;
+        [SerializeField] private Text headerLabel;
         [SerializeField] private Row[] rows;
         [Tooltip("Optional. Rows light up on BuildingCompleted.")]
         [SerializeField] private BuildingManager buildings;
         [Tooltip("Shown in place of the circle when a mission is completed.")]
         [SerializeField] private Sprite checkmarkSprite;
 
+        private CameraPanController panController;
         private Sprite[] defaultCheckSprites;
+        private string defaultHeaderText;
         private bool tutorialMode;
+        private float baseCardHeight = -1f;
 
         private void Awake()
         {
+            EnsureBaseHeight();
+            if (headerLabel == null)
+            {
+                var title = transform.Find("Title");
+                if (title != null) headerLabel = title.GetComponent<Text>();
+            }
+            if (headerLabel != null) defaultHeaderText = headerLabel.text;
+
             CacheDefaultCheckSprites();
             if (rows == null) return;
             for (int i = 0; i < rows.Length; i++) SetProgress(i, 0f);
@@ -59,14 +72,17 @@ namespace ArtemisX.UI
         private void OnBuildingCompleted(int index)
         {
             if (tutorialMode) return;
-            SetProgress(index, 1f);
-            RefreshLabels();
-            if (index >= 0 && index < rows.Length && rows[index].checkCircle != null)
+            void Reveal()
             {
-                var t = rows[index].checkCircle.transform;
-                t.localScale = Vector3.one * 1.6f;
-                DG.Tweening.ShortcutExtensions.DOScale(t, 1f, 0.4f);
+                if (tutorialMode) return;
+                SetProgress(index, 1f);
+                RefreshLabels();
+                AnimateCheckPop(index);
             }
+
+            if (panController == null) panController = FindAnyObjectByType<CameraPanController>();
+            if (panController != null && panController.isActiveAndEnabled) panController.ZoomOutToBase(Reveal);
+            else Reveal();
         }
 
         private void RefreshLabels()
@@ -86,7 +102,7 @@ namespace ArtemisX.UI
                 label.resizeTextMinSize = 13;
                 label.resizeTextMaxSize = 24;
                 label.text = isNext
-                    ? $"NEXT: {b.displayName} ({b.partsCost}P, {b.powerCost}E)"
+                    ? $"NEXT: {b.displayName}"
                     : $"Star {i + 1}: {b.displayName}";
                 label.fontStyle = isNext ? FontStyle.Bold : FontStyle.Normal;
                 if (style != null)
@@ -95,13 +111,17 @@ namespace ArtemisX.UI
         }
 
         /// <summary>Replaces the mission rows with tutorial tasks (all unchecked).</summary>
-        public void ShowTutorial(string[] labels)
+        public void ShowTutorial(string[] labels, string header = "Tutorial")
         {
             tutorialMode = true;
+            if (headerLabel != null && !string.IsNullOrEmpty(header)) headerLabel.text = header;
             if (rows == null || labels == null) return;
+            int visibleCount = 0;
             for (int i = 0; i < rows.Length; i++)
             {
                 bool used = i < labels.Length;
+                SetRowVisible(i, used || i < 3);
+                if (used || i < 3) visibleCount++;
                 if (rows[i].label != null)
                 {
                     rows[i].label.resizeTextForBestFit = true;
@@ -113,6 +133,7 @@ namespace ArtemisX.UI
                 }
                 SetProgress(i, 0f);
             }
+            UpdateCardHeight(visibleCount);
         }
 
         /// <summary>Checks off one tutorial task with a small pop animation.</summary>
@@ -120,22 +141,59 @@ namespace ArtemisX.UI
         {
             if (rows == null || index < 0 || index >= rows.Length) return;
             SetProgress(index, 1f);
-            if (rows[index].checkCircle == null) return;
-            var t = rows[index].checkCircle.transform;
-            t.localScale = Vector3.one * 1.6f;
-            DG.Tweening.ShortcutExtensions.DOScale(t, 1f, 0.4f);
+            AnimateCheckPop(index);
         }
 
         /// <summary>Tutorial finished: restores the real missions.</summary>
         public void ShowMissions()
         {
             tutorialMode = false;
+            if (headerLabel != null && !string.IsNullOrEmpty(defaultHeaderText)) headerLabel.text = defaultHeaderText;
             if (rows == null) return;
-            for (int i = 0; i < rows.Length; i++) SetProgress(i, 0f);
+            int missionCount = buildings != null && buildings.Config != null ? buildings.Config.Count : 3;
+            for (int i = 0; i < rows.Length; i++)
+            {
+                SetRowVisible(i, i < missionCount);
+                SetProgress(i, 0f);
+            }
             if (buildings != null && buildings.Config != null)
                 for (int i = 0; i < rows.Length && i < buildings.Config.Count; i++)
                     SetProgress(i, buildings.IsBuilt(i) ? 1f : 0f);
+            UpdateCardHeight(missionCount);
             RefreshLabels();
+        }
+
+        private void SetRowVisible(int index, bool visible)
+        {
+            if (rows == null || index < 0 || index >= rows.Length) return;
+            var row = rows[index];
+            Transform rowRoot = row.label != null ? row.label.transform.parent : (row.track != null ? row.track.transform.parent : null);
+            if (rowRoot != null && rowRoot != transform)
+                rowRoot.gameObject.SetActive(visible);
+        }
+
+        private void EnsureBaseHeight()
+        {
+            if (baseCardHeight < 0f && transform is RectTransform rt)
+                baseCardHeight = rt.sizeDelta.y;
+        }
+
+        private void UpdateCardHeight(int visibleRows)
+        {
+            EnsureBaseHeight();
+            if (!(transform is RectTransform rt) || baseCardHeight <= 0f) return;
+            int extra = Mathf.Max(0, visibleRows - 3);
+            var size = rt.sizeDelta;
+            size.y = baseCardHeight + extra * 66f;
+            rt.sizeDelta = size;
+        }
+
+        private void AnimateCheckPop(int index)
+        {
+            if (rows == null || index < 0 || index >= rows.Length || rows[index].checkCircle == null) return;
+            var t = rows[index].checkCircle.transform;
+            t.localScale = Vector3.one * 1.6f;
+            DG.Tweening.ShortcutExtensions.DOScale(t, 1f, 0.4f);
         }
 
         /// <summary>Progress 0 to 1 for goal <paramref name="index"/>; 1 marks it done.</summary>
