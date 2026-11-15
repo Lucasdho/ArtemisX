@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bcbebe8996e3e4d66b99818f598e9f12, type: 3}
+  m_Name: PlayerRunProfile
+  m_EditorClassIdentifier: Assembly-CSharp::ArtemisX.UI.StartScreen.PlayerRunProfile
+  defaultNickname: Commander
+  defaultCharacterIndex: 0
+  selectedCharacter: 0
+  playerNickname: Commander
+  playerSpeaker: {fileID: 11400000, guid: e9491b65d8a9c4edfa921bee9056b201, type: 2}
+  astronauts:
+  - index: 0
+    characterId: astronaut_0
+    callsign: NOVA
+    roleTitle: Mission Commander
+    portrait: {fileID: 21300000, guid: 49e10cd1c99e44d43a1667eb0bbf475a, type: 3}
+    accentColor: {r: 0.22, g: 0.741, b: 0.973, a: 1}
+  - index: 1
+    characterId: astronaut_1
+    callsign: LEO
+    roleTitle: Systems Engineer
+    portrait: {fileID: 21300000, guid: dcf5f74797b0c4c2bbd299c514ad7594, type: 3}
+    accentColor: {r: 0.961, g: 0.62, b: 0.043, a: 1}
+  - index: 2
+    characterId: astronaut_2
+    callsign: MAYA
+    roleTitle: Lunar Botanist
+    portrait: {fileID: 21300000, guid: 38760dbfdbe1c4c06a1baf5b6eb7143a, type: 3}
+    accentColor: {r: 0.133, g: 0.773, b: 0.369, a: 1}
+  - index: 3
+    characterId: astronaut_3
+    callsign: KAI
+    roleTitle: Rover Pilot
+    portrait: {fileID: 21300000, guid: a36589ed9594349728054314fbb9bcd4, type: 3}
+    accentColor: {r: 0.659, g: 0.333, b: 0.969, a: 1}
