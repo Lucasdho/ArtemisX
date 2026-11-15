@@ -5,63 +5,156 @@ using UnityEngine.InputSystem;
 namespace ArtemisX.Core
 {
     /// <summary>
-    /// Drag-to-pan for the base camera. Mouse drag and one-finger touch drag both grab the ground under the pointer
-    /// and slide the camera over it. A short press that never passes the drag threshold is left alone so taps still click things.
+    /// Isometric 3/4 diorama camera controller supporting ground-drag pan, scroll/pinch zoom, and right-drag tilt/orbit.
+    /// A short tap/click under the drag threshold is left alone so world objects remain clickable.
     /// Put it on the Cinemachine camera object; the main camera follows that transform.
     /// </summary>
     public class CameraPanController : MonoBehaviour
     {
-        [SerializeField] CameraConfig config;
-        [SerializeField] Camera viewCamera;
+        [SerializeField] private CameraConfig config;
+        [SerializeField] private Camera viewCamera;
 
-        Vector3 home;
-        Vector3 grabPoint;
-        Vector3 velocity;
-        Vector2 pressStart;
-        bool wasPressed, tracking, dragging;
+        private Vector3 lookTarget;
+        private Vector3 grabPoint;
+        private Vector3 velocity;
+        private Vector2 pressStart;
+        private float yaw;
+        private float pitch;
+        private float distance;
+        private float targetDistance;
+        private float prevPinchDistance;
+        private bool wasPressed;
+        private bool tracking;
+        private bool dragging;
+        private bool rightTilting;
+        private bool suppressNextClick;
 
-        void Awake()
+        /// <summary>True while actively dragging/tilting or immediately after a drag release on this frame.</summary>
+        public bool IsInteracting => dragging || rightTilting || suppressNextClick;
+
+        private void Awake()
         {
             ApplyHomePose();
-            home = transform.position;
         }
 
-        /// <summary>Places the camera from the config pitch, distance and look target.</summary>
+        /// <summary>Places the camera from the config pitch, yaw, distance and look target.</summary>
         [ContextMenu("Apply home pose")]
         public void ApplyHomePose()
         {
             if (config == null) return;
-            var rotation = Quaternion.Euler(config.pitchDegrees, 0f, 0f);
-            transform.SetPositionAndRotation(config.homeLookTarget - rotation * Vector3.forward * config.distance, rotation);
-            home = transform.position;
+            lookTarget = config.homeLookTarget;
+            yaw = config.yawDegrees;
+            pitch = config.pitchDegrees;
+            distance = targetDistance = config.distance;
+            ApplyTransform();
         }
 
-        void Update()
+        private void Update()
         {
             if (config == null) return;
             if (viewCamera == null) viewCamera = Camera.main;
             if (viewCamera == null) return;
 
+            suppressNextClick = false;
+
+            HandleRightTilt();
+            HandleZoom();
+            HandlePan();
+
+            distance = Mathf.Lerp(distance, targetDistance, 1f - Mathf.Exp(-config.zoomDamping * Time.unscaledDeltaTime));
+            ApplyTransform();
+        }
+
+        private void HandleRightTilt()
+        {
+            var mouse = Mouse.current;
+            bool rightPressed = mouse != null && mouse.rightButton.isPressed;
+            if (rightPressed && !rightTilting && !PointerOverUi())
+            {
+                rightTilting = true;
+                dragging = false;
+                tracking = false;
+                velocity = Vector3.zero;
+            }
+            else if (!rightPressed && rightTilting)
+            {
+                rightTilting = false;
+                suppressNextClick = true;
+            }
+
+            if (!rightTilting || mouse == null) return;
+            Vector2 delta = mouse.delta.ReadValue();
+            yaw += delta.x * config.tiltSensitivity;
+            pitch = Mathf.Clamp(pitch - delta.y * config.tiltSensitivity, config.pitchRange.x, config.pitchRange.y);
+        }
+
+        private void HandleZoom()
+        {
+            if (PointerOverUi()) return;
+
+            var mouse = Mouse.current;
+            if (mouse != null)
+            {
+                float scroll = mouse.scroll.ReadValue().y;
+                if (Mathf.Abs(scroll) > 0.01f)
+                {
+                    targetDistance = Mathf.Clamp(
+                        targetDistance - Mathf.Sign(scroll) * config.zoomSpeed,
+                        config.distanceRange.x,
+                        config.distanceRange.y);
+                }
+            }
+
+            var touch = Touchscreen.current;
+            if (touch != null && touch.touches.Count >= 2 &&
+                touch.touches[0].press.isPressed && touch.touches[1].press.isPressed)
+            {
+                float currentPinch = Vector2.Distance(
+                    touch.touches[0].position.ReadValue(),
+                    touch.touches[1].position.ReadValue());
+                if (prevPinchDistance > 0f)
+                {
+                    float delta = currentPinch - prevPinchDistance;
+                    targetDistance = Mathf.Clamp(
+                        targetDistance - delta * config.pinchZoomSpeed,
+                        config.distanceRange.x,
+                        config.distanceRange.y);
+                }
+                prevPinchDistance = currentPinch;
+                tracking = false;
+                dragging = false;
+            }
+            else
+            {
+                prevPinchDistance = 0f;
+            }
+        }
+
+        private void HandlePan()
+        {
             var pointer = Pointer.current;
-            bool pressed = pointer != null && pointer.press.isPressed;
-            if (pointer != null)
+            bool primaryPressed = !rightTilting && IsPrimaryPressed(pointer);
+            if (pointer != null && prevPinchDistance <= 0f)
             {
                 Vector2 screen = pointer.position.ReadValue();
-                if (pressed && !wasPressed) Begin(screen);
-                else if (pressed && tracking) Drag(screen);
-                else if (!pressed && wasPressed) End();
+                if (primaryPressed && !wasPressed) BeginPan(screen);
+                else if (primaryPressed && tracking) DragPan(screen);
+                else if (!primaryPressed && wasPressed) EndPan();
             }
-            wasPressed = pressed;
+            wasPressed = primaryPressed;
 
             if (!dragging && velocity.sqrMagnitude > config.stopSpeed * config.stopSpeed)
             {
-                Move(velocity * Time.unscaledDeltaTime);
+                MoveLookTarget(velocity * Time.unscaledDeltaTime);
                 velocity *= Mathf.Exp(-config.inertiaDamping * Time.unscaledDeltaTime);
             }
-            else if (!dragging) velocity = Vector3.zero;
+            else if (!dragging)
+            {
+                velocity = Vector3.zero;
+            }
         }
 
-        void Begin(Vector2 screen)
+        private void BeginPan(Vector2 screen)
         {
             tracking = !PointerOverUi();
             dragging = false;
@@ -69,7 +162,7 @@ namespace ArtemisX.Core
             pressStart = screen;
         }
 
-        void Drag(Vector2 screen)
+        private void DragPan(Vector2 screen)
         {
             if (!dragging)
             {
@@ -81,36 +174,59 @@ namespace ArtemisX.Core
             if (!TryGround(screen, out Vector3 now)) return;
             Vector3 delta = grabPoint - now;
             delta.y = 0f;
-            Vector3 before = transform.position;
-            Move(delta);
+            Vector3 before = lookTarget;
+            MoveLookTarget(delta);
             float dt = Mathf.Max(Time.unscaledDeltaTime, 0.0001f);
-            velocity = Vector3.Lerp(velocity, (transform.position - before) / dt, 0.35f);
+            velocity = Vector3.Lerp(velocity, (lookTarget - before) / dt, 0.35f);
         }
 
-        void End()
+        private void EndPan()
         {
+            if (dragging) suppressNextClick = true;
             tracking = false;
             dragging = false;
         }
 
-        void Move(Vector3 delta)
+        private void MoveLookTarget(Vector3 delta)
         {
-            Vector3 p = transform.position + delta;
-            p.x = Mathf.Clamp(p.x, home.x + config.panRangeX.x, home.x + config.panRangeX.y);
-            p.z = Mathf.Clamp(p.z, home.z + config.panRangeZ.x, home.z + config.panRangeZ.y);
-            transform.position = p;
+            lookTarget += delta;
+            lookTarget.x = Mathf.Clamp(
+                lookTarget.x,
+                config.homeLookTarget.x + config.panRangeX.x,
+                config.homeLookTarget.x + config.panRangeX.y);
+            lookTarget.z = Mathf.Clamp(
+                lookTarget.z,
+                config.homeLookTarget.z + config.panRangeZ.x,
+                config.homeLookTarget.z + config.panRangeZ.y);
         }
 
-        bool TryGround(Vector2 screen, out Vector3 point)
+        private void ApplyTransform()
+        {
+            var rotation = Quaternion.Euler(pitch, yaw, 0f);
+            transform.SetPositionAndRotation(lookTarget - rotation * Vector3.forward * distance, rotation);
+        }
+
+        private bool TryGround(Vector2 screen, out Vector3 point)
         {
             var plane = new Plane(Vector3.up, Vector3.zero);
             Ray ray = viewCamera.ScreenPointToRay(screen);
-            if (plane.Raycast(ray, out float t)) { point = ray.GetPoint(t); return true; }
+            if (plane.Raycast(ray, out float t))
+            {
+                point = ray.GetPoint(t);
+                return true;
+            }
             point = default;
             return false;
         }
 
-        static bool PointerOverUi()
+        private static bool IsPrimaryPressed(Pointer pointer)
+        {
+            if (pointer == null) return false;
+            if (pointer is Mouse mouse) return mouse.leftButton.isPressed;
+            return pointer.press.isPressed;
+        }
+
+        private static bool PointerOverUi()
         {
             if (EventSystem.current == null) return false;
             var touch = Touchscreen.current;

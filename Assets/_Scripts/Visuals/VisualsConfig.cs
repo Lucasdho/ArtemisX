@@ -62,9 +62,9 @@ namespace ArtemisX.Visuals
 
         [Header("Mood lighting")]
         [Min(0.05f)] public float moodTransitionSeconds = 1.5f;
-        public Color nightSunColor = new Color(0.55f, 0.66f, 1f);
-        [Range(0f, 2f)] public float nightSunIntensityScale = 0.45f;
-        public Color nightAmbient = new Color(0.09f, 0.11f, 0.22f);
+        public Color nightSunColor = new Color(0.24f, 0.31f, 0.62f);
+        [Range(0f, 2f)] public float nightSunIntensityScale = 0.15f;
+        public Color nightAmbient = new Color(0.03f, 0.04f, 0.09f);
         public Color stormSunColor = new Color(1f, 0.7f, 0.48f);
         [Range(0f, 2f)] public float stormSunIntensityScale = 0.9f;
         public Color stormAmbient = new Color(0.3f, 0.15f, 0.12f);

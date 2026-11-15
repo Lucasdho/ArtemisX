@@ -12,11 +12,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 12adf763bc4434d1d979619f9dfa3d0e, type: 3}
   m_Name: CameraConfig
   m_EditorClassIdentifier: Assembly-CSharp::ArtemisX.Core.CameraConfig
-  homeLookTarget: {x: 0, y: 0, z: 1}
-  pitchDegrees: 42
-  distance: 21
+  homeLookTarget: {x: 0.5, y: 0, z: 0.5}
+  pitchDegrees: 36
+  yawDegrees: -32
+  distance: 28
   dragThresholdPixels: 10
   inertiaDamping: 7
   stopSpeed: 0.05
-  panRangeX: {x: -30, y: 30}
-  panRangeZ: {x: -20, y: 28}
+  panRangeX: {x: -18, y: 18}
+  panRangeZ: {x: -16, y: 18}
+  distanceRange: {x: 12, y: 42}
+  zoomSpeed: 2.4
+  zoomDamping: 10
+  pinchZoomSpeed: 0.03
+  pitchRange: {x: 22, y: 62}
+  tiltSensitivity: 0.22

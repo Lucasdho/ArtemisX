@@ -18,6 +18,7 @@ namespace ArtemisX.Visuals
         private float baseIntensity;
         private bool storm;
         private Tween intensityTween;
+        private NightLightPool[] nightPools;
 
         private void Awake()
         {
@@ -25,6 +26,7 @@ namespace ArtemisX.Visuals
             normalSunIntensity = sun.intensity;
             normalAmbient = RenderSettings.ambientLight;
             baseIntensity = normalSunIntensity;
+            nightPools = FindObjectsByType<NightLightPool>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
         }
 
         private void OnEnable()
@@ -71,6 +73,14 @@ namespace ArtemisX.Visuals
 
             SetPlaying(nightParticles, mood == MoodState.Night);
             SetPlaying(stormParticles, storm);
+
+            if (nightPools != null)
+            {
+                for (int i = 0; i < nightPools.Length; i++)
+                {
+                    if (nightPools[i] != null) nightPools[i].SetMood(mood, seconds);
+                }
+            }
         }
 
         private void Update()
