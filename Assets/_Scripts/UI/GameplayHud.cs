@@ -1,3 +1,4 @@
+using ArtemisX.Audio;
 using ArtemisX.Simulation;
 using ArtemisX.Story;
 using UnityEngine;
@@ -109,7 +110,8 @@ namespace ArtemisX.UI
         /// <summary>Bauzer explains why an action is blocked.</summary>
         public void ShowBlockedTip(ActionBlockReason reason)
         {
-            PlaySfx(config != null ? config.errorClip : null);
+            if (AudioManager.Instance != null) AudioManager.Play(SoundCue.ActionBlocked);
+            else PlaySfx(config != null ? config.errorClip : null);
             if (config == null) return;
             switch (reason)
             {
@@ -126,8 +128,10 @@ namespace ArtemisX.UI
             }
         }
 
+        /// <summary>Fallback clip; skipped when the AudioManager is in the scene (its bridge plays the same moments).</summary>
         public void PlaySfx(AudioClip clip)
         {
+            if (AudioManager.Instance != null) return;
             if (sfxSource != null && clip != null) sfxSource.PlayOneShot(clip);
         }
     }
