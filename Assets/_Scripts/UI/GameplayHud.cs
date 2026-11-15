@@ -24,6 +24,8 @@ namespace ArtemisX.UI
         [Tooltip("Hidden while a dialogue is open or the rover map is shown.")]
         [SerializeField] private CanvasGroup[] bottomActions = new CanvasGroup[0];
         [SerializeField] private Button helpButton;
+        [Tooltip("Top bar groups hidden during the start screen and intro cutscene.")]
+        [SerializeField] private CanvasGroup[] topBar = new CanvasGroup[0];
 
         private DialogueSequence tipSequence;
 
@@ -34,8 +36,12 @@ namespace ArtemisX.UI
         public MorningSequenceController Morning => morning;
         public Camera ViewCamera => viewCamera != null ? viewCamera : (viewCamera = Camera.main);
 
+        /// <summary>Start screen / intro cutscene: hides the HUD and blocks world clicks.</summary>
+        public bool Cinematic { get; set; }
+
         /// <summary>True when clicks on 3D objects must be ignored.</summary>
         public bool IsWorldInputBlocked =>
+            Cinematic ||
             (runner != null && runner.IsOpen) ||
             (morning != null && morning.IsShowing) ||
             (roverMap != null && roverMap.IsOpen) ||
@@ -55,7 +61,8 @@ namespace ArtemisX.UI
 
         private void Update()
         {
-            bool hide = (runner != null && runner.IsOpen) || (roverMap != null && roverMap.IsOpen);
+            bool hide = Cinematic || (runner != null && runner.IsOpen) || (roverMap != null && roverMap.IsOpen);
+            FadeGroups(topBar, Cinematic);
             for (int i = 0; i < bottomActions.Length; i++)
             {
                 var group = bottomActions[i];
@@ -64,6 +71,18 @@ namespace ArtemisX.UI
                 if (!Mathf.Approximately(group.alpha, alpha)) group.alpha = Mathf.MoveTowards(group.alpha, alpha, Time.unscaledDeltaTime * 8f);
                 group.blocksRaycasts = !hide;
                 group.interactable = !hide;
+            }
+        }
+
+        private static void FadeGroups(CanvasGroup[] groups, bool hide)
+        {
+            for (int i = 0; i < groups.Length; i++)
+            {
+                var group = groups[i];
+                if (group == null) continue;
+                // Hide at once (no HUD flash behind the start screen), fade back in.
+                group.alpha = hide ? 0f : Mathf.MoveTowards(group.alpha, 1f, Time.unscaledDeltaTime * 3f);
+                group.blocksRaycasts = !hide;
             }
         }
 
