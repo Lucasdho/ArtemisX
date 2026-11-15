@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ccf03b02d5cd8417dba70b0a0d0ccf87, type: 3}
   m_Name: GameplayVisualsConfig
   m_EditorClassIdentifier: Assembly-CSharp::ArtemisX.Visuals.GameplayVisualsConfig
-  stormSeconds: 0.8
-  nightSeconds: 1
-  calmNightSeconds: 1.5
+  transitionSeconds: 10
+  eventDaySplit: {x: 0.1, y: 0.3, z: 0.35, w: 0.25}
+  calmDaySplit: {x: 0.15, y: 0, z: 0.55, w: 0.3}
   roverDriveSpeed: 3.2
   roverTurnSharpness: 8
   brokenAlertInterval: 3
