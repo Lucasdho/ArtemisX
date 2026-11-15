@@ -18,5 +18,5 @@ MonoBehaviour:
   dragThresholdPixels: 10
   inertiaDamping: 7
   stopSpeed: 0.05
-  panRangeX: {x: -15, y: 15}
-  panRangeZ: {x: -9, y: 13}
+  panRangeX: {x: -30, y: 30}
+  panRangeZ: {x: -20, y: 28}

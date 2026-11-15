@@ -50,6 +50,14 @@ namespace ArtemisX.EditorTools
                 s.hill = hillBand * northness * hillNoise;
                 h += cfg.hillHeight * s.hill * away;
 
+                foreach (var p in cfg.plateaus)
+                {
+                    float px = Mathf.Max(p.area.xMin - x, 0f, x - p.area.xMax);
+                    float pz = Mathf.Max(p.area.yMin - z, 0f, z - p.area.yMax);
+                    float lift = p.height * (1f - Mathf.SmoothStep(0f, 1f, Mathf.Sqrt(px * px + pz * pz) / cfg.plateauBlend));
+                    h = Mathf.Max(h, lift);
+                }
+
                 foreach (var c in craters)
                 {
                     float d = Vector2.Distance(new Vector2(x, z), c.center);
@@ -108,10 +116,10 @@ namespace ArtemisX.EditorTools
                 offZ = 100f + cfg.seed * 7.3f,
             };
             shape.craters.AddRange(cfg.craters);
+            shape.craters.AddRange(cfg.pits);
             AddSmallCraters(shape);
 
-            var keepCells = CollectRetainedTiles(env.transform);
-            var mesh = BuildMesh(shape, keepCells);
+            var mesh = BuildMesh(shape);
             SaveAsset(mesh, MeshPath);
             BuildTexture(shape);
             ApplyToScene(env.transform, shape, mesh);
@@ -145,21 +153,7 @@ namespace ArtemisX.EditorTools
             }
         }
 
-        /// <summary>Cells (2x2) of the KayKit tiles we keep (pit, slopes, plateaus). Plain "low" tiles are replaced by the new ground.</summary>
-        static List<Vector2> CollectRetainedTiles(Transform env)
-        {
-            var cells = new List<Vector2>();
-            var terrain = env.Find("Terrain");
-            if (terrain == null) return cells;
-            foreach (Transform t in terrain)
-            {
-                if (t.name.StartsWith("terrain_low")) continue;
-                cells.Add(new Vector2(t.position.x, t.position.z));
-            }
-            return cells;
-        }
-
-        static Mesh BuildMesh(Shape shape, List<Vector2> keepCells)
+        static Mesh BuildMesh(Shape shape)
         {
             var cfg = shape.cfg;
             int n = Mathf.RoundToInt(cfg.halfSize * 2f / cfg.cellSize);
@@ -183,8 +177,6 @@ namespace ArtemisX.EditorTools
                 {
                     int a = j * (n + 1) + i, b = a + 1, c = a + (n + 1), d = c + 1;
                     if (beyond[a] && beyond[b] && beyond[c] && beyond[d]) continue;
-                    float cx = minX + (i + 0.5f) * cfg.cellSize, cz = minZ + (j + 0.5f) * cfg.cellSize;
-                    if (UnderRetainedTile(keepCells, cx, cz)) continue;
                     // Alternate the diagonal so the low-poly facets do not all lean one way.
                     if (((i + j) & 1) == 0) { tris.Add(a); tris.Add(c); tris.Add(d); tris.Add(a); tris.Add(d); tris.Add(b); }
                     else { tris.Add(a); tris.Add(c); tris.Add(b); tris.Add(b); tris.Add(c); tris.Add(d); }
@@ -197,13 +189,6 @@ namespace ArtemisX.EditorTools
             mesh.RecalculateNormals();
             mesh.RecalculateBounds();
             return mesh;
-        }
-
-        static bool UnderRetainedTile(List<Vector2> cells, float x, float z)
-        {
-            foreach (var c in cells)
-                if (Mathf.Abs(x - c.x) < 1f && Mathf.Abs(z - c.y) < 1f) return true;
-            return false;
         }
 
         static void BuildTexture(Shape shape)
@@ -278,23 +263,25 @@ namespace ArtemisX.EditorTools
             ground.GetComponent<MeshCollider>().sharedMesh = mesh2;
             ground.GetComponent<MeshRenderer>().sharedMaterial = mat;
 
+            // The old KayKit tile blocks are gone for good: the generated mesh now covers ground, plateaus and pit.
             var terrain = env.Find("Terrain");
-            if (terrain != null)
-                foreach (Transform t in terrain)
-                    if (t.name.StartsWith("terrain_low")) t.gameObject.SetActive(false);
+            if (terrain != null) Object.DestroyImmediate(terrain.gameObject);
 
             var outer = env.Find("TerrainOuter");
             if (outer != null)
-                foreach (Transform t in outer)
+            {
+                for (int i = outer.childCount - 1; i >= 0; i--)
                 {
-                    if (t.name.StartsWith("Ground_") || t.name.StartsWith("ridge")) t.gameObject.SetActive(false);
-                    else if (t.name.StartsWith("FarRock"))
+                    var t = outer.GetChild(i);
+                    if (t.name.StartsWith("FarRock"))
                     {
                         var p = t.position;
                         p.y = shape.Evaluate(p.x, p.z).height - 0.02f;
                         t.position = p;
                     }
+                    else Object.DestroyImmediate(t.gameObject);
                 }
+            }
 
             EditorSceneManager.MarkSceneDirty(ground.gameObject.scene);
         }

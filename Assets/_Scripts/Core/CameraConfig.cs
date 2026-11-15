@@ -18,7 +18,7 @@ namespace ArtemisX.Core
         [Min(0.1f)] public float inertiaDamping = 7f;
         [Min(0f)] public float stopSpeed = 0.05f;
         [Tooltip("How far the camera may move from home, in world units: x = left/right, y = back/forward.")]
-        public Vector2 panRangeX = new Vector2(-15f, 15f);
-        public Vector2 panRangeZ = new Vector2(-9f, 13f);
+        public Vector2 panRangeX = new Vector2(-30f, 30f);
+        public Vector2 panRangeZ = new Vector2(-20f, 28f);
     }
 }
