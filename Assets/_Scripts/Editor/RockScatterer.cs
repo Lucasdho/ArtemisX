@@ -9,32 +9,46 @@ using UnityEngine.Rendering;
 namespace ArtemisX.EditorTools
 {
     /// <summary>
-    /// Builds rock prefabs and scatters them deterministically over LunarGround under Environment/RockScatter.
-    /// Menu: Artemis X / Scatter Rocks.
+    /// Builds rock/resource prefabs, populates LunarGround rocks (including base center dressing)
+    /// under Environment/RockScatter, and creates 5 resource gathering hot spots under
+    /// Environment/ResourceHotspots. Menu: Artemis X / Scatter Rocks.
     /// </summary>
     public static class RockScatterer
     {
         const string ConfigPath = "Assets/_Config/Visuals/RockScatterConfig.asset";
         const string TerrainConfigPath = "Assets/_Config/Visuals/LunarTerrainConfig.asset";
+        const string VisualsConfigPath = "Assets/_Config/Visuals/VisualsConfig.asset";
         const string LightMaterialPath = "Assets/_Materials/M_LunarTerrain.mat";
         const string DarkMaterialPath = "Assets/_Materials/M_LunarRockDark.mat";
+        const string IceMaterialPath = "Assets/_Materials/M_Ice.mat";
+        const string RingMaterialPath = "Assets/_Materials/M_GhostRing.mat";
+        const string LampPostPrefabPath = "Assets/_Prefabs/Base/LampPost.prefab";
         const string PrefabFolder = "Assets/_Prefabs/Environment";
         const string ScatterRootName = "RockScatter";
+        const string HotspotsRootName = "ResourceHotspots";
         const int MaxAllowedRocks = 250;
 
-        readonly struct RockSpec
+        enum MaterialOverrideMode
+        {
+            KeepOriginal,
+            LightTerrain,
+            DarkRock,
+            Ice
+        }
+
+        readonly struct PrefabSpec
         {
             public readonly string prefabName;
             public readonly string fbxPath;
             public readonly float modelScale;
-            public readonly bool useDarkMaterial;
+            public readonly MaterialOverrideMode materialMode;
 
-            public RockSpec(string prefabName, string fbxPath, float modelScale, bool useDarkMaterial)
+            public PrefabSpec(string prefabName, string fbxPath, float modelScale, MaterialOverrideMode materialMode)
             {
                 this.prefabName = prefabName;
                 this.fbxPath = fbxPath;
                 this.modelScale = modelScale;
-                this.useDarkMaterial = useDarkMaterial;
+                this.materialMode = materialMode;
             }
         }
 
@@ -84,19 +98,43 @@ namespace ArtemisX.EditorTools
             public float baseHeight;
         }
 
-        static readonly RockSpec[] RockSpecs =
+        static readonly PrefabSpec[] AllRockSpecs =
         {
-            new RockSpec("Rock_KayKit_A", "Assets/GameAssets/KayKit_Space_Base_Bits_1.0_SOURCE/Assets/fbx(unity)/rock_A.fbx", 1f, false),
-            new RockSpec("Rock_KayKit_B", "Assets/GameAssets/KayKit_Space_Base_Bits_1.0_SOURCE/Assets/fbx(unity)/rock_B.fbx", 1f, false),
-            new RockSpec("Rocks_KayKit_A", "Assets/GameAssets/KayKit_Space_Base_Bits_1.0_SOURCE/Assets/fbx(unity)/rocks_A.fbx", 0.85f, false),
-            new RockSpec("Rocks_KayKit_B", "Assets/GameAssets/KayKit_Space_Base_Bits_1.0_SOURCE/Assets/fbx(unity)/rocks_B.fbx", 0.65f, true),
-            new RockSpec("Rock_Quat_1", "Assets/GameAssets/Ultimate_Space_Kit_Quaternius/Environment/FBX/Rock_1.fbx", 14f, false),
-            new RockSpec("Rock_Quat_2", "Assets/GameAssets/Ultimate_Space_Kit_Quaternius/Environment/FBX/Rock_2.fbx", 16f, false),
-            new RockSpec("Rock_Quat_3", "Assets/GameAssets/Ultimate_Space_Kit_Quaternius/Environment/FBX/Rock_3.fbx", 13f, false),
-            new RockSpec("Rock_Quat_4", "Assets/GameAssets/Ultimate_Space_Kit_Quaternius/Environment/FBX/Rock_4.fbx", 13f, false),
-            new RockSpec("Rock_Quat_Large_1", "Assets/GameAssets/Ultimate_Space_Kit_Quaternius/Environment/FBX/Rock_Large_1.fbx", 14f, true),
-            new RockSpec("Rock_Quat_Large_2", "Assets/GameAssets/Ultimate_Space_Kit_Quaternius/Environment/FBX/Rock_Large_2.fbx", 10f, true),
-            new RockSpec("Rock_Quat_Large_3", "Assets/GameAssets/Ultimate_Space_Kit_Quaternius/Environment/FBX/Rock_Large_3.fbx", 10f, true),
+            new PrefabSpec("Rock_KayKit_A", "Assets/GameAssets/KayKit_Space_Base_Bits_1.0_SOURCE/Assets/fbx(unity)/rock_A.fbx", 1f, MaterialOverrideMode.LightTerrain),
+            new PrefabSpec("Rock_KayKit_B", "Assets/GameAssets/KayKit_Space_Base_Bits_1.0_SOURCE/Assets/fbx(unity)/rock_B.fbx", 1f, MaterialOverrideMode.LightTerrain),
+            new PrefabSpec("Rocks_KayKit_A", "Assets/GameAssets/KayKit_Space_Base_Bits_1.0_SOURCE/Assets/fbx(unity)/rocks_A.fbx", 0.85f, MaterialOverrideMode.LightTerrain),
+            new PrefabSpec("Rocks_KayKit_B", "Assets/GameAssets/KayKit_Space_Base_Bits_1.0_SOURCE/Assets/fbx(unity)/rocks_B.fbx", 0.65f, MaterialOverrideMode.DarkRock),
+            new PrefabSpec("Rock_Quat_1", "Assets/GameAssets/Ultimate_Space_Kit_Quaternius/Environment/FBX/Rock_1.fbx", 14f, MaterialOverrideMode.LightTerrain),
+            new PrefabSpec("Rock_Quat_2", "Assets/GameAssets/Ultimate_Space_Kit_Quaternius/Environment/FBX/Rock_2.fbx", 16f, MaterialOverrideMode.LightTerrain),
+            new PrefabSpec("Rock_Quat_3", "Assets/GameAssets/Ultimate_Space_Kit_Quaternius/Environment/FBX/Rock_3.fbx", 13f, MaterialOverrideMode.LightTerrain),
+            new PrefabSpec("Rock_Quat_4", "Assets/GameAssets/Ultimate_Space_Kit_Quaternius/Environment/FBX/Rock_4.fbx", 13f, MaterialOverrideMode.LightTerrain),
+            new PrefabSpec("Rock_Quat_Large_1", "Assets/GameAssets/Ultimate_Space_Kit_Quaternius/Environment/FBX/Rock_Large_1.fbx", 14f, MaterialOverrideMode.DarkRock),
+            new PrefabSpec("Rock_Quat_Large_2", "Assets/GameAssets/Ultimate_Space_Kit_Quaternius/Environment/FBX/Rock_Large_2.fbx", 10f, MaterialOverrideMode.DarkRock),
+            new PrefabSpec("Rock_Quat_Large_3", "Assets/GameAssets/Ultimate_Space_Kit_Quaternius/Environment/FBX/Rock_Large_3.fbx", 10f, MaterialOverrideMode.DarkRock),
+        };
+
+        static readonly PrefabSpec[] IceSpecs =
+        {
+            new PrefabSpec("Ice_Chunk_Large", "Assets/GameAssets/KayKit_ResourceBits_1.0_FREE/Assets/fbx(unity)/Stone_Chunks_Large.fbx", 0.75f, MaterialOverrideMode.Ice),
+            new PrefabSpec("Ice_Chunk_Small", "Assets/GameAssets/KayKit_ResourceBits_1.0_FREE/Assets/fbx(unity)/Stone_Chunks_Small.fbx", 0.85f, MaterialOverrideMode.Ice),
+        };
+
+        static readonly PrefabSpec[] QuarrySpecs =
+        {
+            new PrefabSpec("Rock_Chunk_Large", "Assets/GameAssets/KayKit_ResourceBits_1.0_FREE/Assets/fbx(unity)/Stone_Chunks_Large.fbx", 0.85f, MaterialOverrideMode.DarkRock),
+            new PrefabSpec("Rock_Chunk_Small", "Assets/GameAssets/KayKit_ResourceBits_1.0_FREE/Assets/fbx(unity)/Stone_Chunks_Small.fbx", 0.90f, MaterialOverrideMode.LightTerrain),
+        };
+
+        static readonly PrefabSpec[] MineralSpecs =
+        {
+            new PrefabSpec("Mineral_Copper_Nuggets", "Assets/GameAssets/KayKit_ResourceBits_1.0_FREE/Assets/fbx(unity)/Copper_Nuggets.fbx", 1.15f, MaterialOverrideMode.KeepOriginal),
+            new PrefabSpec("Mineral_Iron_Nuggets", "Assets/GameAssets/KayKit_ResourceBits_1.0_FREE/Assets/fbx(unity)/Iron_Nuggets.fbx", 1.15f, MaterialOverrideMode.KeepOriginal),
+            new PrefabSpec("Mineral_Silver_Nuggets", "Assets/GameAssets/KayKit_ResourceBits_1.0_FREE/Assets/fbx(unity)/Silver_Nuggets.fbx", 1.15f, MaterialOverrideMode.KeepOriginal),
+            new PrefabSpec("Mineral_Gold_Nuggets", "Assets/GameAssets/KayKit_ResourceBits_1.0_FREE/Assets/fbx(unity)/Gold_Nuggets.fbx", 1.15f, MaterialOverrideMode.KeepOriginal),
+            new PrefabSpec("Mineral_Copper_Large", "Assets/GameAssets/KayKit_ResourceBits_1.0_FREE/Assets/fbx(unity)/Copper_Nugget_Large.fbx", 1.35f, MaterialOverrideMode.KeepOriginal),
+            new PrefabSpec("Mineral_Iron_Large", "Assets/GameAssets/KayKit_ResourceBits_1.0_FREE/Assets/fbx(unity)/Iron_Nugget_Large.fbx", 1.35f, MaterialOverrideMode.KeepOriginal),
+            new PrefabSpec("Mineral_Silver_Large", "Assets/GameAssets/KayKit_ResourceBits_1.0_FREE/Assets/fbx(unity)/Silver_Nugget_Large.fbx", 1.35f, MaterialOverrideMode.KeepOriginal),
+            new PrefabSpec("Mineral_Gold_Large", "Assets/GameAssets/KayKit_ResourceBits_1.0_FREE/Assets/fbx(unity)/Gold_Nugget_Large.fbx", 1.35f, MaterialOverrideMode.KeepOriginal),
         };
 
         [MenuItem("Artemis X/Scatter Rocks")]
@@ -127,8 +165,8 @@ namespace ArtemisX.EditorTools
             var cfg = EnsureAssets();
             if (cfg == null) return;
 
-            var metrics = MeasurePrefabs(cfg.rockPrefabs);
-            if (metrics.Count == 0)
+            var rockMetrics = MeasurePrefabs(cfg.rockPrefabs);
+            if (rockMetrics.Count == 0)
             {
                 Debug.LogError("No valid rock prefabs found in RockScatterConfig.");
                 return;
@@ -138,6 +176,8 @@ namespace ArtemisX.EditorTools
             var keepClearBoxes = CollectKeepClearBoxes();
             var existingRockBoxes = CollectExistingRockBoxes();
             var routeSegments = CollectRouteSegments();
+
+            var hotspotBoxes = BuildHotspots(env.transform, cfg, terrainCfg, groundCollider, routeSegments);
 
             var oldScatter = env.transform.Find(ScatterRootName);
             if (oldScatter != null)
@@ -154,23 +194,35 @@ namespace ArtemisX.EditorTools
             var usedStyles = new HashSet<int>();
 
             int targetTotal = Mathf.Clamp(cfg.targetRockCount, 1, MaxAllowedRocks - 1);
-            int innerQuota = Mathf.Clamp(Mathf.RoundToInt(targetTotal * cfg.innerIslandQuotaFraction), 0, targetTotal);
+            int centerQuota = Mathf.Clamp(Mathf.RoundToInt(targetTotal * cfg.baseCenterQuotaFraction), 0, targetTotal);
+            int innerQuota = Mathf.Clamp(Mathf.RoundToInt(targetTotal * cfg.innerIslandQuotaFraction), 0, targetTotal - centerQuota);
             int clusterCount = 0;
             int singleCount = 0;
+            int centerPlacedCount = 0;
             int groupId = 0;
             int attempts = 0;
-            int maxAttempts = 8000;
+            int centerAttemptCap = 3500;
+            int maxAttempts = 11000;
 
             float offX = 100f + terrainCfg.seed * 13.7f;
             float offZ = 100f + terrainCfg.seed * 7.3f;
 
             while (placed.Count < targetTotal && attempts++ < maxAttempts)
             {
-                bool innerPass = placed.Count < innerQuota;
-                float maxSampleR = innerPass
-                    ? Mathf.Min(cfg.innerIslandRadius, terrainCfg.islandRadius - cfg.islandEdgeMargin)
-                    : terrainCfg.islandRadius - cfg.islandEdgeMargin;
-                float minSampleR = innerPass ? 6.5f : 5.5f;
+                bool centerPass = placed.Count < centerQuota && attempts < centerAttemptCap;
+                bool innerPass = !centerPass && placed.Count < centerQuota + innerQuota;
+
+                float maxIslandR = terrainCfg.islandRadius - cfg.islandEdgeMargin;
+                float minSampleR = centerPass
+                    ? cfg.baseCenterMinRadius
+                    : innerPass
+                        ? cfg.baseCenterRadius * 0.90f
+                        : cfg.innerIslandRadius * 0.65f;
+                float maxSampleR = centerPass
+                    ? Mathf.Min(cfg.baseCenterRadius, maxIslandR)
+                    : innerPass
+                        ? Mathf.Min(cfg.innerIslandRadius, maxIslandR)
+                        : maxIslandR;
 
                 Vector2 dir = RandomUnitVector2(rng);
                 float dist = Mathf.Sqrt(Mathf.Lerp(minSampleR * minSampleR, maxSampleR * maxSampleR, (float)rng.NextDouble()));
@@ -179,16 +231,23 @@ namespace ArtemisX.EditorTools
                 if (EdgeFactor(terrainCfg, center.x, center.y) > 0.02f) continue;
 
                 float density = EvaluateDensity(cfg, terrainCfg, craters, keepClearBoxes, center.x, center.y, offX, offZ);
+                if (centerPass) density = Mathf.Max(density, 0.42f);
                 if ((float)rng.NextDouble() > density) continue;
 
-                bool wantsCluster = (float)rng.NextDouble() < cfg.clusterProbability
-                                    && targetTotal - placed.Count >= cfg.clusterSizeRange.x;
-                float requiredGroupGap = wantsCluster ? cfg.minClusterGap : cfg.minSingleGap;
+                float clusterChance = centerPass ? Mathf.Min(cfg.clusterProbability, 0.45f) : cfg.clusterProbability;
+                int minClusterSize = centerPass ? 2 : cfg.clusterSizeRange.x;
+                int maxClusterSize = centerPass ? Mathf.Min(cfg.clusterSizeRange.y, 4) : cfg.clusterSizeRange.y;
+
+                bool wantsCluster = (float)rng.NextDouble() < clusterChance
+                                    && targetTotal - placed.Count >= minClusterSize;
+                float requiredGroupGap = centerPass
+                    ? (wantsCluster ? cfg.baseCenterClusterGap : cfg.baseCenterSingleGap)
+                    : (wantsCluster ? cfg.minClusterGap : cfg.minSingleGap);
                 if (!HasGroupClearance(groupCenters, center, requiredGroupGap)) continue;
 
                 int remaining = targetTotal - placed.Count;
                 int desiredCount = wantsCluster
-                    ? Mathf.Min(remaining, rng.Next(cfg.clusterSizeRange.x, cfg.clusterSizeRange.y + 1))
+                    ? Mathf.Min(remaining, rng.Next(minClusterSize, maxClusterSize + 1))
                     : 1;
 
                 int placedInGroup = 0;
@@ -198,14 +257,14 @@ namespace ArtemisX.EditorTools
 
                 while (placedInGroup < desiredCount && memberTries++ < maxMemberTries && placed.Count < targetTotal)
                 {
-                    int styleIdx = DrawStyleIndex(styleBag, metrics.Count, rng);
-                    var pref = metrics[styleIdx];
-                    if (wantsCluster && placedInGroup > 0)
+                    int styleIdx = DrawStyleIndex(styleBag, rockMetrics.Count, rng);
+                    var pref = rockMetrics[styleIdx];
+                    if ((wantsCluster && placedInGroup > 0) || centerPass)
                     {
-                        for (int r = 0; r < metrics.Count && IsTallRock(pref.prefab.name); r++)
+                        for (int r = 0; r < rockMetrics.Count && IsTallRock(pref.prefab.name); r++)
                         {
-                            styleIdx = DrawStyleIndex(styleBag, metrics.Count, rng);
-                            pref = metrics[styleIdx];
+                            styleIdx = DrawStyleIndex(styleBag, rockMetrics.Count, rng);
+                            pref = rockMetrics[styleIdx];
                         }
                     }
 
@@ -214,6 +273,8 @@ namespace ArtemisX.EditorTools
                     if (wantsCluster && placedInGroup > 0)
                         scaleT *= 0.72f;
                     float scale = Mathf.Lerp(cfg.scaleRange.x, cfg.scaleRange.y, scaleT);
+                    if (centerPass)
+                        scale = Mathf.Min(scale, cfg.baseCenterMaxScale);
 
                     float worldRadius = pref.baseRadius * scale;
                     float worldHeight = pref.baseHeight * scale;
@@ -226,15 +287,16 @@ namespace ArtemisX.EditorTools
                     else
                     {
                         float angle = (float)rng.NextDouble() * Mathf.PI * 2f;
+                        float maxSpread = centerPass ? Mathf.Min(cfg.clusterSpreadRadius.y, 1.1f) : cfg.clusterSpreadRadius.y;
                         float spread = anchorRadius + worldRadius
-                            + Mathf.Lerp(cfg.clusterSpreadRadius.x, cfg.clusterSpreadRadius.y, (float)rng.NextDouble());
+                            + Mathf.Lerp(cfg.clusterSpreadRadius.x, maxSpread, (float)rng.NextDouble());
                         pos = center + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * spread;
                     }
 
                     if (!IsValidRockPlacement(
                             cfg, terrainCfg, groundCollider,
-                            keepClearBoxes, existingRockBoxes, routeSegments, placed,
-                            pos, worldRadius, worldHeight, groupId,
+                            keepClearBoxes, existingRockBoxes, hotspotBoxes, routeSegments, placed,
+                            pos, worldRadius, groupId, centerPass,
                             out RaycastHit centerHit, out float minFootY))
                     {
                         if (placedInGroup == 0) break;
@@ -259,6 +321,8 @@ namespace ArtemisX.EditorTools
                     placed.Add(new PlacedRock { pos = pos, radius = worldRadius, groupId = groupId });
                     usedStyles.Add(styleIdx);
                     placedInGroup++;
+                    if (Vector2.Distance(pos, terrainCfg.center) <= cfg.baseCenterRadius)
+                        centerPlacedCount++;
                 }
 
                 if (placedInGroup > 0)
@@ -272,7 +336,306 @@ namespace ArtemisX.EditorTools
 
             EditorSceneManager.MarkSceneDirty(groundCollider.gameObject.scene);
             AssetDatabase.SaveAssets();
-            Debug.Log($"Scattered {placed.Count} rocks ({clusterCount} clusters, {singleCount} singles, {usedStyles.Count}/{metrics.Count} styles) under Environment/{ScatterRootName}.");
+            int hotspotCount = cfg.hotspots != null ? cfg.hotspots.Length : 0;
+            Debug.Log($"Scattered {placed.Count} rocks ({centerPlacedCount} in base center r<={cfg.baseCenterRadius:F1}m, {clusterCount} clusters, {singleCount} singles, {usedStyles.Count}/{rockMetrics.Count} styles) + {hotspotCount} hotspots.");
+        }
+
+        static List<ExclusionBox> BuildHotspots(
+            Transform envTransform,
+            RockScatterConfig cfg,
+            LunarTerrainConfig terrainCfg,
+            MeshCollider groundCollider,
+            List<Segment2D> routeSegments)
+        {
+            var hotspotBoxes = new List<ExclusionBox>();
+            var oldHotspots = envTransform.Find(HotspotsRootName);
+            if (oldHotspots != null)
+                Object.DestroyImmediate(oldHotspots.gameObject);
+
+            if (cfg.hotspots == null || cfg.hotspots.Length == 0)
+                return hotspotBoxes;
+
+            var hotspotsRoot = new GameObject(HotspotsRootName);
+            hotspotsRoot.transform.SetParent(envTransform, false);
+
+            var rockMetrics = MeasurePrefabs(cfg.rockPrefabs);
+            var iceMetrics = MeasurePrefabs(cfg.icePrefabs);
+            var mineralMetrics = MeasurePrefabs(cfg.mineralPrefabs);
+            var quarryMetrics = MeasurePrefabs(cfg.quarryChunkPrefabs);
+            var visualsCfg = AssetDatabase.LoadAssetAtPath<VisualsConfig>(VisualsConfigPath);
+
+            var rng = new System.Random(cfg.seed + 777);
+
+            for (int h = 0; h < cfg.hotspots.Length; h++)
+            {
+                var entry = cfg.hotspots[h];
+                if (!RaycastGround(groundCollider, entry.center, out RaycastHit centerHit))
+                {
+                    Debug.LogWarning($"Hotspot '{entry.id}' center {entry.center} missed LunarGround.");
+                    continue;
+                }
+
+                var spotGo = new GameObject(string.IsNullOrEmpty(entry.id) ? $"Hotspot_{h + 1}" : entry.id);
+                spotGo.transform.SetParent(hotspotsRoot.transform, false);
+                spotGo.transform.position = centerHit.point;
+
+                Vector2 toBase = terrainCfg.center - entry.center;
+                Vector2 approachDir = toBase.sqrMagnitude > 0.01f ? toBase.normalized : Vector2.right;
+
+                Vector2 stopXZ = entry.center + approachDir * entry.roverStopDistance;
+                RaycastGround(groundCollider, stopXZ, out RaycastHit stopHit);
+                var roverTargetGo = new GameObject("RoverTarget");
+                roverTargetGo.transform.SetParent(spotGo.transform, false);
+                roverTargetGo.transform.position = stopHit.point;
+                Vector3 lookDir = new Vector3(entry.center.x - stopXZ.x, 0f, entry.center.y - stopXZ.y);
+                roverTargetGo.transform.rotation = lookDir.sqrMagnitude > 0.001f
+                    ? Quaternion.LookRotation(lookDir.normalized, Vector3.up)
+                    : Quaternion.identity;
+
+                var hotspotComp = spotGo.AddComponent<ResourceHotspot>();
+                hotspotComp.hotspotId = spotGo.name;
+                hotspotComp.displayName = string.IsNullOrEmpty(entry.displayName) ? spotGo.name : entry.displayName;
+                hotspotComp.primaryResource = entry.primaryResource;
+                hotspotComp.roverStopPoint = roverTargetGo.transform;
+                hotspotComp.gatherRadius = Mathf.Max(0.8f, entry.depositRadius + 0.5f);
+
+                // Reserve deposit footprint & approach corridor from Base so scatter never blocks rovers.
+                hotspotBoxes.Add(new ExclusionBox
+                {
+                    minX = entry.center.x - entry.depositRadius,
+                    maxX = entry.center.x + entry.depositRadius,
+                    minZ = entry.center.y - entry.depositRadius,
+                    maxZ = entry.center.y + entry.depositRadius,
+                    isBuilding = false,
+                });
+                routeSegments.Add(new Segment2D
+                {
+                    a = entry.center,
+                    b = stopXZ + approachDir * 1.6f,
+                });
+
+                var spotPlaced = new List<PlacedRock>();
+                CreateHotspotRing(spotGo.transform, groundCollider, centerHit.point, entry.depositRadius * 0.95f, cfg.ringMaterial, visualsCfg, h * 0.2f);
+                PlaceHotspotBeacon(spotGo.transform, groundCollider, cfg.beaconPrefab, entry.center, approachDir, entry.depositRadius, spotPlaced);
+
+                var primaryList = SelectPrimaryList(entry.primaryResource, quarryMetrics, mineralMetrics, iceMetrics, rockMetrics);
+                float approachAngle = Mathf.Atan2(approachDir.y, approachDir.x);
+
+                // Core resource deposit cluster.
+                for (int i = 0; i < entry.primaryNodeCount; i++)
+                {
+                    var pref = primaryList[(i + h) % primaryList.Count];
+                    float frac = entry.primaryNodeCount > 1 ? (float)i / entry.primaryNodeCount : 0f;
+                    float radiusFrac = i == 0 ? 0.14f : Mathf.Lerp(0.32f, 0.72f, frac);
+                    float angle = i * 2.399963f + h * 1.1f;
+                    if (Mathf.Abs(Mathf.DeltaAngle(angle * Mathf.Rad2Deg, approachAngle * Mathf.Rad2Deg)) < 26f)
+                        angle += 0.65f;
+
+                    Vector2 candidateXZ = entry.center + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * (entry.depositRadius * radiusFrac);
+                    float scale = entry.primaryResource == HotspotResourceKind.Minerals
+                        ? Mathf.Lerp(0.95f, 1.40f, (float)rng.NextDouble())
+                        : Mathf.Lerp(0.85f, 1.32f, (float)rng.NextDouble());
+
+                    PlaceHotspotProp(spotGo.transform, groundCollider, cfg, rng, pref, candidateXZ, scale, spotPlaced, 0.08f, $"Node_{i + 1:00}");
+                }
+
+                // Secondary resource accents so each hotspot clearly mixes rocks, minerals, and ice veins.
+                PlaceHotspotAccents(spotGo.transform, groundCollider, cfg, rng, entry, h, approachAngle, quarryMetrics, mineralMetrics, iceMetrics, rockMetrics, spotPlaced);
+
+                // Outer rocky outcrop rim crescent leaving the rover approach arc open.
+                for (int b = 0; b < entry.borderRockCount; b++)
+                {
+                    var pref = rockMetrics[(b * 3 + h) % rockMetrics.Count];
+                    float t = entry.borderRockCount > 1 ? (float)b / (entry.borderRockCount - 1) : 0.5f;
+                    float offsetDeg = Mathf.Lerp(-145f, 145f, t) + ((float)rng.NextDouble() - 0.5f) * 18f;
+                    float worldDeg = (approachAngle + Mathf.PI) * Mathf.Rad2Deg + offsetDeg;
+                    float rad = worldDeg * Mathf.Deg2Rad;
+                    float rDist = entry.depositRadius * Mathf.Lerp(0.88f, 1.24f, (float)rng.NextDouble());
+
+                    Vector2 candidateXZ = entry.center + new Vector2(Mathf.Cos(rad), Mathf.Sin(rad)) * rDist;
+                    float scale = Mathf.Lerp(0.65f, 1.30f, (float)rng.NextDouble());
+                    PlaceHotspotProp(spotGo.transform, groundCollider, cfg, rng, pref, candidateXZ, scale, spotPlaced, 0.10f, $"RimRock_{b + 1:00}");
+                }
+            }
+
+            return hotspotBoxes;
+        }
+
+        static List<PrefabMetrics> SelectPrimaryList(
+            HotspotResourceKind kind,
+            List<PrefabMetrics> quarry,
+            List<PrefabMetrics> minerals,
+            List<PrefabMetrics> ice,
+            List<PrefabMetrics> rocks)
+        {
+            switch (kind)
+            {
+                case HotspotResourceKind.FrozenIce: return ice.Count > 0 ? ice : rocks;
+                case HotspotResourceKind.Minerals: return minerals.Count > 0 ? minerals : rocks;
+                default: return quarry.Count > 0 ? quarry : rocks;
+            }
+        }
+
+        static void PlaceHotspotAccents(
+            Transform parent,
+            MeshCollider groundCollider,
+            RockScatterConfig cfg,
+            System.Random rng,
+            HotspotEntry entry,
+            int spotIndex,
+            float approachAngle,
+            List<PrefabMetrics> quarry,
+            List<PrefabMetrics> minerals,
+            List<PrefabMetrics> ice,
+            List<PrefabMetrics> rocks,
+            List<PlacedRock> spotPlaced)
+        {
+            var accents = new List<PrefabMetrics>();
+            if (entry.primaryResource != HotspotResourceKind.Minerals && minerals.Count > 0)
+            {
+                accents.Add(minerals[spotIndex % minerals.Count]);
+                accents.Add(minerals[(spotIndex + 2) % minerals.Count]);
+            }
+            if (entry.primaryResource != HotspotResourceKind.FrozenIce && ice.Count > 0)
+            {
+                accents.Add(ice[spotIndex % ice.Count]);
+            }
+            if (entry.primaryResource == HotspotResourceKind.Rocks && rocks.Count > 0)
+            {
+                accents.Add(rocks[(spotIndex + 8) % rocks.Count]);
+                accents.Add(rocks[(spotIndex + 9) % rocks.Count]);
+            }
+            if (entry.primaryResource == HotspotResourceKind.Minerals && quarry.Count > 0)
+            {
+                accents.Add(quarry[spotIndex % quarry.Count]);
+            }
+
+            for (int i = 0; i < accents.Count; i++)
+            {
+                float angle = approachAngle + Mathf.PI * (0.42f + i * 0.43f);
+                float rDist = entry.depositRadius * Mathf.Lerp(0.45f, 0.78f, (float)rng.NextDouble());
+                Vector2 candidateXZ = entry.center + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * rDist;
+                PlaceHotspotProp(parent, groundCollider, cfg, rng, accents[i], candidateXZ, 0.95f, spotPlaced, 0.06f, $"Accent_{i + 1:00}");
+            }
+        }
+
+        static void PlaceHotspotProp(
+            Transform parent,
+            MeshCollider groundCollider,
+            RockScatterConfig cfg,
+            System.Random rng,
+            PrefabMetrics pref,
+            Vector2 posXZ,
+            float scale,
+            List<PlacedRock> spotPlaced,
+            float minGap,
+            string instanceName)
+        {
+            float worldRadius = pref.baseRadius * scale;
+            float worldHeight = pref.baseHeight * scale;
+
+            // Nudge radially outward once if touching an earlier node in this hotspot.
+            for (int tries = 0; tries < 5; tries++)
+            {
+                bool blocked = false;
+                foreach (var other in spotPlaced)
+                {
+                    if (Vector2.Distance(other.pos, posXZ) < other.radius + worldRadius + minGap)
+                    {
+                        blocked = true;
+                        Vector2 push = posXZ - other.pos;
+                        Vector2 dir = push.sqrMagnitude > 1e-4f ? push.normalized : RandomUnitVector2(rng);
+                        posXZ += dir * 0.35f;
+                        break;
+                    }
+                }
+                if (!blocked) break;
+            }
+
+            if (!RaycastGround(groundCollider, posXZ, out RaycastHit centerHit))
+                return;
+
+            float minFootY = ComputeFootMinY(groundCollider, posXZ, worldRadius, centerHit.point.y);
+            Quaternion rot = ComputeRockRotation(cfg, centerHit.normal, rng);
+            float sink = ComputeSink(cfg, rng, centerHit.point.y, minFootY, worldRadius, worldHeight, rot, out _);
+
+            var go = (GameObject)PrefabUtility.InstantiatePrefab(pref.prefab, parent);
+            go.name = $"{instanceName}_{pref.prefab.name}";
+            go.transform.SetPositionAndRotation(new Vector3(posXZ.x, centerHit.point.y - sink, posXZ.y), rot);
+            go.transform.localScale = Vector3.one * scale;
+            SetStaticRecursive(go, StaticEditorFlags.BatchingStatic);
+
+            spotPlaced.Add(new PlacedRock { pos = posXZ, radius = worldRadius, groupId = 0 });
+        }
+
+        static void PlaceHotspotBeacon(
+            Transform spotRoot,
+            MeshCollider groundCollider,
+            GameObject beaconPrefab,
+            Vector2 centerXZ,
+            Vector2 approachDir,
+            float depositRadius,
+            List<PlacedRock> spotPlaced)
+        {
+            if (beaconPrefab == null) return;
+            float sideAngle = Mathf.Atan2(approachDir.y, approachDir.x) + 115f * Mathf.Deg2Rad;
+            Vector2 beaconXZ = centerXZ + new Vector2(Mathf.Cos(sideAngle), Mathf.Sin(sideAngle)) * (depositRadius * 0.96f);
+            if (!RaycastGround(groundCollider, beaconXZ, out RaycastHit hit)) return;
+
+            var beacon = (GameObject)PrefabUtility.InstantiatePrefab(beaconPrefab, spotRoot);
+            beacon.name = "SurveyBeacon";
+            beacon.transform.position = hit.point - Vector3.up * 0.04f;
+            Vector3 look = new Vector3(centerXZ.x - beaconXZ.x, 0f, centerXZ.y - beaconXZ.y);
+            beacon.transform.rotation = look.sqrMagnitude > 0.001f ? Quaternion.LookRotation(look.normalized, Vector3.up) : Quaternion.identity;
+            beacon.transform.localScale = Vector3.one * 0.75f;
+            spotPlaced.Add(new PlacedRock { pos = beaconXZ, radius = 0.55f, groupId = -1 });
+        }
+
+        static void CreateHotspotRing(
+            Transform spotRoot,
+            MeshCollider groundCollider,
+            Vector3 centerWorld,
+            float radius,
+            Material ringMat,
+            VisualsConfig visualsCfg,
+            float phase)
+        {
+            var ringGo = new GameObject("DepositRing");
+            ringGo.transform.SetParent(spotRoot, false);
+            ringGo.transform.position = centerWorld + Vector3.up * 0.06f;
+            ringGo.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
+
+            var lr = ringGo.AddComponent<LineRenderer>();
+            lr.useWorldSpace = false;
+            lr.loop = true;
+            lr.alignment = LineAlignment.TransformZ;
+            lr.shadowCastingMode = ShadowCastingMode.Off;
+            lr.receiveShadows = false;
+            lr.startWidth = 0.08f;
+            lr.endWidth = 0.08f;
+            lr.startColor = Color.white;
+            lr.endColor = Color.white;
+            if (ringMat != null) lr.sharedMaterial = ringMat;
+
+            const int segments = 48;
+            lr.positionCount = segments;
+            for (int i = 0; i < segments; i++)
+            {
+                float a = (float)i / segments * Mathf.PI * 2f;
+                Vector2 pXZ = new Vector2(centerWorld.x + Mathf.Cos(a) * radius, centerWorld.z + Mathf.Sin(a) * radius);
+                float y = RaycastGround(groundCollider, pXZ, out RaycastHit hit) ? hit.point.y + 0.06f : centerWorld.y + 0.06f;
+                lr.SetPosition(i, ringGo.transform.InverseTransformPoint(new Vector3(pXZ.x, y, pXZ.y)));
+            }
+
+            if (visualsCfg != null)
+            {
+                var pulse = ringGo.AddComponent<GhostRingPulse>();
+                var so = new SerializedObject(pulse);
+                so.FindProperty("config").objectReferenceValue = visualsCfg;
+                so.FindProperty("ring").objectReferenceValue = lr;
+                so.FindProperty("phase").floatValue = Mathf.Repeat(phase, 1f);
+                so.ApplyModifiedPropertiesWithoutUndo();
+            }
         }
 
         static RockScatterConfig EnsureAssets()
@@ -295,12 +658,68 @@ namespace ArtemisX.EditorTools
                 AssetDatabase.CreateAsset(darkMat, DarkMaterialPath);
             }
 
+            var iceMat = AssetDatabase.LoadAssetAtPath<Material>(IceMaterialPath);
+            if (iceMat == null)
+            {
+                Debug.LogError($"Ice material not found at {IceMaterialPath}.");
+                return null;
+            }
+
             EnsureFolder(PrefabFolder);
 
-            var builtPrefabs = new GameObject[RockSpecs.Length];
-            for (int i = 0; i < RockSpecs.Length; i++)
+            var rockPrefabs = BuildOrUpdatePrefabs(AllRockSpecs, lightMat, darkMat, iceMat);
+            var icePrefabs = BuildOrUpdatePrefabs(IceSpecs, lightMat, darkMat, iceMat);
+            var mineralPrefabs = BuildOrUpdatePrefabs(MineralSpecs, lightMat, darkMat, iceMat);
+            var quarryPrefabs = BuildOrUpdatePrefabs(QuarrySpecs, lightMat, darkMat, iceMat);
+            if (rockPrefabs == null || icePrefabs == null || mineralPrefabs == null || quarryPrefabs == null)
+                return null;
+
+            bool isNewConfig = false;
+            var cfg = AssetDatabase.LoadAssetAtPath<RockScatterConfig>(ConfigPath);
+            if (cfg == null)
             {
-                var spec = RockSpecs[i];
+                Directory.CreateDirectory(Path.GetDirectoryName(ConfigPath));
+                cfg = ScriptableObject.CreateInstance<RockScatterConfig>();
+                AssetDatabase.CreateAsset(cfg, ConfigPath);
+                isNewConfig = true;
+            }
+
+            bool dirty = isNewConfig;
+            if (HasMissingPrefabs(cfg.rockPrefabs)) { cfg.rockPrefabs = rockPrefabs; dirty = true; }
+            if (HasMissingPrefabs(cfg.icePrefabs)) { cfg.icePrefabs = icePrefabs; dirty = true; }
+            if (HasMissingPrefabs(cfg.mineralPrefabs)) { cfg.mineralPrefabs = mineralPrefabs; dirty = true; }
+            if (HasMissingPrefabs(cfg.quarryChunkPrefabs)) { cfg.quarryChunkPrefabs = quarryPrefabs; dirty = true; }
+            if (cfg.beaconPrefab == null) { cfg.beaconPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(LampPostPrefabPath); dirty = true; }
+            if (cfg.ringMaterial == null) { cfg.ringMaterial = AssetDatabase.LoadAssetAtPath<Material>(RingMaterialPath); dirty = true; }
+
+            // Migrate pre-hotspot config asset once with center-scatter & hotspot defaults.
+            if (cfg.hotspots == null || cfg.hotspots.Length == 0)
+            {
+                cfg.hotspots = RockScatterConfig.CreateDefaultHotspots();
+                cfg.targetRockCount = 215;
+                cfg.minClusterGap = 4.6f;
+                cfg.minSingleGap = 2.0f;
+                cfg.plainDensity = 0.16f;
+                cfg.innerIslandQuotaFraction = 0.26f;
+                cfg.buildingKeepClearMargin = 1.45f;
+                cfg.propKeepClearMargin = 0.95f;
+                cfg.nearBuildingSoftBand = 1.2f;
+                cfg.nearBuildingDensityFactor = 0.68f;
+                cfg.existingRockMargin = 1.4f;
+                cfg.routeKeepClearMargin = 1.35f;
+                dirty = true;
+            }
+
+            if (dirty) EditorUtility.SetDirty(cfg);
+            return cfg;
+        }
+
+        static GameObject[] BuildOrUpdatePrefabs(PrefabSpec[] specs, Material lightMat, Material darkMat, Material iceMat)
+        {
+            var result = new GameObject[specs.Length];
+            for (int i = 0; i < specs.Length; i++)
+            {
+                var spec = specs[i];
                 string prefabPath = $"{PrefabFolder}/{spec.prefabName}.prefab";
                 var existing = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
                 if (existing != null)
@@ -321,14 +740,14 @@ namespace ArtemisX.EditorTools
                         PrefabUtility.UnloadPrefabContents(contents);
                         existing = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
                     }
-                    builtPrefabs[i] = existing;
+                    result[i] = existing;
                     continue;
                 }
 
                 var fbx = AssetDatabase.LoadAssetAtPath<GameObject>(spec.fbxPath);
                 if (fbx == null)
                 {
-                    Debug.LogError($"Rock FBX missing at {spec.fbxPath}.");
+                    Debug.LogError($"FBX missing at {spec.fbxPath}.");
                     return null;
                 }
 
@@ -341,13 +760,16 @@ namespace ArtemisX.EditorTools
                 foreach (var col in model.GetComponentsInChildren<Collider>(true))
                     Object.DestroyImmediate(col);
 
-                var targetMat = spec.useDarkMaterial ? darkMat : lightMat;
+                Material overrideMat = ResolveOverrideMaterial(spec.materialMode, lightMat, darkMat, iceMat);
                 foreach (var mr in model.GetComponentsInChildren<MeshRenderer>(true))
                 {
-                    int slotCount = Mathf.Max(1, mr.sharedMaterials.Length);
-                    var mats = new Material[slotCount];
-                    for (int m = 0; m < slotCount; m++) mats[m] = targetMat;
-                    mr.sharedMaterials = mats;
+                    if (overrideMat != null)
+                    {
+                        int slotCount = Mathf.Max(1, mr.sharedMaterials.Length);
+                        var mats = new Material[slotCount];
+                        for (int m = 0; m < slotCount; m++) mats[m] = overrideMat;
+                        mr.sharedMaterials = mats;
+                    }
                     mr.shadowCastingMode = ShadowCastingMode.On;
                     mr.receiveShadows = true;
                 }
@@ -356,25 +778,21 @@ namespace ArtemisX.EditorTools
                 model.transform.localPosition = new Vector3(-b.center.x, -b.min.y, -b.center.z);
                 SetStaticRecursive(root, StaticEditorFlags.BatchingStatic);
 
-                builtPrefabs[i] = PrefabUtility.SaveAsPrefabAsset(root, prefabPath);
+                result[i] = PrefabUtility.SaveAsPrefabAsset(root, prefabPath);
                 Object.DestroyImmediate(root);
             }
+            return result;
+        }
 
-            var cfg = AssetDatabase.LoadAssetAtPath<RockScatterConfig>(ConfigPath);
-            if (cfg == null)
+        static Material ResolveOverrideMaterial(MaterialOverrideMode mode, Material lightMat, Material darkMat, Material iceMat)
+        {
+            switch (mode)
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(ConfigPath));
-                cfg = ScriptableObject.CreateInstance<RockScatterConfig>();
-                cfg.rockPrefabs = builtPrefabs;
-                AssetDatabase.CreateAsset(cfg, ConfigPath);
+                case MaterialOverrideMode.LightTerrain: return lightMat;
+                case MaterialOverrideMode.DarkRock: return darkMat;
+                case MaterialOverrideMode.Ice: return iceMat;
+                default: return null;
             }
-            else if (HasMissingPrefabs(cfg.rockPrefabs))
-            {
-                cfg.rockPrefabs = builtPrefabs;
-                EditorUtility.SetDirty(cfg);
-            }
-
-            return cfg;
         }
 
         static bool HasMissingPrefabs(GameObject[] prefabs)
@@ -721,12 +1139,13 @@ namespace ArtemisX.EditorTools
             MeshCollider groundCollider,
             List<ExclusionBox> keepClearBoxes,
             List<ExclusionBox> existingRockBoxes,
+            List<ExclusionBox> hotspotBoxes,
             List<Segment2D> routeSegments,
             List<PlacedRock> placed,
             Vector2 pos,
             float worldRadius,
-            float worldHeight,
             int groupId,
+            bool centerPass,
             out RaycastHit centerHit,
             out float minFootY)
         {
@@ -740,22 +1159,29 @@ namespace ArtemisX.EditorTools
             if (EdgeFactor(terrainCfg, pos.x, pos.y) > 0.02f) return false;
 
             foreach (var box in keepClearBoxes)
-                if (box.DistanceTo(pos.x, pos.y) < cfg.buildingKeepClearMargin + worldRadius) return false;
+            {
+                float margin = box.isBuilding ? cfg.buildingKeepClearMargin : cfg.propKeepClearMargin;
+                if (box.DistanceTo(pos.x, pos.y) < margin + worldRadius) return false;
+            }
 
             foreach (var box in existingRockBoxes)
                 if (box.DistanceTo(pos.x, pos.y) < cfg.existingRockMargin + worldRadius) return false;
 
+            foreach (var box in hotspotBoxes)
+                if (box.DistanceTo(pos.x, pos.y) < cfg.hotspotKeepClearMargin + worldRadius) return false;
+
             foreach (var seg in routeSegments)
                 if (seg.DistanceTo(pos) < cfg.routeKeepClearMargin + worldRadius) return false;
 
+            float singleClearance = (centerPass ? cfg.baseCenterSingleGap : cfg.minSingleGap) * 0.5f;
             foreach (var other in placed)
             {
-                float clearance = other.groupId == groupId ? cfg.minIntraClusterClearance : cfg.minSingleGap * 0.5f;
+                float clearance = other.groupId == groupId ? cfg.minIntraClusterClearance : singleClearance;
                 if (Vector2.Distance(other.pos, pos) < other.radius + worldRadius + clearance)
                     return false;
             }
 
-            if (!groundCollider.Raycast(new Ray(new Vector3(pos.x, 50f, pos.y), Vector3.down), out centerHit, 120f))
+            if (!RaycastGround(groundCollider, pos, out centerHit))
                 return false;
 
             float sampleR = Mathf.Max(0.15f, worldRadius * 0.45f);
@@ -772,12 +1198,36 @@ namespace ArtemisX.EditorTools
                 float sx = pos.x + off.x;
                 float sz = pos.y + off.y;
                 if (EdgeFactor(terrainCfg, sx, sz) > 0.05f) return false;
-                if (!groundCollider.Raycast(new Ray(new Vector3(sx, 50f, sz), Vector3.down), out RaycastHit footHit, 120f))
+                if (!RaycastGround(groundCollider, new Vector2(sx, sz), out RaycastHit footHit))
                     return false;
                 if (footHit.point.y < minFootY) minFootY = footHit.point.y;
             }
 
             return true;
+        }
+
+        static bool RaycastGround(MeshCollider groundCollider, Vector2 posXZ, out RaycastHit hit)
+        {
+            return groundCollider.Raycast(new Ray(new Vector3(posXZ.x, 50f, posXZ.y), Vector3.down), out hit, 120f);
+        }
+
+        static float ComputeFootMinY(MeshCollider groundCollider, Vector2 posXZ, float worldRadius, float fallbackY)
+        {
+            float sampleR = Mathf.Max(0.15f, worldRadius * 0.45f);
+            float minFootY = fallbackY;
+            Vector2[] offsets =
+            {
+                new Vector2(sampleR, 0f),
+                new Vector2(-sampleR, 0f),
+                new Vector2(0f, sampleR),
+                new Vector2(0f, -sampleR),
+            };
+            foreach (var off in offsets)
+            {
+                if (RaycastGround(groundCollider, posXZ + off, out RaycastHit footHit) && footHit.point.y < minFootY)
+                    minFootY = footHit.point.y;
+            }
+            return minFootY;
         }
 
         static Quaternion ComputeRockRotation(RockScatterConfig cfg, Vector3 surfaceNormal, System.Random rng)

@@ -25,27 +25,93 @@ MonoBehaviour:
   - {fileID: 7994543874786442729, guid: eb172159978624ac5bd712b254feaca8, type: 3}
   - {fileID: 2384587081472480904, guid: 782d6f2460ff646e3a8daff3073e5189, type: 3}
   - {fileID: 3533394247535206873, guid: ac8d41f1dcfc74e8f83c2fde0d423419, type: 3}
-  targetRockCount: 235
+  targetRockCount: 215
   clusterSizeRange: {x: 3, y: 7}
   clusterProbability: 0.62
   clusterSpreadRadius: {x: 0.2, y: 1.8}
-  minClusterGap: 4.8
-  minSingleGap: 2.2
+  minClusterGap: 4.6
+  minSingleGap: 2
   minIntraClusterClearance: 0.12
+  baseCenterQuotaFraction: 0.2
+  baseCenterRadius: 15.5
+  baseCenterMinRadius: 2
+  baseCenterMaxScale: 1.3
+  baseCenterClusterGap: 2.8
+  baseCenterSingleGap: 1.25
   scaleRange: {x: 0.4, y: 2.5}
   scaleBiasPower: 2.4
   maxTiltDegrees: 10
   normalAlignBlend: 0.3
   sinkFractionRange: {x: 0.06, y: 0.14}
-  plainDensity: 0.15
+  plainDensity: 0.16
   craterRimDensity: 1
   craterBowlDensity: 0.28
   hillDensity: 0.82
-  innerIslandQuotaFraction: 0.28
+  innerIslandQuotaFraction: 0.26
   innerIslandRadius: 26
   islandEdgeMargin: 8
-  buildingKeepClearMargin: 2.5
-  nearBuildingSoftBand: 3.2
-  nearBuildingDensityFactor: 0.12
-  existingRockMargin: 1.5
-  routeKeepClearMargin: 1.6
+  buildingKeepClearMargin: 1.45
+  propKeepClearMargin: 0.95
+  nearBuildingSoftBand: 1.2
+  nearBuildingDensityFactor: 0.68
+  existingRockMargin: 1.4
+  routeKeepClearMargin: 1.35
+  hotspotKeepClearMargin: 3.4
+  icePrefabs:
+  - {fileID: 3063780168261956092, guid: 70fb0f1dac3864fcb9e9dc2ef918ff67, type: 3}
+  - {fileID: 8245738470382159306, guid: 7e81bfb594e244a9984eed7bdd19d157, type: 3}
+  mineralPrefabs:
+  - {fileID: 4205002168939322927, guid: 1e50d8a04545746d298c9b175dab5d7b, type: 3}
+  - {fileID: 489777547794074363, guid: 5e9798db6804941429c9a9ee544e5833, type: 3}
+  - {fileID: 9174992080569683840, guid: b00f5b4b3b62140f9a6b7940d58a2773, type: 3}
+  - {fileID: 1074827031236392394, guid: a3b48bf036540474b8113d6ee2f6870b, type: 3}
+  - {fileID: 6171502973984337058, guid: f1ef4f886394044aea1008a3f4c51498, type: 3}
+  - {fileID: 7046914845798731159, guid: 4d45a9918f95041568dc68725de6836c, type: 3}
+  - {fileID: 6698948853543854181, guid: 82ff8683464d94250ad7fd80ac08c742, type: 3}
+  - {fileID: 7208036344063895042, guid: e36e7c72a39494fefbfbd952db3db76b, type: 3}
+  quarryChunkPrefabs:
+  - {fileID: 8148847363575535046, guid: 0ba2b7790bb1e41078f4e62ed32250b1, type: 3}
+  - {fileID: 2645456400500345989, guid: b30cd1b3c2fd24e7881f92fa8bfeafbd, type: 3}
+  beaconPrefab: {fileID: 9201880669067036761, guid: 7576ccd6d7a0c483983175bd07e4bbb5, type: 3}
+  ringMaterial: {fileID: 2100000, guid: 9dc331396618d4e3ab266b7a386212cd, type: 2}
+  hotspots:
+  - id: Hotspot_Ice_SW
+    displayName: Southwest Crater Ice Deposit
+    primaryResource: 2
+    center: {x: -11, y: -11.5}
+    depositRadius: 2.1
+    roverStopDistance: 2.6
+    primaryNodeCount: 6
+    borderRockCount: 5
+  - id: Hotspot_Minerals_SSE
+    displayName: South Basin Mineral Vein
+    primaryResource: 1
+    center: {x: 10, y: -12.5}
+    depositRadius: 2.1
+    roverStopDistance: 2.6
+    primaryNodeCount: 7
+    borderRockCount: 5
+  - id: Hotspot_Rocks_East
+    displayName: East Regolith Quarry
+    primaryResource: 0
+    center: {x: 18.5, y: -2.5}
+    depositRadius: 2.2
+    roverStopDistance: 2.7
+    primaryNodeCount: 6
+    borderRockCount: 6
+  - id: Hotspot_Minerals_NE
+    displayName: Northeast Ridge Ore Deposit
+    primaryResource: 1
+    center: {x: 14.5, y: 13.5}
+    depositRadius: 2
+    roverStopDistance: 2.5
+    primaryNodeCount: 7
+    borderRockCount: 5
+  - id: Hotspot_Ice_NW
+    displayName: Northwest Shadow Ice Pocket
+    primaryResource: 2
+    center: {x: -12.5, y: 11}
+    depositRadius: 2
+    roverStopDistance: 2.5
+    primaryNodeCount: 6
+    borderRockCount: 5
