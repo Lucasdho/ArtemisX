@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace ArtemisX.UI.Dialogue
 {
-    /// <summary>Displays "Day X / 30" using DialogueConfig.missionLength alongside DayManager.</summary>
+    /// <summary>Displays "Day X" alongside DayManager. The day cap is announced by Bauzer, not shown in the HUD.</summary>
     public class MissionDayCapView : MonoBehaviour
     {
         [SerializeField] private DayManager days;
@@ -58,7 +58,7 @@ namespace ArtemisX.UI.Dialogue
         private void ApplyText(int day)
         {
             if (label != null)
-                label.text = $"Day {day} / {MissionLength}";
+                label.text = $"Day {day}";
         }
     }
 }
