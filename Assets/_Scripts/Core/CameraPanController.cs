@@ -35,6 +35,8 @@ namespace ArtemisX.Core
         private Vector3 focusLookTarget;
         private float focusFromDistance;
         private float focusToDistance;
+        private float focusFromYaw;
+        private float focusToYaw;
         private System.Action onFocusArrived;
 
         /// <summary>True while actively dragging/tilting or immediately after a drag release on this frame.</summary>
@@ -98,6 +100,7 @@ namespace ArtemisX.Core
             focusFromTarget = lookTarget;
             focusLookTarget = ClampLookTarget(groundPoint + forwardXZ * config.focusForwardOffset);
             focusFromDistance = distance;
+            focusFromYaw = focusToYaw = yaw;
             focusToDistance = desiredZoom > 0f
                 ? Mathf.Clamp(desiredZoom, config.distanceRange.x, config.distanceRange.y)
                 : targetDistance;
@@ -125,7 +128,7 @@ namespace ArtemisX.Core
         /// Smoothly zooms out to the home look target at the overview distance so the whole base is visible,
         /// then calls <paramref name="onArrived"/>. Any player pan/zoom interrupts it (the callback still runs).
         /// </summary>
-        public void ZoomOutToBase(System.Action onArrived = null)
+        public void ZoomOutToBase(System.Action onArrived = null, bool endDayView = false)
         {
             if (config == null) { onArrived?.Invoke(); return; }
             onFocusArrived = null;
@@ -134,14 +137,26 @@ namespace ArtemisX.Core
             dragging = false;
 
             focusFromTarget = lookTarget;
-            focusLookTarget = ClampLookTarget(config.homeLookTarget);
+            focusFromYaw = yaw;
+            focusToYaw = yaw;
+            Vector3 overviewTarget = config.homeLookTarget;
+            if (endDayView)
+            {
+                // Nudge the end-of-day view: rotate a little and shift the look point sideways so the base sits centered.
+                focusToYaw = yaw + config.endDayYawOffset;
+                Quaternion toRot = Quaternion.Euler(0f, focusToYaw, 0f);
+                overviewTarget += toRot * new Vector3(config.endDayLookOffset.x, 0f, config.endDayLookOffset.y);
+            }
+            focusLookTarget = ClampLookTarget(overviewTarget);
             focusFromDistance = distance;
             focusToDistance = Mathf.Clamp(config.overviewDistance, config.distanceRange.x, config.distanceRange.y);
 
             bool nearTarget = (focusLookTarget - focusFromTarget).sqrMagnitude < 0.01f;
             bool nearZoom = Mathf.Abs(focusToDistance - focusFromDistance) < 0.1f;
-            if (nearTarget && nearZoom || config.overviewSeconds <= 0f)
+            bool nearYaw = Mathf.Abs(focusToYaw - focusFromYaw) < 0.1f;
+            if (nearTarget && nearZoom && nearYaw || config.overviewSeconds <= 0f)
             {
+                yaw = focusToYaw;
                 lookTarget = focusLookTarget;
                 distance = targetDistance = focusToDistance;
                 focusing = false;
@@ -284,6 +299,7 @@ namespace ArtemisX.Core
             float t = Mathf.Clamp01(focusElapsed / Mathf.Max(0.0001f, focusDuration));
             float k = EaseInOutCubic(t);
             lookTarget = Vector3.LerpUnclamped(focusFromTarget, focusLookTarget, k);
+            yaw = Mathf.LerpUnclamped(focusFromYaw, focusToYaw, k);
             distance = targetDistance = Mathf.LerpUnclamped(focusFromDistance, focusToDistance, k);
             if (t >= 1f) EndFocus(true);
         }

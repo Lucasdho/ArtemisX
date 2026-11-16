@@ -45,5 +45,11 @@ namespace ArtemisX.Core
         [Min(1f)] public float overviewDistance = 36f;
         [Tooltip("Seconds the camera takes to zoom out to the base overview.")]
         [Min(0f)] public float overviewSeconds = 1.2f;
+
+        [Header("End Day view")]
+        [Tooltip("Extra yaw (degrees) applied while zooming out for the End Day animation.")]
+        [Range(-45f, 45f)] public float endDayYawOffset = 12f;
+        [Tooltip("Shifts the look point in camera space during End Day: x = screen right (negative = left), y = forward.")]
+        public Vector2 endDayLookOffset = new Vector2(-3f, 0f);
     }
 }

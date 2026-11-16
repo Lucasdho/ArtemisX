@@ -46,7 +46,7 @@ namespace ArtemisX.Visuals
             nightResolved = false;
             TransitionStarted?.Invoke();
             if (panController == null) panController = FindAnyObjectByType<CameraPanController>();
-            if (panController != null && panController.isActiveAndEnabled) panController.ZoomOutToBase();
+            if (panController != null && panController.isActiveAndEnabled) panController.ZoomOutToBase(null, true);
             running = StartCoroutine(Play(weather));
         }
 
