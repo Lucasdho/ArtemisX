@@ -192,6 +192,9 @@ namespace ArtemisX.UI.StartScreen
         private static string handoffNickname;
         private static Sprite handoffPortrait;
 
+        /// <summary>True once CharacterSelect has handed a choice over to the gameplay scene.</summary>
+        public static bool HasHandoff => handoffValid;
+
         /// <summary>Restores the choice made in CharacterSelect after a scene load. No-op if none was made.</summary>
         public void RestoreHandoff()
         {

@@ -21,6 +21,8 @@ namespace ArtemisX.UI
         [SerializeField] private StartScreenView startScreen;
         [Tooltip("Optional title screen shown before the start screen on a fresh load (skipped on Play Again).")]
         [SerializeField] private TitleScreenView titleScreen;
+        [Tooltip("Scene PLAY on the title screen loads. Falls back to the in-scene start screen if it isn't in the build.")]
+        [SerializeField] private string characterSelectScene = "CharacterSelect";
         [SerializeField] private DialogueRunner runner;
         [SerializeField] private StoryDirector story;
         [SerializeField] private GameplayHud hud;
@@ -73,8 +75,25 @@ namespace ArtemisX.UI
             }
 
             if (hud != null) hud.Cinematic = true;
-            if (titleScreen != null && !replaying) titleScreen.Show(BeginStartFlow);
+            if (!replaying && PlayerRunProfile.HasHandoff)
+            {
+                // Came from the CharacterSelect scene: skip the title and the in-scene start screen.
+                OnLaunch(profile != null ? profile.selectedCharacter : 0,
+                         profile != null ? profile.playerNickname : null);
+            }
+            else if (titleScreen != null && !replaying)
+            {
+                titleScreen.Show(GoToCharacterSelect);
+            }
             else BeginStartFlow();
+        }
+
+        private void GoToCharacterSelect()
+        {
+            if (!string.IsNullOrEmpty(characterSelectScene) && Application.CanStreamedLevelBeLoaded(characterSelectScene))
+                SceneManager.LoadScene(characterSelectScene);
+            else
+                BeginStartFlow();
         }
 
         private void BeginStartFlow()
