@@ -4,6 +4,7 @@ using ArtemisX.Simulation;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace ArtemisX.UI.Tests
@@ -623,6 +624,228 @@ namespace ArtemisX.UI.Tests
             card.ShowMissions();
             Assert.IsFalse(rowObjects[3].activeSelf);
             Assert.AreEqual(278f, cardRt.sizeDelta.y, 0.1f);
+        }
+
+        [Test]
+        public void RoverSiteMarkerView_ToyPillFlag_HoverAndSelectSwapSpriteAndScale()
+        {
+            var go = Track(new GameObject("ToyMarkerTest", typeof(RectTransform), typeof(Button)));
+            var marker = go.AddComponent<RoverSiteMarkerView>();
+            var pillImg = Track(new GameObject("FlagPill", typeof(Image))).GetComponent<Image>();
+            var rewardTxt = Track(new GameObject("Reward", typeof(Text))).GetComponent<Text>();
+            var nameTxt = Track(new GameObject("Name", typeof(Text))).GetComponent<Text>();
+            var riskTxt = Track(new GameObject("Risk", typeof(Text))).GetComponent<Text>();
+            var normalSpr = Track(MakeSprite("marker-pill"));
+            var selectedSpr = Track(MakeSprite("marker-pill-selected"));
+            var riskOn = Track(MakeSprite("risk-on"));
+            var riskOff = Track(MakeSprite("risk-off"));
+            var blocks = new Image[4];
+            for (int i = 0; i < 4; i++) blocks[i] = Track(new GameObject("B" + i, typeof(Image))).GetComponent<Image>();
+
+            var so = new SerializedObject(marker);
+            so.FindProperty("button").objectReferenceValue = go.GetComponent<Button>();
+            so.FindProperty("nameLabel").objectReferenceValue = nameTxt;
+            so.FindProperty("riskLabel").objectReferenceValue = riskTxt;
+            so.FindProperty("flagImage").objectReferenceValue = pillImg;
+            so.FindProperty("pillNormalSprite").objectReferenceValue = normalSpr;
+            so.FindProperty("pillSelectedSprite").objectReferenceValue = selectedSpr;
+            so.FindProperty("toyRewardLabel").objectReferenceValue = rewardTxt;
+            so.FindProperty("riskOnSprite").objectReferenceValue = riskOn;
+            so.FindProperty("riskOffSprite").objectReferenceValue = riskOff;
+            var bp = so.FindProperty("toyRiskBlocks");
+            bp.arraySize = 4;
+            for (int i = 0; i < 4; i++) bp.GetArrayElementAtIndex(i).objectReferenceValue = blocks[i];
+            so.ApplyModifiedPropertiesWithoutUndo();
+
+            marker.Show("Cryo Abyss", 18, 32, 0, 50, true);
+            Assert.AreEqual("+32", rewardTxt.text);
+            Assert.AreEqual(2, CountLit(blocks, riskOn));
+
+            marker.OnPointerEnter(new PointerEventData(EventSystem.current));
+            Assert.AreEqual(selectedSpr, pillImg.sprite);
+            Assert.AreEqual(1.08f, go.transform.localScale.x, 0.001f);
+
+            marker.OnPointerExit(new PointerEventData(EventSystem.current));
+            Assert.AreEqual(normalSpr, pillImg.sprite);
+            Assert.AreEqual(1f, go.transform.localScale.x, 0.001f);
+
+            marker.SetSelected(true);
+            Assert.AreEqual(selectedSpr, pillImg.sprite);
+            Assert.AreEqual(1.08f, go.transform.localScale.x, 0.001f);
+        }
+
+        [Test]
+        public void ModalCardView_EventChoiceMode_RendersChoicesAndOmitsEmptyOutcome()
+        {
+            var root = Track(new GameObject("ModalRoot", typeof(RectTransform)));
+            var card = Track(new GameObject("Card", typeof(RectTransform)));
+            card.transform.SetParent(root.transform, false);
+            var modal = root.AddComponent<ModalCardView>();
+            var bannerTxt = Track(new GameObject("Banner", typeof(Text))).GetComponent<Text>();
+            var keplerRow = Track(new GameObject("KeplerRow"));
+            var keplerTxt = Track(new GameObject("KeplerTxt", typeof(Text))).GetComponent<Text>();
+            var cardsRow = Track(new GameObject("CardsRow"));
+            var footerRow = Track(new GameObject("FooterRow"));
+            var footerTxt = Track(new GameObject("FooterTxt", typeof(Text))).GetComponent<Text>();
+
+            var so = new SerializedObject(modal);
+            so.FindProperty("root").objectReferenceValue = root;
+            so.FindProperty("card").objectReferenceValue = card.GetComponent<RectTransform>();
+            so.FindProperty("bannerText").objectReferenceValue = bannerTxt;
+            so.FindProperty("keplerBubbleRow").objectReferenceValue = keplerRow;
+            so.FindProperty("keplerBubbleText").objectReferenceValue = keplerTxt;
+            so.FindProperty("choiceCardsRow").objectReferenceValue = cardsRow;
+            so.FindProperty("footerLockRow").objectReferenceValue = footerRow;
+            so.FindProperty("footerLockText").objectReferenceValue = footerTxt;
+
+            var slotsProp = so.FindProperty("choiceCards");
+            slotsProp.arraySize = 2;
+            var outcomeRows = new GameObject[2];
+            var costRows = new GameObject[2];
+            var costAmounts = new Text[2];
+            var outcomeTexts = new Text[2];
+            var btnLabels = new Text[2];
+            for (int i = 0; i < 2; i++)
+            {
+                var cGo = Track(new GameObject("C" + i));
+                var tTxt = Track(new GameObject("Title" + i, typeof(Text))).GetComponent<Text>();
+                costRows[i] = Track(new GameObject("CostRow" + i));
+                costAmounts[i] = Track(new GameObject("CostAmt" + i, typeof(Text))).GetComponent<Text>();
+                outcomeRows[i] = Track(new GameObject("OutRow" + i));
+                outcomeTexts[i] = Track(new GameObject("OutTxt" + i, typeof(Text))).GetComponent<Text>();
+                var btn = Track(new GameObject("Btn" + i, typeof(Image), typeof(Button))).GetComponent<Button>();
+                btnLabels[i] = Track(new GameObject("BtnLbl" + i, typeof(Text))).GetComponent<Text>();
+
+                var el = slotsProp.GetArrayElementAtIndex(i);
+                el.FindPropertyRelative("root").objectReferenceValue = cGo;
+                el.FindPropertyRelative("title").objectReferenceValue = tTxt;
+                el.FindPropertyRelative("costRow").objectReferenceValue = costRows[i];
+                el.FindPropertyRelative("costAmount").objectReferenceValue = costAmounts[i];
+                el.FindPropertyRelative("outcomeRow").objectReferenceValue = outcomeRows[i];
+                el.FindPropertyRelative("outcomeText").objectReferenceValue = outcomeTexts[i];
+                el.FindPropertyRelative("button").objectReferenceValue = btn;
+                el.FindPropertyRelative("buttonImage").objectReferenceValue = btn.GetComponent<Image>();
+                el.FindPropertyRelative("buttonLabel").objectReferenceValue = btnLabels[i];
+            }
+            so.ApplyModifiedPropertiesWithoutUndo();
+
+            modal.Show(new ModalCardContent
+            {
+                banner = "Water leak!",
+                bauzerLine = "Filter is leaking!",
+                footerHint = "Answer to unlock Next day",
+                choices = new[]
+                {
+                    new ModalEventChoice { title = "Fix Filter", costType = ResourceType.Parts, costAmount = 5, outcomeText = "Stops the leak", outcomeRisky = false, buttonLabel = "Fix it", enabled = true },
+                    new ModalEventChoice { title = "Skip", costAmount = 0, outcomeText = null, buttonLabel = "Skip", enabled = true }
+                }
+            });
+
+            Assert.AreEqual("Water leak!", bannerTxt.text);
+            Assert.IsTrue(costRows[0].activeSelf);
+            Assert.AreEqual("−5", costAmounts[0].text);
+            Assert.IsFalse(costRows[1].activeSelf);
+            Assert.IsTrue(outcomeRows[0].activeSelf);
+            Assert.IsFalse(outcomeRows[1].activeSelf);
+            Assert.AreEqual("Fix it", btnLabels[0].text);
+            Assert.AreEqual("Answer to unlock Next day", footerTxt.text);
+        }
+
+        [Test]
+        public void BuildNextFlagView_FollowsNextSlotTintsWhenUnaffordableAndHidesWhenAllBuilt()
+        {
+            var simGo = Track(new GameObject("BuildFlagSim"));
+            var gameCfg = Track(ScriptableObject.CreateInstance<GameConfig>());
+            var res = simGo.AddComponent<ResourceManager>();
+            res.Initialize(gameCfg);
+            res.Add(ResourceType.Parts, -15); // 5 Parts: cannot afford 15 Parts for Processing Plant
+
+            var buildCfg = Track(ScriptableObject.CreateInstance<BuildingConfig>());
+            var bldg = simGo.AddComponent<BuildingManager>();
+            bldg.Initialize(buildCfg, res);
+
+            var slot0Go = Track(new GameObject("Slot0"));
+            var ring0 = Track(new GameObject("GhostRing"));
+            ring0.transform.SetParent(slot0Go.transform, false);
+            var lr0 = ring0.AddComponent<LineRenderer>();
+            var slot0 = slot0Go.AddComponent<GhostSlotInteractable>();
+            var s0So = new SerializedObject(slot0);
+            s0So.FindProperty("buildings").objectReferenceValue = bldg;
+            s0So.FindProperty("buildingIndex").intValue = 0;
+            s0So.FindProperty("ghostRing").objectReferenceValue = ring0;
+            s0So.ApplyModifiedPropertiesWithoutUndo();
+
+            var slot1Go = Track(new GameObject("Slot1"));
+            var slot1 = slot1Go.AddComponent<GhostSlotInteractable>();
+            var s1So = new SerializedObject(slot1);
+            s1So.FindProperty("buildings").objectReferenceValue = bldg;
+            s1So.FindProperty("buildingIndex").intValue = 1;
+            s1So.ApplyModifiedPropertiesWithoutUndo();
+
+            var slot2Go = Track(new GameObject("Slot2"));
+            var slot2 = slot2Go.AddComponent<GhostSlotInteractable>();
+            var s2So = new SerializedObject(slot2);
+            s2So.FindProperty("buildings").objectReferenceValue = bldg;
+            s2So.FindProperty("buildingIndex").intValue = 2;
+            s2So.ApplyModifiedPropertiesWithoutUndo();
+
+            var canvasGo = Track(new GameObject("Canvas", typeof(RectTransform), typeof(Canvas)));
+            var flagGo = Track(new GameObject("Flag", typeof(RectTransform)));
+            flagGo.transform.SetParent(canvasGo.transform, false);
+            var visualGo = Track(new GameObject("Visual", typeof(RectTransform)));
+            visualGo.transform.SetParent(flagGo.transform, false);
+            var pillImg = Track(new GameObject("Pill", typeof(Image))).GetComponent<Image>();
+            var nameTxt = Track(new GameObject("Name", typeof(Text))).GetComponent<Text>();
+            var c0Root = Track(new GameObject("C0"));
+            var c0Amt = Track(new GameObject("C0Amt", typeof(Text))).GetComponent<Text>();
+            var c1Root = Track(new GameObject("C1"));
+            var c1Amt = Track(new GameObject("C1Amt", typeof(Text))).GetComponent<Text>();
+
+            var flag = flagGo.AddComponent<BuildNextFlagView>();
+            var fSo = new SerializedObject(flag);
+            fSo.FindProperty("buildings").objectReferenceValue = bldg;
+            fSo.FindProperty("resources").objectReferenceValue = res;
+            var slotsProp = fSo.FindProperty("slots");
+            slotsProp.arraySize = 3;
+            slotsProp.GetArrayElementAtIndex(0).objectReferenceValue = slot0;
+            slotsProp.GetArrayElementAtIndex(1).objectReferenceValue = slot1;
+            slotsProp.GetArrayElementAtIndex(2).objectReferenceValue = slot2;
+            fSo.FindProperty("visualRoot").objectReferenceValue = visualGo;
+            fSo.FindProperty("pillImage").objectReferenceValue = pillImg;
+            fSo.FindProperty("nameLabel").objectReferenceValue = nameTxt;
+            var stProp = fSo.FindProperty("costStickers");
+            stProp.arraySize = 2;
+            stProp.GetArrayElementAtIndex(0).FindPropertyRelative("root").objectReferenceValue = c0Root;
+            stProp.GetArrayElementAtIndex(0).FindPropertyRelative("amount").objectReferenceValue = c0Amt;
+            stProp.GetArrayElementAtIndex(1).FindPropertyRelative("root").objectReferenceValue = c1Root;
+            stProp.GetArrayElementAtIndex(1).FindPropertyRelative("amount").objectReferenceValue = c1Amt;
+            fSo.ApplyModifiedPropertiesWithoutUndo();
+
+            flag.RefreshTarget();
+            Assert.AreEqual("Processing Plant", nameTxt.text);
+            Assert.AreEqual("−15", c0Amt.text);
+            Assert.AreEqual("−20", c1Amt.text);
+            Assert.IsFalse(lr0.enabled, "Old ring LineRenderer must be disabled on flagged slot.");
+            Assert.AreEqual(0.690f, pillImg.color.r, 0.01f, "Unaffordable pill should be #B0B0B0.");
+
+            // Afford & build slot 0 -> moves to slot 1
+            res.Add(ResourceType.Parts, 100);
+            res.Add(ResourceType.Power, 100);
+            Assert.IsTrue(bldg.TryBuildNext());
+            flag.RefreshTarget();
+            Assert.AreEqual("Electrolyser", nameTxt.text);
+            Assert.AreEqual("−25", c0Amt.text);
+            Assert.AreEqual(1f, pillImg.color.r, 0.01f);
+
+            // Build slot 1 & slot 2 -> hides flag
+            res.Add(ResourceType.Parts, 50);
+            res.Add(ResourceType.Power, 50);
+            Assert.IsTrue(bldg.TryBuildNext());
+            res.Add(ResourceType.Parts, 50);
+            res.Add(ResourceType.Power, 50);
+            Assert.IsTrue(bldg.TryBuildNext());
+            flag.RefreshTarget();
+            Assert.IsFalse(visualGo.activeSelf);
         }
     }
 }
