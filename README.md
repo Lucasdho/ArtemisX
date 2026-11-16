@@ -79,5 +79,7 @@ Guided by **Bauzer** (the base computer, named in honour of Dr. Claudia Maria Ba
 
 **Local Event:** Campinas, Brazil — NASA Space Apps Challenge 2026
 
-- **Lucas Francisco Salman de Oliveira** — Team Owner, Game Design & Development
-- **Beatriz Montali Pucharelli** — Team Member, Design & Ideas
+- **Lucas Francisco Salman de Oliveira**
+- **Beatriz Montali Pucharelli**
+- **Rafael Augusto Silva Tobia**
+- **Marina Montali Pucharelli**
