@@ -47,13 +47,14 @@ namespace ArtemisX.UI
 
         public void Open()
         {
-            if (IsOpen || cameraRig == null) return;
+            if (IsOpen || cameraRig == null || (hud != null && hud.IsWorldInputBlocked)) return;
             IsOpen = true;
             if (panController != null) panController.enabled = false;
             savedPosition = cameraRig.position;
             savedRotation = cameraRig.rotation;
 
             RefreshMarkers();
+            if (markerLayer != null) markerLayer.gameObject.SetActive(true);
             if (siteCard != null) siteCard.Hide();
             if (titleLabel != null && rover != null) titleLabel.text = "Send " + rover.RoverName + " to a site";
 
@@ -129,6 +130,11 @@ namespace ArtemisX.UI
         private void LateUpdate()
         {
             if (!IsOpen || mapRoot == null || !mapRoot.activeSelf || markerLayer == null) return;
+            bool dialogueOpen = hud != null && hud.IsDialogueOpen;
+            if (markerLayer.gameObject.activeSelf == dialogueOpen)
+                markerLayer.gameObject.SetActive(!dialogueOpen);
+            if (dialogueOpen) return;
+
             Camera cam = hud != null ? hud.ViewCamera : Camera.main;
             if (cam == null) return;
             float height = config != null ? config.markerHeight : 1.5f;
@@ -158,6 +164,8 @@ namespace ArtemisX.UI
             var reason = rover.CanDispatch(siteId);
             if (reason != ActionBlockReason.None)
             {
+                if (siteCard != null) siteCard.Hide();
+                Close();
                 if (hud != null) hud.ShowBlockedTip(reason);
                 return;
             }

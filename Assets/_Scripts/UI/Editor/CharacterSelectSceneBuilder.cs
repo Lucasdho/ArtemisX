@@ -23,6 +23,8 @@ namespace ArtemisX.UI.EditorTools
         private const string ToyUiRoot = "Assets/GameAssets/Free Icon Pack v3.1 (Basic)/Claude outputs/ToyUI/";
         private const string ProfilePath = "Assets/_Config/UI/PlayerRunProfile.asset";
         private const string ControllerPath = "Assets/_Animations/AstronautWalker.controller";
+        private const string GroundPrefabPath = "Assets/_Prefabs/Environment/LunarGround.prefab";
+        private const string GroundMeshPath = "Assets/_Materials/LunarGround_HandMadeBase.asset";
         private const string GroundMatPath = "Assets/_Materials/M_LunarGround_HandMadeBase.mat";
         private const string CharacterMatPath = "Assets/_Materials/M_QuaterniusAtlas.mat";
         private const string VolumeProfilePath = "Assets/Settings/SampleSceneProfile.asset";
@@ -103,7 +105,7 @@ namespace ArtemisX.UI.EditorTools
             CreateDirectionalLight("FillLight_Warm", new Vector3(8f, 25f, 0f), new Color(1.0f, 0.82f, 0.65f, 1f), 0.28f, LightShadows.None);
 
             // --- Lunar Stage Environment ---
-            BuildEnvironment();
+            var groundCollider = BuildEnvironment();
 
             // --- Face Photo Camera & Dedicated Face Light (off except during Render()) ---
             var photoCamGo = new GameObject("FacePhotoCamera");
@@ -132,7 +134,8 @@ namespace ArtemisX.UI.EditorTools
 
             for (int i = 0; i < 4; i++)
             {
-                selectableAstronauts[i] = BuildAstronautSlot(i, xPositions[i], animController);
+                float groundY = SampleGroundY(groundCollider, xPositions[i], 0f);
+                selectableAstronauts[i] = BuildAstronautSlot(i, xPositions[i], groundY, animController);
             }
 
             // --- EventSystem (New Input System) ---
@@ -146,26 +149,42 @@ namespace ArtemisX.UI.EditorTools
             EditorSceneManager.SaveScene(scene, ScenePath);
         }
 
-        private static void BuildEnvironment()
+        private static MeshCollider BuildEnvironment()
         {
             var envRoot = new GameObject("Environment");
 
-            // Lunar ground disc/plane
-            var ground = GameObject.CreatePrimitive(PrimitiveType.Plane);
-            ground.name = "LunarGround";
-            ground.transform.SetParent(envRoot.transform, false);
-            ground.transform.position = Vector3.zero;
-            ground.transform.localScale = new Vector3(6f, 1f, 6f);
-            var groundMat = Load<Material>(GroundMatPath);
-            if (groundMat != null)
-                ground.GetComponent<Renderer>().sharedMaterial = groundMat;
+            MeshCollider groundCollider = null;
+            var groundPrefab = Load<GameObject>(GroundPrefabPath);
+            if (groundPrefab != null)
+            {
+                var ground = (GameObject)PrefabUtility.InstantiatePrefab(groundPrefab);
+                ground.name = "LunarGround";
+                ground.transform.SetParent(envRoot.transform, false);
+                ground.transform.position = Vector3.zero;
+                ground.transform.localScale = Vector3.one;
+                groundCollider = ground.GetComponent<MeshCollider>();
+            }
+            else
+            {
+                var ground = new GameObject("LunarGround");
+                ground.transform.SetParent(envRoot.transform, false);
+                ground.transform.position = Vector3.zero;
+                ground.transform.localScale = Vector3.one;
+                var mesh = Load<Mesh>(GroundMeshPath);
+                var mat = Load<Material>(GroundMatPath);
+                ground.AddComponent<MeshFilter>().sharedMesh = mesh;
+                ground.AddComponent<MeshRenderer>().sharedMaterial = mat;
+                groundCollider = ground.AddComponent<MeshCollider>();
+                groundCollider.sharedMesh = mesh;
+            }
 
             // Distant background moonbase dome with warm beacon & solar panels (centered in horizon gap)
             PlaceProp("Assets/GameAssets/KayKit_Space_Base_Bits_1.0_SOURCE/Assets/fbx(unity)/dome.fbx",
-                envRoot.transform, new Vector3(0.0f, 0f, 14.5f), Quaternion.Euler(0f, -20f, 0f), 0.58f);
+                envRoot.transform, new Vector3(0.0f, 0f, 14.5f), Quaternion.Euler(0f, -20f, 0f), 0.58f, groundCollider);
+            float domeGroundY = SampleGroundY(groundCollider, 0.0f, 14.2f);
             var domeGlowGo = new GameObject("DomeBeaconLight");
             domeGlowGo.transform.SetParent(envRoot.transform, false);
-            domeGlowGo.transform.position = new Vector3(0.0f, 0.9f, 14.2f);
+            domeGlowGo.transform.position = new Vector3(0.0f, domeGroundY + 0.9f, 14.2f);
             var domeGlow = domeGlowGo.AddComponent<Light>();
             domeGlow.type = LightType.Point;
             domeGlow.color = new Color(1.0f, 0.65f, 0.28f, 1f);
@@ -173,18 +192,18 @@ namespace ArtemisX.UI.EditorTools
             domeGlow.range = 6f;
 
             PlaceProp("Assets/GameAssets/KayKit_Space_Base_Bits_1.0_SOURCE/Assets/fbx(unity)/solarpanel.fbx",
-                envRoot.transform, new Vector3(0.95f, 0f, 14.8f), Quaternion.Euler(0f, -28f, 0f), 0.5f);
+                envRoot.transform, new Vector3(0.95f, 0f, 14.8f), Quaternion.Euler(0f, -28f, 0f), 0.5f, groundCollider);
             PlaceProp("Assets/GameAssets/KayKit_Space_Base_Bits_1.0_SOURCE/Assets/fbx(unity)/solarpanel.fbx",
-                envRoot.transform, new Vector3(-0.95f, 0f, 15.0f), Quaternion.Euler(0f, 22f, 0f), 0.5f);
+                envRoot.transform, new Vector3(-0.95f, 0f, 15.0f), Quaternion.Euler(0f, 22f, 0f), 0.5f, groundCollider);
 
             // Framed lunar rocks & ridge silhouettes (clear of astronaut silhouettes)
-            PlaceProp("Assets/_Prefabs/Environment/Rock_Quat_Large_1.prefab", envRoot.transform, new Vector3(-4.8f, 0f, 4.2f), Quaternion.Euler(0f, 20f, 0f), 0.65f);
-            PlaceProp("Assets/_Prefabs/Environment/Rock_Quat_Large_2.prefab", envRoot.transform, new Vector3(4.9f, 0f, 4.0f), Quaternion.Euler(0f, -45f, 0f), 0.68f);
-            PlaceProp("Assets/_Prefabs/Environment/Rock_Quat_Large_3.prefab", envRoot.transform, new Vector3(2.9f, -0.15f, 13.5f), Quaternion.Euler(0f, 12f, 0f), 0.9f);
-            PlaceProp("Assets/_Prefabs/Environment/Rock_Quat_1.prefab", envRoot.transform, new Vector3(-3.35f, 0f, -1.2f), Quaternion.Euler(0f, 15f, 0f), 0.42f);
-            PlaceProp("Assets/_Prefabs/Environment/Rock_Quat_3.prefab", envRoot.transform, new Vector3(3.4f, 0f, -1.1f), Quaternion.Euler(0f, -65f, 0f), 0.4f);
-            PlaceProp("Assets/_Prefabs/Environment/Rock_KayKit_A.prefab", envRoot.transform, new Vector3(-3.2f, 0f, 9.5f), Quaternion.Euler(0f, 40f, 0f), 0.48f);
-            PlaceProp("Assets/_Prefabs/Environment/Rock_KayKit_B.prefab", envRoot.transform, new Vector3(3.3f, 0f, 9.8f), Quaternion.Euler(0f, -20f, 0f), 0.48f);
+            PlaceProp("Assets/_Prefabs/Environment/Rock_Quat_Large_1.prefab", envRoot.transform, new Vector3(-4.8f, 0f, 4.2f), Quaternion.Euler(0f, 20f, 0f), 0.65f, groundCollider);
+            PlaceProp("Assets/_Prefabs/Environment/Rock_Quat_Large_2.prefab", envRoot.transform, new Vector3(4.9f, 0f, 4.0f), Quaternion.Euler(0f, -45f, 0f), 0.68f, groundCollider);
+            PlaceProp("Assets/_Prefabs/Environment/Rock_Quat_Large_3.prefab", envRoot.transform, new Vector3(2.9f, -0.15f, 13.5f), Quaternion.Euler(0f, 12f, 0f), 0.9f, groundCollider);
+            PlaceProp("Assets/_Prefabs/Environment/Rock_Quat_1.prefab", envRoot.transform, new Vector3(-3.35f, 0f, -1.2f), Quaternion.Euler(0f, 15f, 0f), 0.42f, groundCollider);
+            PlaceProp("Assets/_Prefabs/Environment/Rock_Quat_3.prefab", envRoot.transform, new Vector3(3.4f, 0f, -1.1f), Quaternion.Euler(0f, -65f, 0f), 0.4f, groundCollider);
+            PlaceProp("Assets/_Prefabs/Environment/Rock_KayKit_A.prefab", envRoot.transform, new Vector3(-3.2f, 0f, 9.5f), Quaternion.Euler(0f, 40f, 0f), 0.48f, groundCollider);
+            PlaceProp("Assets/_Prefabs/Environment/Rock_KayKit_B.prefab", envRoot.transform, new Vector3(3.3f, 0f, 9.8f), Quaternion.Euler(0f, -20f, 0f), 0.48f, groundCollider);
 
             // Subtle distant starfield particles
             var starsGo = new GameObject("Starfield");
@@ -219,12 +238,14 @@ namespace ArtemisX.UI.EditorTools
                 }
             }
             if (starMat != null) psr.sharedMaterial = starMat;
+
+            return groundCollider;
         }
 
-        private static SelectableAstronaut BuildAstronautSlot(int index, float xPos, RuntimeAnimatorController animController)
+        private static SelectableAstronaut BuildAstronautSlot(int index, float xPos, float yPos, RuntimeAnimatorController animController)
         {
             var slot = new GameObject($"Astronaut_{index}");
-            slot.transform.position = new Vector3(xPos, 0f, 0f);
+            slot.transform.position = new Vector3(xPos, yPos, 0f);
             slot.transform.rotation = Quaternion.Euler(0f, 180f, 0f); // Face -Z toward Main Camera
 
             // Collider for click selection
@@ -551,15 +572,23 @@ namespace ArtemisX.UI.EditorTools
             light.shadows = shadows;
         }
 
-        private static void PlaceProp(string assetPath, Transform parent, Vector3 pos, Quaternion rot, float scale)
+        private static void PlaceProp(string assetPath, Transform parent, Vector3 pos, Quaternion rot, float scale, MeshCollider groundCollider)
         {
             var prefab = Load<GameObject>(assetPath);
             if (prefab == null) return;
             var go = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
             go.transform.SetParent(parent, false);
+            pos.y += SampleGroundY(groundCollider, pos.x, pos.z);
             go.transform.position = pos;
             go.transform.rotation = rot;
             go.transform.localScale = Vector3.one * scale;
+        }
+
+        private static float SampleGroundY(MeshCollider groundCollider, float x, float z)
+        {
+            if (groundCollider == null) return 0f;
+            var ray = new Ray(new Vector3(x, 20f, z), Vector3.down);
+            return groundCollider.Raycast(ray, out RaycastHit hit, 50f) ? hit.point.y : 0f;
         }
 
         private static Material GetOrCreatePadMaterial(int index, Color accent)

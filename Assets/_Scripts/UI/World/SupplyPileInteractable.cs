@@ -75,6 +75,9 @@ namespace ArtemisX.UI
             seq.AppendCallback(ShowPile);
         }
 
+        public bool HasPendingSupply => supply != null && supply.HasPendingSupply;
+        public Transform HighlightTransform => pile != null ? pile.transform : transform;
+
         private void ShowPile()
         {
             if (pile == null || supply == null || !supply.HasPendingSupply) return;
@@ -95,8 +98,18 @@ namespace ArtemisX.UI
                 return;
             }
 
+            TryCollectSupply();
+        }
+
+        /// <summary>Collects the waiting supply crate and plays SFX, resource fly FX, and pile hide animation.</summary>
+        public bool TryCollectSupply()
+        {
+            if (supply == null || !supply.HasPendingSupply) return false;
+            if (hud != null && hud.IsWorldInputBlocked) return false;
+
             Vector3 from = pile != null && pile.activeSelf ? pile.transform.position : AnchorWorldPosition;
-            if (!supply.CollectSupply()) return;
+            if (!supply.CollectSupply()) return false;
+            dropPending = false;
             if (hud != null)
             {
                 if (hud.Popup != null) hud.Popup.Close();
@@ -107,7 +120,11 @@ namespace ArtemisX.UI
                     hud.FlyFx.Fly(ResourceType.Parts, from, hud.ViewCamera);
                 }
             }
-            if (pile != null) pile.transform.DOScale(0f, 0.25f).SetEase(Ease.InBack).SetLink(pile).OnComplete(() => pile.SetActive(false));
+            if (pile != null && pile.activeSelf)
+                pile.transform.DOScale(0f, 0.25f).SetEase(Ease.InBack).SetLink(pile).OnComplete(() => pile.SetActive(false));
+            else if (pile != null)
+                pile.SetActive(false);
+            return true;
         }
     }
 }

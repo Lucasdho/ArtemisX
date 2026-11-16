@@ -29,6 +29,9 @@ namespace ArtemisX.UI
         [SerializeField] private RectTransform nextDayButton;
         [SerializeField] private RectTransform roverButton;
         [SerializeField] private Transform solarField;
+        [SerializeField] private SupplyManager supply;
+        [SerializeField] private SupplyPileInteractable supplyPad;
+        [SerializeField] private SupplyAlertButtonView supplyAlertButton;
         [SerializeField] private Speaker playerSpeaker;
 
         public bool IsRunning { get; private set; }
@@ -40,7 +43,7 @@ namespace ArtemisX.UI
 
         private void LateUpdate()
         {
-            if (highlight != null) highlight.Suppressed = hud != null && hud.RoverMap != null && hud.RoverMap.IsOpen;
+            if (highlight != null) highlight.Suppressed = hud != null && hud.IsOverlayCoveringHud;
         }
 
         private void OnEnable() => WorldClickRouter.Clicked += OnWorldClicked;
@@ -66,9 +69,12 @@ namespace ArtemisX.UI
         {
             IsRunning = true;
             if (nextDay != null) nextDay.ExternalLock = true;
+            if (supply == null) supply = FindFirstObjectByType<SupplyManager>(FindObjectsInactive.Include);
+            if (supplyAlertButton == null) supplyAlertButton = FindFirstObjectByType<SupplyAlertButtonView>(FindObjectsInactive.Include);
+            if (supplyPad == null) supplyPad = FindFirstObjectByType<SupplyPileInteractable>(FindObjectsInactive.Include);
 
             card = missionCard != null ? missionCard.GetComponent<MissionCardView>() : null;
-            if (card != null) card.ShowTutorial(new[] { "Click the solar field", "Send the rover out", "Press Next Day" });
+            if (card != null) card.ShowTutorial(new[] { "Click the solar field", "Send the rover out", "Collect supply cargo", "Press Next Day" });
 
             // Step 1: what is the goal (Mission Card).
             if (missionCard != null)
@@ -105,7 +111,38 @@ namespace ArtemisX.UI
             }
             if (card != null) card.CompleteTutorialTask(1);
 
-            // Step 5: Next Day.
+            // Step 5: Supply cargo on the left landing pad + jumping Golden Box icon.
+            if (supply != null)
+            {
+                supply.DropStarterSupply(days != null ? days.CurrentDay : 1);
+                RectTransform alertRect = supplyAlertButton != null ? supplyAlertButton.Rect : null;
+                if (supplyAlertButton != null) supplyAlertButton.Refresh();
+                if (highlight != null && alertRect != null) highlight.ShowUi(alertRect, config.supplyAlertHint);
+                yield return Say(config.supplyLines);
+
+                if (supply.HasPendingSupply)
+                {
+                    if (supplyAlertButton != null && !supplyAlertButton.IsTargetClearlyVisible())
+                    {
+                        if (highlight != null && alertRect != null) highlight.ShowUi(alertRect, config.supplyAlertHint);
+                        yield return new WaitUntil(() => !supply.HasPendingSupply || supplyAlertButton.IsTargetClearlyVisible());
+                    }
+
+                    if (supply.HasPendingSupply)
+                    {
+                        Transform padTarget = supplyPad != null ? supplyPad.HighlightTransform : null;
+                        if (highlight != null && padTarget != null)
+                            highlight.ShowWorld(padTarget, hud != null ? hud.ViewCamera : null, config.supplyCollectHint);
+                        else if (highlight != null && alertRect != null)
+                            highlight.ShowUi(alertRect, config.supplyCollectHint);
+                        yield return new WaitUntil(() => !supply.HasPendingSupply);
+                    }
+                }
+                yield return WaitIdle();
+            }
+            if (card != null) card.CompleteTutorialTask(2);
+
+            // Step 6: Next Day.
             if (highlight != null) highlight.ShowUi(nextDayButton, config.step3Hint);
             yield return Say(config.step3Lines);
             if (nextDay != null) nextDay.ExternalLock = false;
@@ -114,7 +151,7 @@ namespace ArtemisX.UI
                 || (resolution != null && resolution.IsMissionOver));
             if (highlight != null) highlight.Hide();
             yield return new WaitUntil(() => (days == null || days.CurrentDay > startDay) && IsIdle());
-            if (card != null) card.CompleteTutorialTask(2);
+            if (card != null) card.CompleteTutorialTask(3);
             yield return new WaitForSeconds(0.8f);
             if (card != null) card.ShowMissions();
             yield return Say(config.doneLines);

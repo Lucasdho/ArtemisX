@@ -114,7 +114,8 @@ namespace ArtemisX.UI
             if (r.solarBroken) sb.Append("\nRocks hit the solar panels!");
             if (r.solarRedeployed) sb.Append("\nSolar panels deployed again for the new day.");
             if (r.supplyArrived) sb.Append("\nSupply capsule: +").Append(r.supplyFood).Append(" Food, +").Append(r.supplyParts).Append(" Parts waiting on the pad.");
-            if (r.crewRestricted) sb.Append("\nCrew restricted: Oxygen or Food is at 0.");
+            bool tracksOxygen = resolution == null || resolution.Resources == null || resolution.Resources.RestrictOnZeroOxygen;
+            if (r.crewRestricted) sb.Append(tracksOxygen ? "\nCrew restricted: Oxygen or Food is at 0." : "\nCrew restricted: Food is at 0.");
             return sb.ToString();
         }
 

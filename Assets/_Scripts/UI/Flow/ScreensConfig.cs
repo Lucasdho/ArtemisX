@@ -34,37 +34,43 @@ namespace ArtemisX.UI
         [Header("Day 1 onboarding")]
         public Line[] goalLines =
         {
-            new Line { mood = SpeakerMood.Happy, text = "First, our mission goal! See these 3 Missions? Each module you build earns 1 Star toward a self-sufficient base." },
-            new Line { mood = SpeakerMood.Neutral, text = "Build them in order: 1) Processing Plant, 2) Electrolyser, 3) Terraforming Dome." },
+            new Line { mood = SpeakerMood.Happy, text = "First, here is our training checklist! Complete these 4 steps to get the base running, then your main missions unlock." },
         };
-        public string goalHint = "GOAL (1/5)  3 Modules = 3 Stars";
+        public string goalHint = "GOAL (1/6)  3 Modules = 3 Stars";
         public Line[] buildNextLines =
         {
             new Line { mood = SpeakerMood.Happy, text = "Build here next! The glowing ring marks the Processing Plant." },
             new Line { mood = SpeakerMood.Neutral, text = "Moon rocks and polar ice lock up metals and water. Refining them here gives us Water and Parts without Earth rockets!" },
         };
-        public string buildNextHint = "BUILD NEXT (2/5)  Processing Plant (15 Parts, 20 Power)";
+        public string buildNextHint = "BUILD NEXT (2/6)  Processing Plant (15 Parts, 20 Power)";
         public Line[] step1Lines =
         {
             new Line { mood = SpeakerMood.Neutral, text = "How to get Power: watch space weather! Real NASA DONKI data warns us of storms." },
             new Line { mood = SpeakerMood.Neutral, text = "Solar panels power our base and machines. On storm days, retract them to stay safe—tap the solar field to see." },
         };
-        public string step1WeatherHint = "RESOURCES (3/5)  Space weather & Power";
-        public string step1Hint = "RESOURCES (3/5)  Tap the solar panels";
+        public string step1WeatherHint = "RESOURCES (3/6)  Space weather & Power";
+        public string step1Hint = "RESOURCES (3/6)  Tap the solar panels";
         public Line[] step2Lines =
         {
             new Line { mood = SpeakerMood.Happy, text = "How to get Parts & Water: tap the Rover button and send Luna to Ice or Mineral sites!" },
             new Line { mood = SpeakerMood.Neutral, text = "That's how you gather what the Processing Plant needs. Far sites carry more, at higher Power and breakdown risk." },
         };
-        public string step2Hint = "RESOURCES (4/5)  Tap the Rover button";
+        public string step2Hint = "RESOURCES (4/6)  Tap the Rover button";
+        public Line[] supplyLines =
+        {
+            new Line { mood = SpeakerMood.Happy, text = "Important tip, {playerName}! Every 5 days, Earth launches a supply capsule to our left landing pad packed with Food and Parts." },
+            new Line { mood = SpeakerMood.Neutral, text = "A starter drop just landed! Whenever new cargo is waiting, tap the jumping crate icon to pan straight to it—then tap the crate or icon again to collect!" },
+        };
+        public string supplyAlertHint = "SUPPLY CARGO (5/6)  Tap the jumping cargo icon";
+        public string supplyCollectHint = "SUPPLY CARGO (5/6)  Tap the cargo crate or icon to open it";
         public Line[] step3Lines =
         {
             new Line { mood = SpeakerMood.Happy, text = "Press Next Day to finish your shift. Overnight, Luna returns with cargo and solar panels recharge!" },
         };
-        public string step3Hint = "NEXT SHIFT (5/5)  Press Next Day";
+        public string step3Hint = "NEXT SHIFT (6/6)  Press Next Day";
         public Line[] doneLines =
         {
-            new Line { mood = SpeakerMood.Happy, text = "Training done, {playerName}! Goal: 3 Stars. Tap the glowing Processing Plant ring when you have 15 Parts and 20 Power!" },
+            new Line { mood = SpeakerMood.Happy, text = "Training done, {playerName}! Your 3 main missions are now active—earn 3 Stars by building the Processing Plant, Electrolyser, and Terraforming Dome!" },
         };
         [TextArea(1, 2)] public string replayLine = "Welcome back, {playerName}! Day 1 again. Can you beat your last run?";
 

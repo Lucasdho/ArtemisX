@@ -61,7 +61,7 @@ namespace ArtemisX.UI
         {
             if (frame == null || canvasRect == null) return;
             bool hasTarget = uiTarget != null || worldTarget != null;
-            if (hintRoot != null) hintRoot.SetActive(hasTarget && !Suppressed && hintLabel != null && hintLabel.text.Length > 0);
+            if (hintRoot != null) hintRoot.SetActive(showHintBanner && hasTarget && !Suppressed && hintLabel != null && hintLabel.text.Length > 0);
             if (!hasTarget || Suppressed) { frame.gameObject.SetActive(false); return; }
             frame.gameObject.SetActive(true);
             float pulse = 1f + Mathf.Sin(Time.unscaledTime * pulseSpeed) * pulseAmount;

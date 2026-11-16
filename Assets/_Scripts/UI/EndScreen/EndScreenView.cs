@@ -146,7 +146,7 @@ namespace ArtemisX.UI
                 counts[index] += row.runs;
                 total += row.runs;
             }
-            if (statusLabel != null) statusLabel.text = string.Format(config.onlineText, total);
+            if (statusLabel != null) statusLabel.text = string.Empty; // "N runs so far" line removed from the victory screen.
             DrawBars(counts);
         }
 

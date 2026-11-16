@@ -178,8 +178,27 @@ namespace ArtemisX.UI.StartScreen
             selectedCharacter = Mathf.Clamp(characterIndex, 0, RosterCount - 1);
             ValidateAndSanitizeNickname(rawNickname, out string cleanName, out filterHint);
             playerNickname = cleanName;
+            handoffValid = true;
+            handoffCharacter = selectedCharacter;
+            handoffNickname = playerNickname;
+            handoffPortrait = runtimeCapturedPortrait;
             ApplySpeakerPortrait();
             return playerNickname;
+        }
+
+        // Survives scene loads even if Unity reloads this asset (builds), so CharacterSelect -> HandMadeBase keeps the choice.
+        private static bool handoffValid;
+        private static int handoffCharacter;
+        private static string handoffNickname;
+        private static Sprite handoffPortrait;
+
+        /// <summary>Restores the choice made in CharacterSelect after a scene load. No-op if none was made.</summary>
+        public void RestoreHandoff()
+        {
+            if (!handoffValid) return;
+            selectedCharacter = handoffCharacter;
+            playerNickname = handoffNickname;
+            if (handoffPortrait != null) runtimeCapturedPortrait = handoffPortrait;
         }
 
         /// <summary>Updates the linked player Speaker using the runtime 3D face photo (or roster fallback) and accent color.</summary>

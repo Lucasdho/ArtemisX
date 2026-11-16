@@ -65,6 +65,7 @@ namespace ArtemisX.UI
         {
             if (profile != null)
             {
+                profile.RestoreHandoff();
                 profile.ApplySpeakerPortrait();
                 if (runner != null) runner.SetPlayerProfile(profile);
             }
@@ -148,6 +149,10 @@ namespace ArtemisX.UI
                         cameraRig.SetPositionAndRotation(p, r);
                     }).SetEase(Ease.InOutSine));
             }
+
+            // The dialogue box must not cover the landing: wait until the lander has touched down (or the intro was skipped).
+            yield return new WaitUntil(() => !cutsceneRunning || landerTween == null || !landerTween.IsActive() || landerTween.IsComplete());
+            if (!cutsceneRunning) yield break; // skipped
 
             var intro = story != null && story.Schedule != null ? story.Schedule.introMilestone : null;
             if (runner != null && intro != null) runner.Enqueue(intro, () => introDialogueDone = true, DialogueQueueSlot.Intro);

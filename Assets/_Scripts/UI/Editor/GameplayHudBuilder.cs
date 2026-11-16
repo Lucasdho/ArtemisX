@@ -165,9 +165,10 @@ namespace ArtemisX.UI.EditorTools
             // ---------- Rover map ----------
             var camRig = Object.FindAnyObjectByType<CameraPanController>();
             var mapParts = BuildRoverMap(hudRoot, rover.GetComponent<RoverExpeditionManager>(), hotspots, out var markers, out var back, out var title, out var markerLayer);
+            var siteCard = hudRoot.GetComponentInChildren<RoverSiteCardView>(true);
             Wire(map, ("hud", hud), ("config", uiConfig), ("rover", rover), ("resources", resources), ("weather", weather),
                 ("cameraRig", camRig.transform), ("panController", camRig), ("mapRoot", mapParts), ("markerLayer", markerLayer),
-                ("backButton", back), ("titleLabel", title));
+                ("backButton", back), ("titleLabel", title), ("siteCard", siteCard));
             SetArray(map, "markers", markers);
 
             // ---------- Hub ----------
@@ -386,12 +387,12 @@ namespace ArtemisX.UI.EditorTools
             var todayIcon = MakeDay("Today", 0f, "Today", out var todayLabel);
             var tomorrowIcon = MakeDay("Tomorrow", 0.5f, "Tomorrow", out var tomorrowLabel);
             var view = root.gameObject.AddComponent<SpaceWeatherWidgetView>();
-            const string emotes = "Assets/GameAssets/kenney_emotes-pack/PNG/Vector/Style 1/";
+            const string weatherIcons = "Assets/_UI/Icons/";
             Wire(view, ("weather", weather), ("todayIcon", todayIcon), ("todayLabel", todayLabel), ("tomorrowIcon", tomorrowIcon),
                 ("tomorrowLabel", tomorrowLabel),
-                ("calmIcon", AssetDatabase.LoadAssetAtPath<Texture2D>(CirclePath)),
-                ("stormIcon", AssetDatabase.LoadAssetAtPath<Texture2D>(emotes + "emote_swirl.png")),
-                ("radiationIcon", AssetDatabase.LoadAssetAtPath<Texture2D>(emotes + "emote_alert.png")));
+                ("calmIcon", AssetDatabase.LoadAssetAtPath<Texture2D>(weatherIcons + "icon_weather_calm.png")),
+                ("stormIcon", AssetDatabase.LoadAssetAtPath<Texture2D>(weatherIcons + "icon_weather_storm.png")),
+                ("radiationIcon", AssetDatabase.LoadAssetAtPath<Texture2D>(weatherIcons + "icon_weather_radiation.png")));
             return view;
         }
 
@@ -587,7 +588,7 @@ namespace ArtemisX.UI.EditorTools
                 MakeChip(chips, "Cost", out _, out var costIcon, out var costLabel);
                 MakeChip(chips, "RewardA", out _, out var rewardIconA, out var rewardLabelA);
                 MakeChip(chips, "RewardB", out _, out var rewardIconB, out var rewardLabelB);
-                var risk = MakeText(m, "Risk", "5% risk", 15, style.mutedTextColor, TextAnchor.MiddleCenter, FontStyle.Normal);
+                var risk = MakeText(m, "Risk", Mathf.RoundToInt(site.calmBreakdownChance * 100f) + "% risk", 15, style.mutedTextColor, TextAnchor.MiddleCenter, FontStyle.Normal);
                 Place((RectTransform)risk.transform, new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 6f), new Vector2(-16f, 22f));
                 var stem = NewUI("Stem", m);
                 Place(stem, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0.5f, 1f), new Vector2(0f, 2f), new Vector2(14f, 14f));
