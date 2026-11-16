@@ -19,6 +19,8 @@ namespace ArtemisX.UI
         [SerializeField] private GameplayUIConfig uiConfig;
         [SerializeField] private PlayerRunProfile profile;
         [SerializeField] private StartScreenView startScreen;
+        [Tooltip("Optional title screen shown before the start screen on a fresh load (skipped on Play Again).")]
+        [SerializeField] private TitleScreenView titleScreen;
         [SerializeField] private DialogueRunner runner;
         [SerializeField] private StoryDirector story;
         [SerializeField] private GameplayHud hud;
@@ -71,6 +73,12 @@ namespace ArtemisX.UI
             }
 
             if (hud != null) hud.Cinematic = true;
+            if (titleScreen != null && !replaying) titleScreen.Show(BeginStartFlow);
+            else BeginStartFlow();
+        }
+
+        private void BeginStartFlow()
+        {
             if (startScreen != null)
             {
                 startScreen.OnMissionLaunchRequested += OnLaunch;

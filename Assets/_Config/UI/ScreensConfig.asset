@@ -12,6 +12,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d3f3519c53f5d4320802b81d24266d9b, type: 3}
   m_Name: ScreensConfig
   m_EditorClassIdentifier: Assembly-CSharp::ArtemisX.UI.ScreensConfig
+  titleName: ARTEMIS X
+  titleSubtitle: Junior Astronaut Mission Trainer
+  titlePlayLabel: PLAY
+  titleOrbitCenter: {x: 0.5, y: 0, z: 0.5}
+  titleOrbitDistance: 38
+  titleOrbitPitch: 35
+  titleOrbitDegreesPerSecond: 4
+  titleFloatPixels: 6
+  titleFloatHz: 0.5
+  titlePlayPulseScale: 1.04
+  titlePlayPulseHz: 1
   introFocusOffset: {x: 0, y: 1, z: 0}
   introStartDistance: 6
   introEndDistance: 22

@@ -17,6 +17,20 @@ namespace ArtemisX.UI
             [TextArea(1, 2)] public string text;
         }
 
+        [Header("Title screen")]
+        public string titleName = "ARTEMIS X";
+        public string titleSubtitle = "Junior Astronaut Mission Trainer";
+        public string titlePlayLabel = "PLAY";
+        [Tooltip("World point the title camera orbits (base center).")]
+        public Vector3 titleOrbitCenter = Vector3.zero;
+        [Min(1f)] public float titleOrbitDistance = 40f;
+        [Range(5f, 85f)] public float titleOrbitPitch = 35f;
+        public float titleOrbitDegreesPerSecond = 4f;
+        [Min(0f)] public float titleFloatPixels = 6f;
+        [Min(0f)] public float titleFloatHz = 0.5f;
+        [Min(1f)] public float titlePlayPulseScale = 1.04f;
+        [Min(0f)] public float titlePlayPulseHz = 1f;
+
         [Header("Intro cutscene (camera orbit around the lander)")]
         public Vector3 introFocusOffset = new Vector3(0f, 1f, 0f);
         [Min(1f)] public float introStartDistance = 6f;
