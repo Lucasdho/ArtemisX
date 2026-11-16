@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+using ArtemisX.Simulation;
 using ArtemisX.Story;
 using DG.Tweening;
 using UnityEngine;
@@ -31,10 +31,27 @@ namespace ArtemisX.UI
         [SerializeField] private Text statusLabel;
         [SerializeField] private Button playAgainButton;
         [SerializeField] private Text playAgainLabel;
+#pragma warning disable 0414
+        // Legacy: the histogram moved to LeaderboardPanelView; kept so the scene's references stay intact.
         [SerializeField] private Font labelFont;
         [SerializeField] private int missionLength = 30;
+#pragma warning restore 0414
 
-        private readonly List<Image> bars = new List<Image>();
+        [Header("Toy UI")]
+        [SerializeField] private BuildingManager buildings;
+        [SerializeField] private RectTransform ribbon;
+        [SerializeField] private RectTransform rays;
+        [SerializeField] private Color starOffTint = new Color(0x3A / 255f, 0x3A / 255f, 0x55 / 255f, 0.6f);
+        [SerializeField] private Sprite portraitOverride;
+        [SerializeField] private Text daysValue;
+        [SerializeField] private Text daysCaption;
+        [SerializeField] private GameObject builtTile;
+        [SerializeField] private Text builtValue;
+        [SerializeField] private Text builtCaption;
+        [SerializeField] private Button leaderboardButton;
+        [SerializeField] private Text leaderboardLabel;
+        [SerializeField] private LeaderboardPanelView leaderboardPanel;
+
         private MissionRunRecord record;
 
         public bool IsOpen => root != null && root.activeSelf;
@@ -43,6 +60,18 @@ namespace ArtemisX.UI
         {
             if (root != null) root.SetActive(false);
             if (playAgainButton != null) playAgainButton.onClick.AddListener(GameFlowController.PlayAgain);
+            if (leaderboardButton != null) leaderboardButton.onClick.AddListener(OpenLeaderboard);
+        }
+
+        private void Update()
+        {
+            if (rays != null && IsOpen && config != null)
+                rays.Rotate(0f, 0f, -360f / config.raysTurnSeconds * Time.unscaledDeltaTime);
+        }
+
+        private void OpenLeaderboard()
+        {
+            if (leaderboardPanel != null) leaderboardPanel.Open();
         }
 
         private void OnEnable()
@@ -58,6 +87,7 @@ namespace ArtemisX.UI
         private void OnDestroy()
         {
             if (playAgainButton != null) playAgainButton.onClick.RemoveListener(GameFlowController.PlayAgain);
+            if (leaderboardButton != null) leaderboardButton.onClick.RemoveListener(OpenLeaderboard);
         }
 
         /// <summary>Shows the player's result right away, then fills the histogram when the leaderboard answers.</summary>
@@ -73,7 +103,7 @@ namespace ArtemisX.UI
             {
                 if (stars[i] == null) continue;
                 stars[i].texture = i < run.stars ? starOn : starOff;
-                stars[i].color = i < run.stars ? Color.white : new Color(1f, 1f, 1f, 0.20f);
+                stars[i].color = i < run.stars ? Color.white : starOffTint;
             }
 
             var grade = PickGrade(run);
@@ -81,24 +111,76 @@ namespace ArtemisX.UI
             if (bauzerLine != null) bauzerLine.text = runner != null ? runner.FormatText(grade.text) : grade.text;
             if (bauzerPortrait != null)
             {
-                bauzerPortrait.sprite = bauzer != null ? bauzer.GetPortrait(grade.mood) : null;
+                bauzerPortrait.sprite = portraitOverride != null ? portraitOverride
+                                      : bauzer != null ? bauzer.GetPortrait(grade.mood) : null;
                 bauzerPortrait.enabled = bauzerPortrait.sprite != null;
             }
 
             if (histogramTitle != null) histogramTitle.text = config.histogramTitle;
+            HideLegacy();
             if (playAgainLabel != null) playAgainLabel.text = config.playAgainLabel;
             if (statusLabel != null) statusLabel.text = config.loadingText;
-            DrawBars(null);
+            if (daysValue != null) daysValue.text = run.daysTaken.ToString();
+            if (daysCaption != null) daysCaption.text = config.daysCaption;
+            if (builtTile != null) builtTile.SetActive(buildings != null);
+            if (builtValue != null && buildings != null) builtValue.text = buildings.BuiltCount.ToString();
+            if (builtCaption != null) builtCaption.text = config.builtCaption;
+            if (leaderboardLabel != null) leaderboardLabel.text = config.leaderboardButtonLabel;
+            if (leaderboardPanel != null)
+            {
+                leaderboardPanel.SetLoading(run);
+                leaderboardPanel.Close();
+            }
 
             if (root != null) root.SetActive(true);
-            if (card != null)
-            {
-                card.localScale = Vector3.one * 0.85f;
-                card.DOScale(1f, 0.3f).SetEase(Ease.OutBack).SetUpdate(true).SetLink(gameObject);
-            }
+            PlayIntro(run.stars);
 
             if (leaderboard != null) leaderboard.SubmitAndFetch(ToPayload(run), OnLeaderboard);
             else OnLeaderboard(false, null);
+        }
+
+        /// <summary>The old subtitle, histogram and status line stay in the scene but are hidden on this screen.</summary>
+        private void HideLegacy()
+        {
+            if (subtitleLabel != null) subtitleLabel.gameObject.SetActive(false);
+            if (histogramTitle != null) histogramTitle.gameObject.SetActive(false);
+            if (barsContainer != null && barsContainer.parent != null) barsContainer.parent.gameObject.SetActive(false);
+            if (statusLabel != null) statusLabel.gameObject.SetActive(false);
+        }
+
+        private void PlayIntro(int earned)
+        {
+            var seq = DOTween.Sequence().SetUpdate(true).SetLink(gameObject);
+            if (card != null)
+            {
+                card.DOKill();
+                card.localScale = Vector3.one * config.cardScaleFrom;
+                seq.Insert(0f, card.DOScale(1f, config.cardScaleDuration).SetEase(Ease.OutBack));
+            }
+
+            float t = config.ribbonDropDelay;
+            if (ribbon != null)
+            {
+                ribbon.DOKill();
+                Vector2 rest = ribbon.anchoredPosition;
+                var group = ribbon.GetComponent<CanvasGroup>();
+                ribbon.anchoredPosition = rest + Vector2.up * config.ribbonDropDistance;
+                if (group != null) group.alpha = 0f;
+                seq.Insert(t, ribbon.DOAnchorPos(rest, config.ribbonDropDuration).SetEase(Ease.OutBack));
+                if (group != null) seq.Insert(t, group.DOFade(1f, config.ribbonDropDuration * 0.5f));
+                t += config.ribbonDropDuration;
+            }
+
+            for (int i = 0; i < stars.Length; i++)
+            {
+                if (stars[i] == null) continue;
+                var star = stars[i].rectTransform;
+                star.DOKill();
+                star.localScale = Vector3.zero;
+                float at = t + i * config.starPopDuration;
+                seq.InsertCallback(at, () => star.localScale = Vector3.one * config.starPopScale);
+                seq.Insert(at, star.DOScale(1f, config.starPopDuration).SetEase(Ease.OutQuad));
+            }
         }
 
         private ScreensConfig.Line PickGrade(MissionRunRecord run)
@@ -130,90 +212,8 @@ namespace ArtemisX.UI
         private void OnLeaderboard(bool online, LeaderboardClient.HistogramRow[] rows)
         {
             if (!IsOpen) return;
-            if (!online || rows == null)
-            {
-                if (statusLabel != null) statusLabel.text = config.offlineText;
-                DrawBars(null);
-                return;
-            }
-
-            var counts = new int[missionLength + 1]; // 0..29 = days 1..30, last = Mission Extended
-            int total = 0;
-            foreach (var row in rows)
-            {
-                if (row == null || row.runs <= 0) continue;
-                int index = row.end_reason == "day_cap" ? missionLength : Mathf.Clamp(row.days_taken, 1, missionLength) - 1;
-                counts[index] += row.runs;
-                total += row.runs;
-            }
-            if (statusLabel != null) statusLabel.text = string.Empty; // "N runs so far" line removed from the victory screen.
-            DrawBars(counts);
-        }
-
-        /// <summary>counts == null: only the player's own run (offline / loading).</summary>
-        private void DrawBars(int[] counts)
-        {
-            if (barsContainer == null) return;
-            EnsureBars();
-            int own = record.endReason == MissionEndReason.EarlyWin ? Mathf.Clamp(record.daysTaken, 1, missionLength) - 1 : missionLength;
-            int max = 1;
-            if (counts != null) foreach (int c in counts) max = Mathf.Max(max, c);
-            for (int i = 0; i < bars.Count; i++)
-            {
-                int value = counts != null ? counts[i] : (i == own ? 1 : 0);
-                if (i == own) value = Mathf.Max(value, 1);
-                float height = value > 0 ? Mathf.Max(0.04f, value / (float)max) : 0.015f;
-                var rt = bars[i].rectTransform;
-                rt.anchorMax = new Vector2(1f, height);
-                bars[i].color = i == own ? config.ownBarColor : config.barColor;
-            }
-        }
-
-        private void EnsureBars()
-        {
-            if (bars.Count == missionLength + 1) return;
-            for (int i = 0; i <= missionLength; i++)
-            {
-                var slot = new GameObject("Bar_" + (i + 1), typeof(RectTransform));
-                slot.transform.SetParent(barsContainer, false);
-                var area = new GameObject("Area", typeof(RectTransform)).GetComponent<RectTransform>();
-                area.SetParent(slot.transform, false);
-                area.anchorMin = Vector2.zero;
-                area.anchorMax = Vector2.one;
-                area.offsetMin = new Vector2(2f, 26f);
-                area.offsetMax = new Vector2(-2f, 0f);
-                var fillGo = new GameObject("Fill", typeof(RectTransform), typeof(Image));
-                fillGo.transform.SetParent(area, false);
-                var fill = fillGo.GetComponent<Image>();
-                fill.raycastTarget = false;
-                var frt = fill.rectTransform;
-                frt.anchorMin = new Vector2(0f, 0f);
-                frt.anchorMax = new Vector2(1f, 0.02f);
-                frt.offsetMin = Vector2.zero;
-                frt.offsetMax = Vector2.zero;
-                bars.Add(fill);
-
-                bool extended = i == missionLength;
-                int day = i + 1;
-                if (extended || day == 1 || day % 5 == 0)
-                {
-                    var labelGo = new GameObject("Label", typeof(RectTransform), typeof(Text));
-                    labelGo.transform.SetParent(slot.transform, false);
-                    var label = labelGo.GetComponent<Text>();
-                    label.font = labelFont;
-                    label.fontSize = 16;
-                    label.alignment = TextAnchor.LowerCenter;
-                    label.horizontalOverflow = HorizontalWrapMode.Overflow;
-                    label.color = new Color(0.337f, 0.396f, 0.498f);
-                    label.raycastTarget = false;
-                    label.text = extended ? config.extendedBarLabel : day.ToString();
-                    var lrt = label.rectTransform;
-                    lrt.anchorMin = Vector2.zero;
-                    lrt.anchorMax = new Vector2(1f, 0f);
-                    lrt.sizeDelta = new Vector2(0f, 24f);
-                    lrt.anchoredPosition = new Vector2(0f, 12f);
-                }
-            }
+            if (statusLabel != null) statusLabel.text = online && rows != null ? string.Empty : config.offlineText;
+            if (leaderboardPanel != null) leaderboardPanel.SetResult(record, online, rows);
         }
     }
 }

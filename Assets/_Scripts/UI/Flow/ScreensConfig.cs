@@ -97,5 +97,40 @@ namespace ArtemisX.UI
         public string playAgainLabel = "PLAY AGAIN";
         public Color barColor = new Color(0.22f, 0.74f, 0.97f, 0.55f);
         public Color ownBarColor = new Color(0.96f, 0.62f, 0.04f, 1f);
+
+        [Header("End screen (Toy UI)")]
+        public string daysCaption = "days";
+        public string builtCaption = "built";
+        public string leaderboardButtonLabel = "Leaderboard";
+        [Min(0.01f)] public float cardScaleFrom = 0.92f;
+        [Min(0.01f)] public float cardScaleDuration = 0.18f;
+        [Min(0f)] public float ribbonDropDelay = 0.12f;
+        [Min(0.01f)] public float ribbonDropDuration = 0.2f;
+        public float ribbonDropDistance = 60f;
+        [Min(1f)] public float starPopScale = 1.2f;
+        [Min(0.01f)] public float starPopDuration = 0.15f;
+        [Min(0.1f)] public float raysTurnSeconds = 8f;
+
+        [Header("Leaderboard panel")]
+        public string leaderboardTitle = "All missions";
+        [Tooltip("{0} = player's day, {1} = k (in 10)")]
+        public string leaderboardFasterLine = "You finished on day {0}. That's faster than {1} in 10 players!";
+        [Tooltip("{0} = k (in 10)")]
+        public string leaderboardExtendedLine = "Your mission was extended. {0} in 10 players needed more time too!";
+        public string leaderboardFirstCrewsLine = "You're one of the first crews on the Moon!";
+        public string leaderboardOfflineLine = "Leaderboard offline. Your run is saved for next time.";
+        public string leaderboardExtendedLabel = "extended";
+        public string leaderboardDayLabel = "day {0}";
+        public string leaderboardBackLabel = "Back";
+        [Min(1)] public int leaderboardMinRunsForStats = 5;
+        [Min(1)] public int leaderboardFirstDay = 10;
+        [Min(1f)] public float leaderboardBarMaxHeight = 120f;
+        [Min(0f)] public float leaderboardBarMinHeight = 2f;
+        [Min(1f)] public float leaderboardBarWidth = 15f;
+        [Min(0f)] public float leaderboardBarGap = 2f;
+        [Min(0f)] public float leaderboardExtendedGap = 8f;
+        [Min(1f)] public float leaderboardExtendedWidth = 30f;
+        [Min(0.01f)] public float leaderboardGrowDuration = 0.4f;
+        [Min(0f)] public float leaderboardGrowStagger = 0.02f;
     }
 }

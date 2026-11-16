@@ -83,8 +83,8 @@ MonoBehaviour:
     text: "Training done, {playerName}! Your 3 main missions are now active\u2014earn
       3 Stars by building the Processing Plant, Electrolyser, and Terraforming Dome!"
   replayLine: Welcome back, {playerName}! Day 1 again. Can you beat your last run?
-  earlyWinTitle: MISSION COMPLETE
-  dayCapTitle: MISSION EXTENDED
+  earlyWinTitle: Mission complete!
+  dayCapTitle: Mission extended
   earlyWinSubtitle: Base self-sufficient in {0} days!
   dayCapSubtitle: 'Day {0}: {1} of 3 buildings built. Mission extended!'
   gradeLines:
@@ -114,6 +114,36 @@ MonoBehaviour:
   offlineText: Leaderboard offline. Showing your run only.
   onlineText: '{0} runs so far. Your bar is highlighted!'
   extendedBarLabel: EXT
-  playAgainLabel: PLAY AGAIN
+  playAgainLabel: Play again
   barColor: {r: 0.5803922, g: 0.6392157, b: 0.72156864, a: 0.7}
   ownBarColor: {r: 1, g: 0.3529412, b: 0.12156863, a: 1}
+  daysCaption: days
+  builtCaption: built
+  leaderboardButtonLabel: Leaderboard
+  cardScaleFrom: 0.92
+  cardScaleDuration: 0.18
+  ribbonDropDelay: 0.12
+  ribbonDropDuration: 0.2
+  ribbonDropDistance: 60
+  starPopScale: 1.2
+  starPopDuration: 0.15
+  raysTurnSeconds: 8
+  leaderboardTitle: All missions
+  leaderboardFasterLine: You finished on day {0}. That's faster than {1} in 10 players!
+  leaderboardExtendedLine: Your mission was extended. {0} in 10 players needed more
+    time too!
+  leaderboardFirstCrewsLine: You're one of the first crews on the Moon!
+  leaderboardOfflineLine: Leaderboard offline. Your run is saved for next time.
+  leaderboardExtendedLabel: extended
+  leaderboardDayLabel: day {0}
+  leaderboardBackLabel: Back
+  leaderboardMinRunsForStats: 5
+  leaderboardFirstDay: 10
+  leaderboardBarMaxHeight: 120
+  leaderboardBarMinHeight: 2
+  leaderboardBarWidth: 15
+  leaderboardBarGap: 2
+  leaderboardExtendedGap: 8
+  leaderboardExtendedWidth: 30
+  leaderboardGrowDuration: 0.4
+  leaderboardGrowStagger: 0.02
