@@ -28,13 +28,32 @@ namespace ArtemisX.Core
         private bool dragging;
         private bool rightTilting;
         private bool suppressNextClick;
+        private bool focusing;
+        private float focusElapsed;
+        private float focusDuration;
+        private Vector3 focusFromTarget;
+        private Vector3 focusLookTarget;
+        private float focusFromDistance;
+        private float focusToDistance;
+        private float focusFromYaw;
+        private float focusToYaw;
+        private System.Action onFocusArrived;
 
         /// <summary>True while actively dragging/tilting or immediately after a drag release on this frame.</summary>
         public bool IsInteracting => dragging || rightTilting || suppressNextClick;
 
+        /// <summary>True while the camera is flying to a clicked object.</summary>
+        public bool IsFocusing => focusing;
+
         private void Awake()
         {
             ApplyHomePose();
+        }
+
+        private void OnDisable()
+        {
+            // Another system took the camera (rover map, cutscene): finish so nobody waits forever.
+            EndFocus(true);
         }
 
         /// <summary>Places the camera from the config pitch, yaw, distance and look target.</summary>
@@ -42,11 +61,125 @@ namespace ArtemisX.Core
         public void ApplyHomePose()
         {
             if (config == null) return;
+            EndFocus(false);
             lookTarget = config.homeLookTarget;
             yaw = config.yawDegrees;
             pitch = config.pitchDegrees;
             distance = targetDistance = config.distance;
             ApplyTransform();
+        }
+
+        /// <summary>
+        /// Flies the camera from where it is to center a world point (shifted slightly down to leave room for a banner),
+        /// then calls <paramref name="onArrived"/>. A new focus replaces the old one (its callback is dropped).
+        /// </summary>
+        public void FocusOn(Vector3 worldPoint, System.Action onArrived = null, float? zoomDistance = null)
+        {
+            if (config == null) { onArrived?.Invoke(); return; }
+            onFocusArrived = null;
+            velocity = Vector3.zero;
+            tracking = false;
+            dragging = false;
+
+            var rot = Quaternion.Euler(pitch, yaw, 0f);
+            Vector3 viewDir = rot * Vector3.forward;
+            Vector3 groundPoint = worldPoint;
+            if (Mathf.Abs(viewDir.y) > 0.001f)
+            {
+                float t = (config.homeLookTarget.y - worldPoint.y) / viewDir.y;
+                groundPoint = worldPoint + viewDir * t;
+            }
+            groundPoint.y = config.homeLookTarget.y;
+
+            Vector3 forwardXZ = Quaternion.Euler(0f, yaw, 0f) * Vector3.forward;
+            forwardXZ.y = 0f;
+            if (forwardXZ.sqrMagnitude > 0.0001f) forwardXZ.Normalize();
+
+            float desiredZoom = zoomDistance ?? config.focusDistance;
+
+            focusFromTarget = lookTarget;
+            focusLookTarget = ClampLookTarget(groundPoint + forwardXZ * config.focusForwardOffset);
+            focusFromDistance = distance;
+            focusFromYaw = focusToYaw = yaw;
+            focusToDistance = desiredZoom > 0f
+                ? Mathf.Clamp(desiredZoom, config.distanceRange.x, config.distanceRange.y)
+                : targetDistance;
+
+            // Already there: show the menu right away.
+            bool nearTarget = (focusLookTarget - focusFromTarget).sqrMagnitude < 0.01f;
+            bool nearZoom = Mathf.Abs(focusToDistance - focusFromDistance) < 0.1f;
+            if (nearTarget && nearZoom || config.focusSeconds <= 0f)
+            {
+                lookTarget = focusLookTarget;
+                distance = targetDistance = focusToDistance;
+                focusing = false;
+                ApplyTransform();
+                onArrived?.Invoke();
+                return;
+            }
+
+            focusElapsed = 0f;
+            focusDuration = config.focusSeconds;
+            onFocusArrived = onArrived;
+            focusing = true;
+        }
+
+        /// <summary>
+        /// Smoothly zooms out to the home look target at the overview distance so the whole base is visible,
+        /// then calls <paramref name="onArrived"/>. Any player pan/zoom interrupts it (the callback still runs).
+        /// </summary>
+        public void ZoomOutToBase(System.Action onArrived = null, bool endDayView = false)
+        {
+            if (config == null) { onArrived?.Invoke(); return; }
+            onFocusArrived = null;
+            velocity = Vector3.zero;
+            tracking = false;
+            dragging = false;
+
+            focusFromTarget = lookTarget;
+            focusFromYaw = yaw;
+            focusToYaw = yaw;
+            Vector3 overviewTarget = config.homeLookTarget;
+            if (endDayView)
+            {
+                // Nudge the end-of-day view: rotate a little and shift the look point sideways so the base sits centered.
+                focusToYaw = yaw + config.endDayYawOffset;
+                Quaternion toRot = Quaternion.Euler(0f, focusToYaw, 0f);
+                overviewTarget += toRot * new Vector3(config.endDayLookOffset.x, 0f, config.endDayLookOffset.y);
+            }
+            focusLookTarget = ClampLookTarget(overviewTarget);
+            focusFromDistance = distance;
+            focusToDistance = Mathf.Clamp(config.overviewDistance, config.distanceRange.x, config.distanceRange.y);
+
+            bool nearTarget = (focusLookTarget - focusFromTarget).sqrMagnitude < 0.01f;
+            bool nearZoom = Mathf.Abs(focusToDistance - focusFromDistance) < 0.1f;
+            bool nearYaw = Mathf.Abs(focusToYaw - focusFromYaw) < 0.1f;
+            if (nearTarget && nearZoom && nearYaw || config.overviewSeconds <= 0f)
+            {
+                yaw = focusToYaw;
+                lookTarget = focusLookTarget;
+                distance = targetDistance = focusToDistance;
+                focusing = false;
+                ApplyTransform();
+                onArrived?.Invoke();
+                return;
+            }
+
+            focusElapsed = 0f;
+            focusDuration = config.overviewSeconds;
+            onFocusArrived = onArrived;
+            focusing = true;
+        }
+
+        /// <summary>Stops a running focus flight; optionally still runs its arrival callback.</summary>
+        private void EndFocus(bool invokeCallback)
+        {
+            if (!focusing) { onFocusArrived = null; return; }
+            focusing = false;
+            targetDistance = distance;
+            var callback = onFocusArrived;
+            onFocusArrived = null;
+            if (invokeCallback) callback?.Invoke();
         }
 
         private void Update()
@@ -60,8 +193,10 @@ namespace ArtemisX.Core
             HandleRightTilt();
             HandleZoom();
             HandlePan();
+            HandleFocus();
 
-            distance = Mathf.Lerp(distance, targetDistance, 1f - Mathf.Exp(-config.zoomDamping * Time.unscaledDeltaTime));
+            if (!focusing)
+                distance = Mathf.Lerp(distance, targetDistance, 1f - Mathf.Exp(-config.zoomDamping * Time.unscaledDeltaTime));
             ApplyTransform();
         }
 
@@ -74,6 +209,7 @@ namespace ArtemisX.Core
                 rightTilting = true;
                 dragging = false;
                 tracking = false;
+                EndFocus(true);
                 velocity = Vector3.zero;
             }
             else if (!rightPressed && rightTilting)
@@ -98,6 +234,7 @@ namespace ArtemisX.Core
                 float scroll = mouse.scroll.ReadValue().y;
                 if (Mathf.Abs(scroll) > 0.01f)
                 {
+                    EndFocus(true);
                     targetDistance = Mathf.Clamp(
                         targetDistance - Mathf.Sign(scroll) * config.zoomSpeed,
                         config.distanceRange.x,
@@ -114,6 +251,7 @@ namespace ArtemisX.Core
                     touch.touches[1].position.ReadValue());
                 if (prevPinchDistance > 0f)
                 {
+                    EndFocus(true);
                     float delta = currentPinch - prevPinchDistance;
                     targetDistance = Mathf.Clamp(
                         targetDistance - delta * config.pinchZoomSpeed,
@@ -154,6 +292,21 @@ namespace ArtemisX.Core
             }
         }
 
+        private void HandleFocus()
+        {
+            if (!focusing) return;
+            focusElapsed += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(focusElapsed / Mathf.Max(0.0001f, focusDuration));
+            float k = EaseInOutCubic(t);
+            lookTarget = Vector3.LerpUnclamped(focusFromTarget, focusLookTarget, k);
+            yaw = Mathf.LerpUnclamped(focusFromYaw, focusToYaw, k);
+            distance = targetDistance = Mathf.LerpUnclamped(focusFromDistance, focusToDistance, k);
+            if (t >= 1f) EndFocus(true);
+        }
+
+        private static float EaseInOutCubic(float t) =>
+            t < 0.5f ? 4f * t * t * t : 1f - Mathf.Pow(-2f * t + 2f, 3f) * 0.5f;
+
         private void BeginPan(Vector2 screen)
         {
             tracking = !PointerOverUi();
@@ -169,6 +322,7 @@ namespace ArtemisX.Core
                 if ((screen - pressStart).magnitude < config.dragThresholdPixels) return;
                 if (!TryGround(screen, out grabPoint)) return;
                 dragging = true;
+                EndFocus(true);
             }
 
             if (!TryGround(screen, out Vector3 now)) return;
@@ -189,15 +343,20 @@ namespace ArtemisX.Core
 
         private void MoveLookTarget(Vector3 delta)
         {
-            lookTarget += delta;
-            lookTarget.x = Mathf.Clamp(
-                lookTarget.x,
+            lookTarget = ClampLookTarget(lookTarget + delta);
+        }
+
+        private Vector3 ClampLookTarget(Vector3 target)
+        {
+            target.x = Mathf.Clamp(
+                target.x,
                 config.homeLookTarget.x + config.panRangeX.x,
                 config.homeLookTarget.x + config.panRangeX.y);
-            lookTarget.z = Mathf.Clamp(
-                lookTarget.z,
+            target.z = Mathf.Clamp(
+                target.z,
                 config.homeLookTarget.z + config.panRangeZ.x,
                 config.homeLookTarget.z + config.panRangeZ.y);
+            return target;
         }
 
         private void ApplyTransform()

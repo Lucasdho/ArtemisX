@@ -20,5 +20,6 @@ MonoBehaviour:
       days!
   - speaker: {fileID: 11400000, guid: f1a52219a36a5425fbc0493a4d791c19, type: 2}
     mood: 1
-    text: Water, air, food and rocket fuel, all made on the Moon. Three stars!
+    text: "Parts & Water from lunar rocks, O2 & H2 fuel from electrolysis, and Food
+      from terraforming\u2014three stars, junior astronaut!"
   choices: []

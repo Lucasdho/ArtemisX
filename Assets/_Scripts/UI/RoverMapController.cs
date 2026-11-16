@@ -25,6 +25,7 @@ namespace ArtemisX.UI
         [SerializeField] private RoverSiteMarkerView[] markers = new RoverSiteMarkerView[0];
         [SerializeField] private Button backButton;
         [SerializeField] private Text titleLabel;
+        [SerializeField] private RoverSiteCardView siteCard;
 
         private Vector3 savedPosition;
         private Quaternion savedRotation;
@@ -35,6 +36,7 @@ namespace ArtemisX.UI
         private void Awake()
         {
             if (backButton != null) backButton.onClick.AddListener(Close);
+            if (siteCard != null) siteCard.Closed += ClearSelection;
             foreach (var m in markers) if (m != null) m.Bind(OnSiteClicked);
             if (mapRoot != null) mapRoot.SetActive(false);
         }
@@ -42,17 +44,21 @@ namespace ArtemisX.UI
         private void OnDestroy()
         {
             if (backButton != null) backButton.onClick.RemoveListener(Close);
+            if (siteCard != null) siteCard.Closed -= ClearSelection;
         }
 
         public void Open()
         {
-            if (IsOpen || cameraRig == null) return;
+            if (IsOpen || cameraRig == null || (hud != null && hud.IsWorldInputBlocked)) return;
             IsOpen = true;
             if (panController != null) panController.enabled = false;
             savedPosition = cameraRig.position;
             savedRotation = cameraRig.rotation;
 
             RefreshMarkers();
+            ClearSelection();
+            if (markerLayer != null) markerLayer.gameObject.SetActive(true);
+            if (siteCard != null) siteCard.Hide();
             if (titleLabel != null && rover != null) titleLabel.text = "Send " + rover.RoverName + " to a site";
 
             ComputeMapPose(out Vector3 pos, out Quaternion rot);
@@ -62,6 +68,7 @@ namespace ArtemisX.UI
         public void Close()
         {
             if (!IsOpen) return;
+            if (siteCard != null) siteCard.Hide();
             if (mapRoot != null) mapRoot.SetActive(false);
             Fly(savedPosition, savedRotation, () =>
             {
@@ -126,6 +133,11 @@ namespace ArtemisX.UI
         private void LateUpdate()
         {
             if (!IsOpen || mapRoot == null || !mapRoot.activeSelf || markerLayer == null) return;
+            bool dialogueOpen = hud != null && hud.IsDialogueOpen;
+            if (markerLayer.gameObject.activeSelf == dialogueOpen)
+                markerLayer.gameObject.SetActive(!dialogueOpen);
+            if (dialogueOpen) return;
+
             Camera cam = hud != null ? hud.ViewCamera : Camera.main;
             if (cam == null) return;
             float height = config != null ? config.markerHeight : 1.5f;
@@ -141,14 +153,34 @@ namespace ArtemisX.UI
         private void OnSiteClicked(string siteId)
         {
             if (rover == null) return;
+            if (siteCard != null && rover.Config != null && rover.Config.TryGetSite(siteId, out var site))
+            {
+                foreach (var m in markers) if (m != null) m.SetSelected(m.SiteId == siteId);
+                siteCard.Show(site, rover, resources, weather, () => DispatchSite(siteId));
+                return;
+            }
+            DispatchSite(siteId);
+        }
+
+        private void ClearSelection()
+        {
+            foreach (var m in markers) if (m != null) m.SetSelected(false);
+        }
+
+        private void DispatchSite(string siteId)
+        {
+            if (rover == null) return;
             var reason = rover.CanDispatch(siteId);
             if (reason != ActionBlockReason.None)
             {
+                if (siteCard != null) siteCard.Hide();
+                Close();
                 if (hud != null) hud.ShowBlockedTip(reason);
                 return;
             }
             if (rover.TryDispatchRover(siteId))
             {
+                if (siteCard != null) siteCard.Hide();
                 if (hud != null) hud.PlaySfx(hud.Config != null ? hud.Config.confirmClip : null);
                 Close();
             }

@@ -3,22 +3,20 @@ using UnityEngine;
 
 namespace ArtemisX.Visuals
 {
-    /// <summary>Periodically launches the dropship to orbit the base, then returns it to its parked hover pose.</summary>
+    /// <summary>Keeps the dropship flying in a wide, continuous orbit around the base.</summary>
     public class DropshipPatrol : MonoBehaviour
     {
         [Header("Orbit")]
         [Tooltip("Optional center to circle around. Uses Base Center Fallback when empty.")]
         [SerializeField] private Transform orbitCenter;
         [SerializeField] private Vector3 baseCenterFallback = new Vector3(-1.5f, 0f, 0.5f);
-        [Min(2f)] [SerializeField] private float orbitRadius = 10.5f;
-        [Min(1f)] [SerializeField] private float cruiseHeight = 7.5f;
-        [Min(0.5f)] [SerializeField] private float flySpeed = 5.5f;
+        [Min(2f)] [SerializeField] private float orbitRadius = 17f;
+        [Min(1f)] [SerializeField] private float cruiseHeight = 9f;
+        [Min(0.5f)] [SerializeField] private float flySpeed = 6f;
         [SerializeField] private bool clockwise = true;
 
-        [Header("Timing & Feel")]
-        [SerializeField] private Vector2 waitRangeSeconds = new Vector2(10f, 24f);
+        [Header("Feel")]
         [Min(0.2f)] [SerializeField] private float takeoffSeconds = 2.4f;
-        [Min(2f)] [SerializeField] private float orbitSeconds = 16f;
         [Range(0f, 45f)] [SerializeField] private float bankDegrees = 18f;
         [Min(1f)] [SerializeField] private float turnSharpness = 4f;
         [Min(0f)] [SerializeField] private float idleBobHeight = 0.12f;
@@ -50,51 +48,28 @@ namespace ArtemisX.Visuals
 
         private IEnumerator PatrolLoop()
         {
-            while (enabled)
+            // Orbit the base all the time, starting from wherever the dropship is placed in the scene.
+            Vector3 center = CenterPoint();
+            Vector3 fromCenter = transform.position - center;
+            fromCenter.y = 0f;
+            float angle = fromCenter.sqrMagnitude > 0.01f ? Mathf.Atan2(fromCenter.z, fromCenter.x) : 0f;
+
+            // Ease onto the orbit ring first so the start has no snap.
+            yield return MoveToPoint(OrbitPoint(center, angle), takeoffSeconds, 0.35f);
+
+            float dir = clockwise ? -1f : 1f;
+            float bank = clockwise ? -bankDegrees : bankDegrees;
+            while (true)
             {
-                yield return IdleHover(Random.Range(waitRangeSeconds.x, waitRangeSeconds.y));
+                float dt = Time.deltaTime;
+                angle += (flySpeed / Mathf.Max(1f, orbitRadius)) * dir * dt;
 
-                Vector3 center = CenterPoint();
-                Vector3 toHome = homePos - center;
-                toHome.y = 0f;
-                float angle = toHome.sqrMagnitude > 0.01f ? Mathf.Atan2(toHome.z, toHome.x) : 0f;
-
-                // 1. Lift off from hover pose onto the orbit ring
-                yield return MoveToPoint(OrbitPoint(center, angle), takeoffSeconds, 0.35f);
-
-                // 2. Orbit smoothly around the base, banking into the turn
-                float dir = clockwise ? -1f : 1f;
-                float angularSpeed = (flySpeed / Mathf.Max(1f, orbitRadius)) * dir;
-                float bank = clockwise ? -bankDegrees : bankDegrees;
-                float elapsed = 0f;
-
-                while (elapsed < orbitSeconds)
-                {
-                    float dt = Time.deltaTime;
-                    elapsed += dt;
-                    angle += angularSpeed * dt;
-
-                    Vector3 nextPos = OrbitPoint(center, angle);
-                    Vector3 velocity = (nextPos - transform.position) / Mathf.Max(dt, 0.0001f);
-                    transform.position = nextPos;
-                    SteerAlong(velocity, bank, dt);
-                    yield return null;
-                }
-
-                // 3. Return to the parked hover position
-                float returnDuration = Mathf.Max(1.5f, Vector3.Distance(transform.position, homePos) / Mathf.Max(0.5f, flySpeed));
-                yield return MoveToPoint(homePos, returnDuration, 0.25f);
-
-                // 4. Settle cleanly back to initial orientation
-                float settle = 0f;
-                Quaternion fromRot = transform.rotation;
-                while (settle < 1f)
-                {
-                    settle += Time.deltaTime / 1.2f;
-                    transform.rotation = Quaternion.Slerp(fromRot, homeRot, Mathf.SmoothStep(0f, 1f, settle));
-                    yield return null;
-                }
-                transform.SetPositionAndRotation(homePos, homeRot);
+                Vector3 nextPos = OrbitPoint(center, angle);
+                nextPos.y += Mathf.Sin(Time.time * idleBobSpeed) * idleBobHeight;
+                Vector3 velocity = (nextPos - transform.position) / Mathf.Max(dt, 0.0001f);
+                transform.position = nextPos;
+                SteerAlong(velocity, bank, dt);
+                yield return null;
             }
         }
 

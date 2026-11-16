@@ -36,6 +36,7 @@ namespace ArtemisX.UI
         {
             ApplyStyle();
             if (alertBadge != null) alertBadge.gameObject.SetActive(false);
+            if (fillShine != null) fillShine.SetActive(false);
         }
 
         private void Update()
@@ -134,10 +135,15 @@ namespace ArtemisX.UI
         {
             if (changed != type || deltaLabel == null) return;
             if (fillMask != null)
+            {
                 deltaLabel.text = perDay > 0 ? "▲+" + perDay : perDay < 0 ? "▼−" + Mathf.Abs(perDay) : "0";
+                deltaLabel.color = perDay == 0 ? new Color(0.76f, 0.81f, 0.89f, 1f) : (style != null ? style.DeltaColor(perDay) : Color.white);
+            }
             else
+            {
                 deltaLabel.text = perDay > 0 ? "+" + perDay : perDay < 0 ? "−" + Mathf.Abs(perDay) : "0";
-            if (style != null) deltaLabel.color = style.DeltaColor(perDay);
+                if (style != null) deltaLabel.color = style.DeltaColor(perDay);
+            }
         }
     }
 }

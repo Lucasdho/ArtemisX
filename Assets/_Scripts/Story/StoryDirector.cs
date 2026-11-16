@@ -96,10 +96,22 @@ namespace ArtemisX.Story
         }
 
         /// <summary>Milestone hook for the first completed building.</summary>
-        public void TriggerFirstBuilding()
+        public void TriggerFirstBuilding() => TriggerBuildingCompleted(0);
+
+        /// <summary>Plays Kepler's science milestone dialogue for the completed building index (0..2).</summary>
+        public void TriggerBuildingCompleted(int index)
         {
-            if (runner != null && schedule != null && schedule.firstBuildingMilestone != null)
-                runner.Enqueue(schedule.firstBuildingMilestone, null, DialogueQueueSlot.MorningBriefing);
+            if (runner == null || schedule == null) return;
+            DialogueSequence seq = index switch
+            {
+                0 => schedule.firstBuildingMilestone,
+                1 => schedule.secondBuildingMilestone,
+                2 => schedule.thirdBuildingMilestone,
+                _ => null
+            };
+            if (seq == null) return;
+            SyncTemplateTokens();
+            runner.Enqueue(seq, null, DialogueQueueSlot.MorningBriefing);
         }
 
         /// <summary>Queues Bauzer's supply ship arrival announcement in the SupplyArrival slot.</summary>

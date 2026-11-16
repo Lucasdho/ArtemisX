@@ -20,20 +20,22 @@ MonoBehaviour:
       that runs Artemis X Base.
   - speaker: {fileID: 11400000, guid: f1a52219a36a5425fbc0493a4d791c19, type: 2}
     mood: 0
-    text: 'Small outposts exist up here, but none can live on its own yet. Our job:
-      make this one self-sufficient!'
+    text: 'Real Moon bases can''t rely on expensive rockets forever. Our goal: make
+      this base self-sufficient in 30 days!'
   - speaker: {fileID: 11400000, guid: f1a52219a36a5425fbc0493a4d791c19, type: 2}
     mood: 0
-    text: 'Build 3 modules in order: Water & O2 Plant, Greenhouse, then Fuel Reserve.
-      Each one earns a star.'
+    text: 'Build 3 science modules in order: 1) Processing Plant (rocks & ice ->
+      Water & Parts), 2) Electrolyser (Water -> O2 & H2 fuel), 3) Terraforming Dome
+      (Power & Water -> Food).'
   - speaker: {fileID: 11400000, guid: f1a52219a36a5425fbc0493a4d791c19, type: 2}
     mood: 2
-    text: 'We have 30 days. Every choice is a trade-off: Power, Water, Oxygen, Food
-      and Parts are all limited.'
+    text: 'Every module earns a Star, and every resource counts: Power, Water, Oxygen,
+      Food and Parts are all limited.'
   - speaker: {fileID: 11400000, guid: e9491b65d8a9c4edfa921bee9056b201, type: 2}
     mood: 0
-    text: Ready for duty, Kepler! Show me around.
+    text: Ready for duty, Kepler! Show me the goal, where to build, and how to gather
+      resources.
   - speaker: {fileID: 11400000, guid: f1a52219a36a5425fbc0493a4d791c19, type: 2}
     mood: 1
-    text: Let's start with a quick training day!
+    text: Let's start with a quick Day 1 training!
   choices: []

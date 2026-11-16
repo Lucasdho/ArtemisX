@@ -37,6 +37,9 @@ namespace ArtemisX.UI
         public MorningSequenceController Morning => morning;
         public Camera ViewCamera => viewCamera != null ? viewCamera : (viewCamera = Camera.main);
 
+        /// <summary>True when a Kepler/story dialogue box is open.</summary>
+        public bool IsDialogueOpen => runner != null && runner.IsOpen;
+
         /// <summary>Start screen / intro cutscene: hides the HUD and blocks world clicks.</summary>
         public bool Cinematic { get; set; }
 
@@ -44,6 +47,14 @@ namespace ArtemisX.UI
         public bool IsWorldInputBlocked =>
             Cinematic ||
             (runner != null && runner.IsOpen) ||
+            (morning != null && morning.IsShowing) ||
+            (roverMap != null && roverMap.IsOpen) ||
+            (transition != null && transition.IsPlaying) ||
+            (resolution != null && (resolution.IsResolving || resolution.IsMissionOver));
+
+        /// <summary>True when a full-screen overlay or transition should hide floating HUD alerts.</summary>
+        public bool IsOverlayCoveringHud =>
+            Cinematic ||
             (morning != null && morning.IsShowing) ||
             (roverMap != null && roverMap.IsOpen) ||
             (transition != null && transition.IsPlaying) ||

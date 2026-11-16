@@ -28,9 +28,25 @@ namespace ArtemisX.Simulation
         public int Day { get; private set; } = 1;
         public WeatherEventType TodayWeather => config != null ? config.GetWeather(Day) : WeatherEventType.Calm;
         public WeatherEventType TomorrowWeather => config != null ? config.GetWeather(Day + 1) : WeatherEventType.Calm;
+        public int ForecastLength => config != null && config.days != null ? config.days.Length : 0;
         public bool IsEventToday => TodayWeather != WeatherEventType.Calm;
         public bool IsSolarStormToday => TodayWeather == WeatherEventType.SolarStorm;
         public SpaceWeatherConfig.WeatherDay TodayEntry => config != null ? config.GetDay(Day) : default;
+
+        public bool HasWeatherForDay(int day) => config != null && config.days != null && day >= 1 && day <= config.days.Length;
+
+        public WeatherEventType GetWeather(int day) => config != null ? config.GetWeather(day) : WeatherEventType.Calm;
+
+        public bool TryGetWeather(int day, out WeatherEventType weather)
+        {
+            if (HasWeatherForDay(day))
+            {
+                weather = config.GetWeather(day);
+                return true;
+            }
+            weather = WeatherEventType.Calm;
+            return false;
+        }
 
         /// <summary>The choice made today, or null. The choice card is shown only on event days.</summary>
         public WeatherChoice? TodayChoice { get; private set; }

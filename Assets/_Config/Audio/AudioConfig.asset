@@ -14,6 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ArtemisX.Audio.AudioConfig
   masterVolume: 1
   muted: 0
+  musicClip: {fileID: 8300000, guid: 41308e62a94424f7aaa501255119ba8e, type: 3}
+  musicVolume: 0.5
+  musicFadeInSeconds: 4
+  musicFadeOutSeconds: 6
   entries:
   - cue: 0
     clip: {fileID: 8300000, guid: a90a1c3352086408484585f0e302ed50, type: 3}

@@ -31,5 +31,25 @@ namespace ArtemisX.Core
         [Header("Right-Tilt")]
         public Vector2 pitchRange = new Vector2(22f, 62f);
         [Min(0.01f)] public float tiltSensitivity = 0.22f;
+
+        [Header("Focus")]
+        [Tooltip("Seconds for the camera to fly to a clicked component before its menu opens. 0 = snap.")]
+        [Min(0f)] public float focusSeconds = 0.6f;
+        [Tooltip("Zoom distance when focusing an object. Set 0 to keep current zoom.")]
+        [Min(0f)] public float focusDistance = 22f;
+        [Tooltip("Shifts the camera look target forward along camera yaw so the object sits slightly below center, leaving room for its banner above.")]
+        public float focusForwardOffset = 1.8f;
+
+        [Header("Base overview")]
+        [Tooltip("Zoom distance used to show the whole base (building completed, End Day).")]
+        [Min(1f)] public float overviewDistance = 36f;
+        [Tooltip("Seconds the camera takes to zoom out to the base overview.")]
+        [Min(0f)] public float overviewSeconds = 1.2f;
+
+        [Header("End Day view")]
+        [Tooltip("Extra yaw (degrees) applied while zooming out for the End Day animation.")]
+        [Range(-45f, 45f)] public float endDayYawOffset = 12f;
+        [Tooltip("Shifts the look point in camera space during End Day: x = screen right (negative = left), y = forward.")]
+        public Vector2 endDayLookOffset = new Vector2(-3f, 0f);
     }
 }

@@ -167,12 +167,12 @@ namespace ArtemisX.Simulation.Tests
             Assert.IsFalse(s.buildings.TryBuildNext());
 
             s.res.Add(ResourceType.Parts, 45); // 50
-            Assert.IsTrue(s.buildings.TryBuildNext()); // Greenhouse: 25 Parts + 25 Power
+            Assert.IsTrue(s.buildings.TryBuildNext()); // Electrolyser: 25 Parts + 25 Power
             Assert.AreEqual(25, s.res.Get(ResourceType.Parts));
             Assert.AreEqual(15, s.res.Get(ResourceType.Power));
 
             s.res.Add(ResourceType.Parts, 25);
-            Assert.AreEqual(ActionBlockReason.NotEnoughPower, s.buildings.CanBuildNext()); // Fuel Reserve needs 30 Power
+            Assert.AreEqual(ActionBlockReason.NotEnoughPower, s.buildings.CanBuildNext()); // Terraforming Dome needs 30 Power
             s.res.Add(ResourceType.Power, 20);
             Assert.IsTrue(s.buildings.TryBuildNext());
             Assert.AreEqual(ActionBlockReason.AllBuilt, s.buildings.CanBuildNext());
@@ -185,11 +185,15 @@ namespace ArtemisX.Simulation.Tests
         public void Buildings_AddTheirPassiveOutputToNetRates()
         {
             var s = Create(new int[0]);
-            s.buildings.TryBuildNext();
+            s.buildings.TryBuildNext(); // Processing Plant: +10 Water, +4 Parts
             Assert.AreEqual(2, s.res.GetNetRate(ResourceType.Water));
+            Assert.AreEqual(4, s.res.GetNetRate(ResourceType.Parts));
+            s.res.Add(ResourceType.Parts, 50);
+            s.buildings.TryBuildNext(); // Electrolyser: +12 Oxygen
             Assert.AreEqual(4, s.res.GetNetRate(ResourceType.Oxygen));
             s.res.Add(ResourceType.Parts, 50);
-            s.buildings.TryBuildNext();
+            s.res.Add(ResourceType.Power, 50);
+            s.buildings.TryBuildNext(); // Terraforming Dome: +12 Food
             Assert.AreEqual(4, s.res.GetNetRate(ResourceType.Food));
         }
 
@@ -252,7 +256,7 @@ namespace ArtemisX.Simulation.Tests
         public void Rover_CanBreakInStorm_NoHaul_RepairsFor5Parts()
         {
             var siteConfig = Load<ExpeditionSiteConfig>(SiteConfigPath);
-            var s = Create(new[] { 1 }, () => siteConfig.stormBreakdownChance - 0.01f); // above Far's calm 25%, below storm 30%
+            var s = Create(new[] { 1 }, () => siteConfig.stormBreakdownChance - 0.01f); // below the 30% storm chance
             var brokenEvents = new List<BaseComponent>();
             s.rover.ComponentBroken += brokenEvents.Add;
 
@@ -275,11 +279,52 @@ namespace ArtemisX.Simulation.Tests
         [Test]
         public void Rover_CalmBreakdown_UsesSiteRisk()
         {
-            var s = Create(new int[0], () => 0.10f); // 10%: above Near 5%, below Far 25%
+            var siteConfig = Load<ExpeditionSiteConfig>(SiteConfigPath);
+            Assert.IsTrue(siteConfig.TryGetSite(NearIce, out var nearIce));
+            Assert.AreEqual("Frostline Hollow", nearIce.displayName);
+            Assert.AreEqual(0f, nearIce.calmBreakdownChance, 0.0001f);
+
+            Assert.IsTrue(siteConfig.TryGetSite(FarIce, out var farIce));
+            Assert.AreEqual("Cryo Abyss", farIce.displayName);
+            Assert.AreEqual(0.5f, farIce.calmBreakdownChance, 0.0001f);
+
+            Assert.IsTrue(siteConfig.TryGetSite(NearMinerals, out var nearMinerals));
+            Assert.AreEqual("Gleam Gully", nearMinerals.displayName);
+            Assert.AreEqual(0f, nearMinerals.calmBreakdownChance, 0.0001f);
+
+            Assert.IsTrue(siteConfig.TryGetSite(FarMinerals, out var farMinerals));
+            Assert.AreEqual("Titan's Vein", farMinerals.displayName);
+            Assert.AreEqual(0.5f, farMinerals.calmBreakdownChance, 0.0001f);
+
+            Assert.IsTrue(siteConfig.TryGetSite(Balanced, out var balanced));
+            Assert.AreEqual("Crossroads Basin", balanced.displayName);
+            Assert.AreEqual(0.25f, balanced.calmBreakdownChance, 0.0001f);
+
+            // Near sites (0%) never break even on roll 0f
+            var s = Create(new int[0], () => 0f);
             s.rover.TryDispatchRover(NearMinerals);
             s.ctrl.EndDay();
             Assert.AreEqual(RoverStatus.Ready, s.rover.Status);
 
+            // Balanced (25%) breaks at 0.20f and survives at 0.30f
+            s.rover.RandomValue = () => 0.30f;
+            s.rover.TryDispatchRover(Balanced);
+            s.ctrl.EndDay();
+            Assert.AreEqual(RoverStatus.Ready, s.rover.Status);
+
+            s.rover.RandomValue = () => 0.20f;
+            s.rover.TryDispatchRover(Balanced);
+            s.ctrl.EndDay();
+            Assert.AreEqual(RoverStatus.Broken, s.rover.Status);
+            s.rover.TryRepairRover();
+
+            // Far sites (50%) survive at 0.55f and break at 0.45f
+            s.rover.RandomValue = () => 0.55f;
+            s.rover.TryDispatchRover(FarIce);
+            s.ctrl.EndDay();
+            Assert.AreEqual(RoverStatus.Ready, s.rover.Status);
+
+            s.rover.RandomValue = () => 0.45f;
             s.rover.TryDispatchRover(FarIce);
             s.ctrl.EndDay();
             Assert.AreEqual(RoverStatus.Broken, s.rover.Status);
@@ -384,6 +429,36 @@ namespace ArtemisX.Simulation.Tests
             Assert.IsFalse(s.ctrl.IsMissionOver);
         }
 
+        [Test]
+        public void OxygenZero_WhenRestrictOnZeroOxygenDisabled_DoesNotSoftLockBeforeElectrolyser()
+        {
+            var s = Create(new int[0]);
+            s.res.RestrictOnZeroOxygen = false;
+
+            // Drain Oxygen to 0 over 10 nights without building Electrolyser while keeping Food stocked.
+            for (int i = 0; i < 10; i++)
+            {
+                s.res.Add(ResourceType.Food, 20);
+                s.ctrl.EndDay();
+            }
+
+            Assert.AreEqual(0, s.res.Get(ResourceType.Oxygen));
+            Assert.Greater(s.res.Get(ResourceType.Food), 0);
+            Assert.IsFalse(s.res.IsCrewRestricted);
+            Assert.IsFalse(s.ctrl.LastReport.crewRestricted);
+
+            // Player can still build Processing Plant + Electrolyser and dispatch the rover.
+            s.res.Add(ResourceType.Parts, 50);
+            s.res.Add(ResourceType.Power, 50);
+            Assert.AreEqual(ActionBlockReason.None, s.buildings.CanBuildNext());
+            Assert.AreEqual(ActionBlockReason.None, s.rover.CanDispatch(NearIce));
+
+            // Food hitting 0 still restricts the crew.
+            s.res.Add(ResourceType.Food, -200);
+            Assert.IsTrue(s.res.IsCrewRestricted);
+            Assert.AreEqual(ActionBlockReason.CrewRestricted, s.buildings.CanBuildNext());
+        }
+
         // ---------- Supply ----------
 
         [Test]
@@ -404,6 +479,35 @@ namespace ArtemisX.Simulation.Tests
             Assert.AreEqual(food + 30, s.res.Get(ResourceType.Food));
             Assert.AreEqual(parts + 15, s.res.Get(ResourceType.Parts));
             Assert.IsFalse(s.supply.CollectSupply());
+        }
+
+        [Test]
+        public void Supply_DropStarterSupply_DropsOnceOnDay1_AndPreserves5DayCadence()
+        {
+            var s = Create(new int[0]);
+            var drops = new List<int>();
+            s.supply.SupplyDropped += (day, f, p) => drops.Add(day);
+
+            Assert.IsFalse(s.supply.HasPendingSupply);
+            Assert.IsTrue(s.supply.DropStarterSupply(1));
+            Assert.IsTrue(s.supply.StarterDropped);
+            Assert.IsTrue(s.supply.HasPendingSupply);
+            Assert.AreEqual(30, s.supply.PendingFood);
+            Assert.AreEqual(15, s.supply.PendingParts);
+            Assert.IsFalse(s.supply.DropStarterSupply(1), "Should not drop a second starter crate while pending");
+
+            int foodBefore = s.res.Get(ResourceType.Food);
+            int partsBefore = s.res.Get(ResourceType.Parts);
+            Assert.IsTrue(s.supply.CollectSupply());
+            Assert.AreEqual(foodBefore + 30, s.res.Get(ResourceType.Food));
+            Assert.AreEqual(partsBefore + 15, s.res.Get(ResourceType.Parts));
+            Assert.IsFalse(s.supply.HasPendingSupply);
+            Assert.IsFalse(s.supply.DropStarterSupply(1), "Starter drop is strictly one-time");
+
+            for (int i = 0; i < 4; i++) s.ctrl.EndDay(); // Days 2, 3, 4, 5
+            Assert.AreEqual(5, s.days.CurrentDay);
+            CollectionAssert.AreEqual(new[] { 1, 5 }, drops);
+            Assert.IsTrue(s.supply.HasPendingSupply);
         }
 
         // ---------- Day resolution / end ----------

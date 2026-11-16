@@ -50,14 +50,7 @@ namespace ArtemisX.UI.EditorTools
             var cameraRig = Find("CM_BaseCamera");
             var lander = Find("lander_A") ?? Find("landingPad + lander");
 
-            // --- Start screen (Run 3C prefab) ---
-            var startPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(StartPrefabPath);
-            var startGo = (GameObject)PrefabUtility.InstantiatePrefab(startPrefab);
-            startGo.name = "StartScreenCanvas";
-            var startView = startGo.GetComponentInChildren<StartScreenView>(true);
-            Set(startView, "dialogueRunner", runner);
-            var overlay = new SerializedObject(startView).FindProperty("overlayRoot").objectReferenceValue as GameObject;
-            AddAiCredit(overlay != null ? overlay.transform : startGo.transform, theme);
+            // Start screen now lives in its own CharacterSelect scene; ensure any legacy StartScreenCanvas is removed.
 
             // --- Tutorial / skip overlay ---
             var tutorial = NewCanvas(TutorialName, 40);
@@ -67,8 +60,8 @@ namespace ArtemisX.UI.EditorTools
             frame.rectTransform.anchorMin = frame.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
             var hint = NewImage("HintBanner", tutRect, theme.panelBaseSprite, theme.panelBackdropColor);
             hint.raycastTarget = false;
-            Anchor(hint.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, -170f), new Vector2(900f, 76f));
-            var hintText = NewText("Text", hint.rectTransform, theme.headerFont, 28, theme.amberHighlight, TextAnchor.MiddleCenter);
+            Anchor(hint.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, -190f), new Vector2(1300f, 140f));
+            var hintText = NewText("Text", hint.rectTransform, theme.headerFont, 50, theme.amberHighlight, TextAnchor.MiddleCenter);
             Stretch(hintText.rectTransform, 16f);
             var highlight = tutorial.AddComponent<TutorialHighlightView>();
             Set(highlight, "canvasRect", tutRect);
@@ -174,6 +167,8 @@ namespace ArtemisX.UI.EditorTools
             Set(onboarding, "morning", hudRoot.GetComponent<MorningSequenceController>());
             Set(onboarding, "transition", managers.GetComponent<Visuals.DayNightTransitionPlayer>());
             Set(onboarding, "highlight", highlight);
+            Set(onboarding, "missionCard", Find("MissionCard")?.GetComponent<RectTransform>());
+            Set(onboarding, "firstBuildingSlot", Find("ProcessingPlant")?.transform);
             Set(onboarding, "weatherWidget", Find("WeatherWidget")?.GetComponent<RectTransform>());
             Set(onboarding, "nextDayButton", Find("NextDayButton")?.GetComponent<RectTransform>());
             Set(onboarding, "solarField", Find("solarFarm")?.transform);
@@ -182,7 +177,7 @@ namespace ArtemisX.UI.EditorTools
 
             Set(gameFlow, "config", screens);
             Set(gameFlow, "uiConfig", uiConfig);
-            Set(gameFlow, "startScreen", startView);
+            Set(gameFlow, "profile", profile);
             Set(gameFlow, "runner", runner);
             Set(gameFlow, "story", story);
             Set(gameFlow, "hud", hud);

@@ -137,12 +137,12 @@ namespace ArtemisX.UI.EditorTools
             BuildSolarVisuals(solarFarm, solar, visConfig, visuals);
 
             var plant = GameObject.Find("ProcessingPlant");
-            var greenhouse = GameObject.Find("foodFarm");
-            var fuel = GameObject.Find("Electrolyser_H2Generator");
+            var electro = GameObject.Find("Electrolyser_H2Generator");
+            var terraforming = GameObject.Find("foodFarm");
             var ringMaterial = Object.FindAnyObjectByType<ResourceHotspot>().GetComponentInChildren<LineRenderer>().sharedMaterial;
             BuildSlot(plant, 0, hud, buildings, visConfig, visuals, ringMaterial);
-            BuildSlot(greenhouse, 1, hud, buildings, visConfig, visuals, ringMaterial);
-            BuildSlot(fuel, 2, hud, buildings, visConfig, visuals, ringMaterial);
+            BuildSlot(electro, 1, hud, buildings, visConfig, visuals, ringMaterial);
+            BuildSlot(terraforming, 2, hud, buildings, visConfig, visuals, ringMaterial);
 
             var roverGo = Object.FindAnyObjectByType<RoverDriver>(FindObjectsInactive.Include).gameObject;
             var oldDriver = roverGo.GetComponent<RoverDriver>();
@@ -165,9 +165,10 @@ namespace ArtemisX.UI.EditorTools
             // ---------- Rover map ----------
             var camRig = Object.FindAnyObjectByType<CameraPanController>();
             var mapParts = BuildRoverMap(hudRoot, rover.GetComponent<RoverExpeditionManager>(), hotspots, out var markers, out var back, out var title, out var markerLayer);
+            var siteCard = hudRoot.GetComponentInChildren<RoverSiteCardView>(true);
             Wire(map, ("hud", hud), ("config", uiConfig), ("rover", rover), ("resources", resources), ("weather", weather),
                 ("cameraRig", camRig.transform), ("panController", camRig), ("mapRoot", mapParts), ("markerLayer", markerLayer),
-                ("backButton", back), ("titleLabel", title));
+                ("backButton", back), ("titleLabel", title), ("siteCard", siteCard));
             SetArray(map, "markers", markers);
 
             // ---------- Hub ----------
@@ -305,14 +306,14 @@ namespace ArtemisX.UI.EditorTools
         private static void BuildPopupCosts(ContextConfirmPopupView popup)
         {
             var root = (RectTransform)popup.transform;
-            root.sizeDelta = new Vector2(360f, 200f);
+            root.sizeDelta = new Vector2(380f, 240f);
             var titleText = root.Find("Title").GetComponent<Text>();
             titleText.resizeTextForBestFit = true; titleText.resizeTextMinSize = 12; titleText.resizeTextMaxSize = titleText.fontSize;
             var old = root.Find("CostRow");
             if (old != null) Object.DestroyImmediate(old.gameObject);
             var desc = (RectTransform)root.Find("Description");
-            desc.offsetMin = new Vector2(18f, 96f);
-            desc.offsetMax = new Vector2(-18f, -44f);
+            desc.offsetMin = new Vector2(22f, 84f);
+            desc.offsetMax = new Vector2(-22f, -70f);
             desc.GetComponent<Text>().resizeTextForBestFit = true;
             desc.GetComponent<Text>().resizeTextMinSize = 12;
             desc.GetComponent<Text>().resizeTextMaxSize = desc.GetComponent<Text>().fontSize;
@@ -386,12 +387,12 @@ namespace ArtemisX.UI.EditorTools
             var todayIcon = MakeDay("Today", 0f, "Today", out var todayLabel);
             var tomorrowIcon = MakeDay("Tomorrow", 0.5f, "Tomorrow", out var tomorrowLabel);
             var view = root.gameObject.AddComponent<SpaceWeatherWidgetView>();
-            const string emotes = "Assets/GameAssets/kenney_emotes-pack/PNG/Vector/Style 1/";
+            const string weatherIcons = "Assets/_UI/Icons/";
             Wire(view, ("weather", weather), ("todayIcon", todayIcon), ("todayLabel", todayLabel), ("tomorrowIcon", tomorrowIcon),
                 ("tomorrowLabel", tomorrowLabel),
-                ("calmIcon", AssetDatabase.LoadAssetAtPath<Texture2D>(CirclePath)),
-                ("stormIcon", AssetDatabase.LoadAssetAtPath<Texture2D>(emotes + "emote_swirl.png")),
-                ("radiationIcon", AssetDatabase.LoadAssetAtPath<Texture2D>(emotes + "emote_alert.png")));
+                ("calmIcon", AssetDatabase.LoadAssetAtPath<Texture2D>(weatherIcons + "icon_weather_calm.png")),
+                ("stormIcon", AssetDatabase.LoadAssetAtPath<Texture2D>(weatherIcons + "icon_weather_storm.png")),
+                ("radiationIcon", AssetDatabase.LoadAssetAtPath<Texture2D>(weatherIcons + "icon_weather_radiation.png")));
             return view;
         }
 
@@ -587,7 +588,7 @@ namespace ArtemisX.UI.EditorTools
                 MakeChip(chips, "Cost", out _, out var costIcon, out var costLabel);
                 MakeChip(chips, "RewardA", out _, out var rewardIconA, out var rewardLabelA);
                 MakeChip(chips, "RewardB", out _, out var rewardIconB, out var rewardLabelB);
-                var risk = MakeText(m, "Risk", "5% risk", 15, style.mutedTextColor, TextAnchor.MiddleCenter, FontStyle.Normal);
+                var risk = MakeText(m, "Risk", Mathf.RoundToInt(site.calmBreakdownChance * 100f) + "% risk", 15, style.mutedTextColor, TextAnchor.MiddleCenter, FontStyle.Normal);
                 Place((RectTransform)risk.transform, new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 6f), new Vector2(-16f, 22f));
                 var stem = NewUI("Stem", m);
                 Place(stem, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0.5f, 1f), new Vector2(0f, 2f), new Vector2(14f, 14f));

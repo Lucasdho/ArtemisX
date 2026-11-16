@@ -16,7 +16,7 @@ MonoBehaviour:
   reportLines:
   - key: crew_restricted
     mood: 2
-    text: Oxygen or Food hit zero. No building or rover trips until we restock!
+    text: Food hit zero. No building or rover trips until we restock!
   - key: solar_broken
     mood: 2
     text: Storm rocks hit the solar panels. Repair them with 5 Parts to get Power
@@ -53,17 +53,17 @@ MonoBehaviour:
     Exposed equipment can get damaged.
   radiationFallbackNote: Fast particles from the Sun can harm astronauts outside
     shelter. Shields or walls keep them safe.
-  tipCrewRestricted: Need Oxygen and Food first! Restock before building or sending
-    the rover.
+  tipCrewRestricted: Need Food first! Restock before building or sending the rover.
   tipNotEnoughPower: Not enough Power for that. Keep the solar panels out to recharge.
   tipNotEnoughParts: Not enough Parts. Mineral trips and supply capsules bring more.
   tipRoverOnMission: The rover is out on a trip. It comes back tomorrow morning.
   tipRoverBroken: The rover is broken. Repair it with 5 Parts first.
   tipRoverLocked: Radiation today! The rover stays docked to keep the crew safe.
-  tipBuildOrder: 'Build in order: Water & O2 Plant, then Greenhouse, then Fuel Reserve.'
+  tipBuildOrder: 'Build in order: Processing Plant, then Electrolyser, then Terraforming
+    Dome.'
   tipGeneric: That can't be done right now.
-  helpText: Tap glowing objects to act. Use the Rover button for Water and Parts,
-    then build. Press Next Day when ready!
+  helpText: 'Goal: build 3 modules (Missions card). Tap the glowing ring to build.
+    Use the Rover for Water & Parts, solar panels for Power, then press Next Day!'
   startDayLabel: Start Day
   shieldLabel: Shield & Retract
   keepPowerLabel: Keep Full Power

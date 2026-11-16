@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using ArtemisX.Core;
 using ArtemisX.Simulation;
 using UnityEngine;
 
@@ -16,6 +17,8 @@ namespace ArtemisX.Visuals
         [SerializeField] private DayResolutionController resolution;
         [SerializeField] private AmbientMood ambientMood;
         [SerializeField] private GameplayVisualsConfig config;
+        [Tooltip("Optional. Found in the scene if left empty. Zooms out to the whole base when the transition starts.")]
+        [SerializeField] private CameraPanController panController;
 
         /// <summary>Raised when the transition starts and when it ends (played out or skipped).</summary>
         public event Action TransitionStarted;
@@ -42,6 +45,8 @@ namespace ArtemisX.Visuals
             IsPlaying = true;
             nightResolved = false;
             TransitionStarted?.Invoke();
+            if (panController == null) panController = FindAnyObjectByType<CameraPanController>();
+            if (panController != null && panController.isActiveAndEnabled) panController.ZoomOutToBase(null, true);
             running = StartCoroutine(Play(weather));
         }
 

@@ -55,7 +55,15 @@ namespace ArtemisX.Core
                 var clickable = hit.collider.GetComponentInParent<ClickableBuilding>();
                 if (clickable != null)
                 {
-                    popup.Open(clickable, viewCamera);
+                    if (panController != null && panController.isActiveAndEnabled)
+                    {
+                        int ticket = popup.BeginPending();
+                        panController.FocusOn(clickable.AnchorWorldPosition, () =>
+                        {
+                            if (popup.IsPendingFor(ticket)) popup.Open(clickable, viewCamera);
+                        });
+                    }
+                    else popup.Open(clickable, viewCamera);
                     return;
                 }
             }

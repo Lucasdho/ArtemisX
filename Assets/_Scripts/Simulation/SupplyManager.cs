@@ -43,7 +43,21 @@ namespace ArtemisX.Simulation
         private void OnEnable() => Subscribe();
         private void OnDisable() => Unsubscribe();
 
+        private bool starterDropped;
+
+        public bool StarterDropped => starterDropped;
+
         public static bool IsSupplyDay(int day, int interval) => day > 0 && interval > 0 && day % interval == 0;
+
+        /// <summary>Spawns a one-time starter supply crate for Day 1 onboarding without altering the 5-day cadence.</summary>
+        public bool DropStarterSupply(int day = 1)
+        {
+            if (starterDropped || HasPendingSupply) return false;
+            starterDropped = true;
+            PendingDrops++;
+            SupplyDropped?.Invoke(day, PendingFood, PendingParts);
+            return true;
+        }
 
         /// <summary>Morning of a new day: drops a pile on supply days.</summary>
         public void OnDayStarted(int day)

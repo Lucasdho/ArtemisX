@@ -8,6 +8,8 @@ namespace ArtemisX.Simulation
     public class ResourceManager : MonoBehaviour
     {
         [SerializeField] private GameConfig config;
+        [Tooltip("When false (e.g. HUD without an Oxygen tracker), Oxygen hitting 0 does not trigger Crew Restricted.")]
+        [SerializeField] private bool restrictOnZeroOxygen = true;
 
         /// <summary>Raised whenever a resource changes (type, value, max), and once per resource on Start.</summary>
         public event Action<ResourceType, int, int> ResourceChanged;
@@ -26,8 +28,20 @@ namespace ArtemisX.Simulation
 
         public GameConfig Config => config;
 
-        /// <summary>True while Oxygen or Food is at 0. Blocks building and rover dispatch, never ends the game.</summary>
+        /// <summary>True while Oxygen (if tracked for restriction) or Food is at 0. Blocks building and rover dispatch, never ends the game.</summary>
         public bool IsCrewRestricted { get; private set; }
+
+        /// <summary>Whether Oxygen hitting 0 triggers Crew Restricted. Disabled on scenes without an Oxygen HUD tracker.</summary>
+        public bool RestrictOnZeroOxygen
+        {
+            get => restrictOnZeroOxygen;
+            set
+            {
+                if (restrictOnZeroOxygen == value) return;
+                restrictOnZeroOxygen = value;
+                UpdateCrewRestriction(ResourceType.Oxygen);
+            }
+        }
 
         private void Awake()
         {
@@ -107,7 +121,7 @@ namespace ArtemisX.Simulation
         }
 
         private bool ComputeRestricted() =>
-            current[(int)ResourceType.Oxygen] <= 0 || current[(int)ResourceType.Food] <= 0;
+            (restrictOnZeroOxygen && current[(int)ResourceType.Oxygen] <= 0) || current[(int)ResourceType.Food] <= 0;
 
         private void UpdateCrewRestriction(ResourceType changed)
         {
@@ -117,7 +131,7 @@ namespace ArtemisX.Simulation
 
             ResourceType cause = changed;
             if (restricted)
-                cause = current[(int)ResourceType.Oxygen] <= 0 ? ResourceType.Oxygen : ResourceType.Food;
+                cause = (restrictOnZeroOxygen && current[(int)ResourceType.Oxygen] <= 0) ? ResourceType.Oxygen : ResourceType.Food;
             CrewRestrictionChanged?.Invoke(restricted, cause);
         }
     }

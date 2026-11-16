@@ -5,8 +5,9 @@ using UnityEngine;
 namespace ArtemisX.Visuals
 {
     /// <summary>
-    /// Drives the rover out along its hot spot's RoverRoutes path when dispatched and back home when it returns
-    /// next morning. Shows cargo or a broken alert over it. Replaces the decorative RoverDriver loop.
+    /// Drives the rover out along its hot spot's RoverRoutes path while OnMission and parks it at home
+    /// whenever it is not on a mission (Ready, Broken, LockedByRadiation). Shows cargo or a broken alert over it.
+    /// Replaces the decorative RoverDriver loop.
     /// </summary>
     public class RoverMissionDriver : MonoBehaviour
     {
@@ -21,71 +22,143 @@ namespace ArtemisX.Visuals
         private int nextWaypoint;
         private Vector3 homePosition;
         private Quaternion homeRotation;
-        private bool parkAtEnd;
         private float alertTimer;
+        private ParticleSystem[] dustSystems;
+        private bool homeCaptured;
 
         public bool IsDriving => nextWaypoint < waypoints.Count;
+        private bool CanDrive => rover == null || rover.Status == RoverStatus.OnMission;
 
         private void Awake()
         {
-            homePosition = transform.position;
-            homeRotation = transform.rotation;
-            SetDust(false);
+            CaptureHomeIfNeeded();
+            EnsureDustSystems();
+            SetDust(false, clear: true);
+        }
+
+        private void Start()
+        {
+            if (!CanDrive) ParkHome();
+            else if (!IsDriving) SetDust(false, clear: true);
         }
 
         private void OnEnable()
         {
-            if (rover == null) return;
-            rover.RoverDispatched += OnDispatched;
-            rover.RoverReturned += OnReturned;
-            rover.ComponentRepaired += OnRepaired;
+            CaptureHomeIfNeeded();
+            if (rover != null)
+            {
+                rover.RoverDispatched += OnDispatched;
+                rover.RoverReturned += OnReturned;
+                rover.RoverStatusChanged += OnStatusChanged;
+                rover.ComponentBroken += OnComponentBroken;
+                rover.ComponentRepaired += OnRepaired;
+            }
+
+            if (!CanDrive) ParkHome();
+            else SetDust(IsDriving, clear: true);
         }
 
         private void OnDisable()
         {
-            if (rover == null) return;
-            rover.RoverDispatched -= OnDispatched;
-            rover.RoverReturned -= OnReturned;
-            rover.ComponentRepaired -= OnRepaired;
+            if (rover != null)
+            {
+                rover.RoverDispatched -= OnDispatched;
+                rover.RoverReturned -= OnReturned;
+                rover.RoverStatusChanged -= OnStatusChanged;
+                rover.ComponentBroken -= OnComponentBroken;
+                rover.ComponentRepaired -= OnRepaired;
+            }
+            SetDust(false, clear: true);
+        }
+
+        private void CaptureHomeIfNeeded()
+        {
+            if (homeCaptured) return;
+            homePosition = transform.position;
+            homeRotation = transform.rotation;
+            homeCaptured = true;
+        }
+
+        private void ParkHome()
+        {
+            CaptureHomeIfNeeded();
+            waypoints.Clear();
+            nextWaypoint = 0;
+            transform.SetPositionAndRotation(homePosition, homeRotation);
+            SetDust(false, clear: true);
         }
 
         private void OnDispatched(string siteId)
         {
-            BuildRoute(siteId, outbound: true);
-            parkAtEnd = false;
+            if (!CanDrive)
+            {
+                ParkHome();
+                return;
+            }
+            BuildRoute(siteId);
         }
 
         private void OnReturned(string siteId, int water, int parts, bool broken)
         {
-            // The rover spent the night at the site: start the drive home from there.
-            BuildRoute(siteId, outbound: false);
-            if (waypoints.Count > 0) transform.position = waypoints[0];
-            nextWaypoint = Mathf.Min(1, waypoints.Count);
-            parkAtEnd = true;
+            ParkHome();
             alertTimer = 0f;
             if (!broken && (water > 0 || parts > 0)) EmoteBubble.Show(transform, EmoteKind.Happy, 3f, 1.4f);
         }
 
-        private void OnRepaired(BaseComponent component)
+        private void OnStatusChanged(RoverStatus status)
         {
-            if (component == BaseComponent.Rover) EmoteBubble.Show(transform, EmoteKind.Happy, 2f, 1.4f);
+            if (status != RoverStatus.OnMission)
+                ParkHome();
         }
 
-        private void BuildRoute(string siteId, bool outbound)
+        private void OnComponentBroken(BaseComponent component)
         {
+            if (component != BaseComponent.Rover) return;
+            ParkHome();
+            alertTimer = 0f;
+        }
+
+        private void OnRepaired(BaseComponent component)
+        {
+            if (component != BaseComponent.Rover) return;
+            ParkHome();
+            EmoteBubble.Show(transform, EmoteKind.Happy, 2f, 1.4f);
+        }
+
+        private void BuildRoute(string siteId)
+        {
+            CaptureHomeIfNeeded();
             waypoints.Clear();
             nextWaypoint = 0;
             WaypointPath path = FindRoute(siteId);
             Vector3 target = FindTarget(siteId);
 
-            var points = new List<Vector3> { homePosition };
+            Vector3 last = transform.position;
             if (path != null)
-                for (int i = 0; i < path.Count; i++) points.Add(path.GetPoint(i));
-            if (target != Vector3.zero || path == null) points.Add(target);
+            {
+                int outwardCount = GetOutwardPointCount(path);
+                for (int i = 0; i < outwardCount; i++)
+                {
+                    Vector3 pt = path.GetPoint(i);
+                    if ((pt - last).sqrMagnitude <= 0.0001f) continue;
+                    waypoints.Add(pt);
+                    last = pt;
+                }
+            }
+            if ((target != Vector3.zero || path == null) && (target - last).sqrMagnitude > 0.0001f)
+            {
+                waypoints.Add(target);
+            }
+        }
 
-            if (!outbound) points.Reverse();
-            if (outbound) waypoints.Add(transform.position);
-            waypoints.AddRange(points);
+        private static int GetOutwardPointCount(WaypointPath path)
+        {
+            int count = path.Count;
+            if (count <= 2) return count;
+            int mid = count / 2;
+            if (count % 2 == 0 && (path.GetPoint(mid - 1) - path.GetPoint(mid + 1)).sqrMagnitude < 0.0001f)
+                return mid + 1;
+            return count;
         }
 
         private WaypointPath FindRoute(string siteId)
@@ -107,10 +180,25 @@ namespace ArtemisX.Visuals
             return Vector3.zero;
         }
 
-        private void Update()
+        private void Update() => Step(Time.deltaTime);
+
+        public void Step(float dt)
         {
-            float dt = Time.deltaTime;
-            if (IsDriving)
+            if (dt < 0f) dt = 0f;
+            if (!CanDrive)
+            {
+                if (IsDriving
+                    || (transform.position - homePosition).sqrMagnitude > 0.0001f
+                    || Quaternion.Angle(transform.rotation, homeRotation) > 0.01f)
+                {
+                    ParkHome();
+                }
+                else
+                {
+                    SetDust(false, clear: true);
+                }
+            }
+            else if (IsDriving)
             {
                 Vector3 target = waypoints[nextWaypoint];
                 Vector3 to = target - transform.position;
@@ -120,10 +208,6 @@ namespace ArtemisX.Visuals
                 {
                     transform.position = target;
                     nextWaypoint++;
-                    if (!IsDriving && parkAtEnd)
-                    {
-                        transform.rotation = homeRotation;
-                    }
                 }
                 else
                 {
@@ -134,8 +218,12 @@ namespace ArtemisX.Visuals
                         transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(flat, Vector3.up), 1f - Mathf.Exp(-sharp * dt));
                     }
                 }
+                SetDust(IsDriving, clear: false);
             }
-            SetDust(IsDriving);
+            else
+            {
+                SetDust(false, clear: false);
+            }
 
             if (rover != null && rover.Status == RoverStatus.Broken && !IsDriving)
             {
@@ -148,11 +236,39 @@ namespace ArtemisX.Visuals
             }
         }
 
-        private void SetDust(bool on)
+        private void EnsureDustSystems()
         {
-            if (wheelDust == null) return;
-            var emission = wheelDust.emission;
-            if (emission.enabled != on) emission.enabled = on;
+            if (dustSystems != null && dustSystems.Length > 0) return;
+            if (wheelDust == null)
+            {
+                dustSystems = System.Array.Empty<ParticleSystem>();
+                return;
+            }
+
+            Transform container = wheelDust.transform.parent != null && wheelDust.transform.parent != transform
+                ? wheelDust.transform.parent
+                : wheelDust.transform;
+            dustSystems = container.GetComponentsInChildren<ParticleSystem>(true);
+        }
+
+        private void SetDust(bool on, bool clear = true)
+        {
+            EnsureDustSystems();
+            for (int i = 0; i < dustSystems.Length; i++)
+            {
+                ParticleSystem ps = dustSystems[i];
+                if (ps == null) continue;
+                var emission = ps.emission;
+                if (emission.enabled != on) emission.enabled = on;
+                if (on)
+                {
+                    if (!ps.isPlaying) ps.Play(false);
+                }
+                else if (ps.isEmitting || (clear && (ps.isPlaying || ps.particleCount > 0)))
+                {
+                    ps.Stop(false, clear ? ParticleSystemStopBehavior.StopEmittingAndClear : ParticleSystemStopBehavior.StopEmitting);
+                }
+            }
         }
     }
 }

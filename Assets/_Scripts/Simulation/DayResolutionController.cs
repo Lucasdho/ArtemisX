@@ -52,6 +52,7 @@ namespace ArtemisX.Simulation
         public DailyReportData LastReport { get; private set; }
         public int CurrentDay => dayManager != null ? dayManager.CurrentDay : 1;
         public int MissionLength => config != null ? config.missionLength : 30;
+        public ResourceManager Resources => resources;
 
         private bool subscribed;
 
@@ -236,7 +237,7 @@ namespace ArtemisX.Simulation
         private void OnBuildingCompleted(int index)
         {
             RefreshNetRates();
-            if (index == 0 && storyDirector != null) storyDirector.TriggerFirstBuilding();
+            if (storyDirector != null) storyDirector.TriggerBuildingCompleted(index);
         }
 
         private void OnSolarStateChanged(SolarFieldState _) => RefreshNetRates();

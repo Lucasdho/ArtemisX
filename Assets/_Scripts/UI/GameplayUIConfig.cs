@@ -47,9 +47,9 @@ namespace ArtemisX.UI
         [TextArea(1, 2)] public string tipRoverOnMission = "The rover is out on a trip. It comes back tomorrow morning.";
         [TextArea(1, 2)] public string tipRoverBroken = "The rover is broken. Repair it with 5 Parts first.";
         [TextArea(1, 2)] public string tipRoverLocked = "Radiation today! The rover stays docked to keep the crew safe.";
-        [TextArea(1, 2)] public string tipBuildOrder = "Build in order: Water & O2 Plant, then Greenhouse, then Fuel Reserve.";
+        [TextArea(1, 2)] public string tipBuildOrder = "Build in order: Processing Plant, then Electrolyser, then Terraforming Dome.";
         [TextArea(1, 2)] public string tipGeneric = "That can't be done right now.";
-        [TextArea(1, 3)] public string helpText = "Tap glowing objects to act. Use the Rover button for Water and Parts, then build. Press Next Day when ready!";
+        [TextArea(1, 3)] public string helpText = "Goal: build 3 modules (Missions card). Tap the glowing ring to build. Use the Rover for Water & Parts, solar panels for Power, then press Next Day!";
 
         [Header("Card labels")]
         public string startDayLabel = "Start Day";

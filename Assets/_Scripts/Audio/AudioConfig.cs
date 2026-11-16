@@ -21,6 +21,12 @@ namespace ArtemisX.Audio
         [Range(0f, 1f)] public float masterVolume = 1f;
         public bool muted;
 
+        [Header("Music")]
+        public AudioClip musicClip;
+        [Range(0f, 1f)] public float musicVolume = 0.5f;
+        [Min(0f)] public float musicFadeInSeconds = 4f;
+        [Min(0f)] public float musicFadeOutSeconds = 6f;
+
         [Header("Sound Cues")]
         public CueEntry[] entries = Array.Empty<CueEntry>();
 

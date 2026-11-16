@@ -10,6 +10,8 @@ namespace ArtemisX.UI
         [SerializeField] private RectTransform frame;
         [SerializeField] private GameObject hintRoot;
         [SerializeField] private Text hintLabel;
+        [Tooltip("Tutorial progress now lives in the Mission card; keep the top banner off.")]
+        [SerializeField] private bool showHintBanner = false;
         [SerializeField] private Vector2 worldFrameSize = new Vector2(240f, 240f);
         [SerializeField] private float uiPadding = 24f;
         [SerializeField] private float pulseSpeed = 4f;
@@ -50,8 +52,8 @@ namespace ArtemisX.UI
         private void Show(string hint)
         {
             if (frame != null) frame.gameObject.SetActive(true);
-            if (hintRoot != null) hintRoot.SetActive(!string.IsNullOrEmpty(hint));
-            if (hintLabel != null) hintLabel.text = hint ?? string.Empty;
+            if (hintLabel != null) hintLabel.text = showHintBanner ? (hint ?? string.Empty) : string.Empty;
+            if (hintRoot != null) hintRoot.SetActive(showHintBanner && !string.IsNullOrEmpty(hint));
             LateUpdate();
         }
 
@@ -59,7 +61,7 @@ namespace ArtemisX.UI
         {
             if (frame == null || canvasRect == null) return;
             bool hasTarget = uiTarget != null || worldTarget != null;
-            if (hintRoot != null) hintRoot.SetActive(hasTarget && !Suppressed && hintLabel != null && hintLabel.text.Length > 0);
+            if (hintRoot != null) hintRoot.SetActive(showHintBanner && hasTarget && !Suppressed && hintLabel != null && hintLabel.text.Length > 0);
             if (!hasTarget || Suppressed) { frame.gameObject.SetActive(false); return; }
             frame.gameObject.SetActive(true);
             float pulse = 1f + Mathf.Sin(Time.unscaledTime * pulseSpeed) * pulseAmount;

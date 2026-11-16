@@ -27,3 +27,6 @@ MonoBehaviour:
   pinchZoomSpeed: 0.03
   pitchRange: {x: 22, y: 62}
   tiltSensitivity: 0.22
+  focusSeconds: 0.6
+  focusDistance: 22
+  focusForwardOffset: 1.8
