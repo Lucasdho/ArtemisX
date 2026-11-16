@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using ArtemisX.Audio;
 using DG.Tweening;
@@ -30,6 +31,8 @@ namespace ArtemisX.UI.StartScreen
         [SerializeField] private Camera facePhotoCamera;
         [SerializeField] private Light facePhotoLight;
         [SerializeField] private int portraitResolution = 256;
+        [Tooltip("Astronaut selected on load (1 = Rae the red panda).")]
+        [SerializeField] private int defaultCharacterIndex = 1;
 
         [Header("Minimal ToyUI Box (Avatar + Name + Next)")]
         [SerializeField] private GameObject toyBoxRoot;
@@ -77,6 +80,14 @@ namespace ArtemisX.UI.StartScreen
                 toyBoxRoot.SetActive(false);
         }
 
+        private IEnumerator Start()
+        {
+            // Wait one frame so the astronaut idle pose is applied before the face snapshot.
+            yield return new WaitForEndOfFrame();
+            if (selectedIndex < 0)
+                Select(defaultCharacterIndex, playSfx: false);
+        }
+
         private void OnDestroy()
         {
             if (nextButton != null)
@@ -92,7 +103,9 @@ namespace ArtemisX.UI.StartScreen
             }
         }
 
-        private void HandleAstronautClicked(int index)
+        private void HandleAstronautClicked(int index) => Select(index, playSfx: true);
+
+        private void Select(int index, bool playSfx)
         {
             selectedIndex = Mathf.Clamp(index, 0, astronauts.Length - 1);
 
@@ -111,7 +124,8 @@ namespace ArtemisX.UI.StartScreen
             }
 
             ShowToyBox();
-            PlayClickSfx();
+            if (playSfx)
+                PlayClickSfx();
         }
 
         private void ShowToyBox()
