@@ -36,6 +36,7 @@ namespace ArtemisX.UI
         private void Awake()
         {
             if (backButton != null) backButton.onClick.AddListener(Close);
+            if (siteCard != null) siteCard.Closed += ClearSelection;
             foreach (var m in markers) if (m != null) m.Bind(OnSiteClicked);
             if (mapRoot != null) mapRoot.SetActive(false);
         }
@@ -43,6 +44,7 @@ namespace ArtemisX.UI
         private void OnDestroy()
         {
             if (backButton != null) backButton.onClick.RemoveListener(Close);
+            if (siteCard != null) siteCard.Closed -= ClearSelection;
         }
 
         public void Open()
@@ -54,6 +56,7 @@ namespace ArtemisX.UI
             savedRotation = cameraRig.rotation;
 
             RefreshMarkers();
+            ClearSelection();
             if (markerLayer != null) markerLayer.gameObject.SetActive(true);
             if (siteCard != null) siteCard.Hide();
             if (titleLabel != null && rover != null) titleLabel.text = "Send " + rover.RoverName + " to a site";
@@ -152,10 +155,16 @@ namespace ArtemisX.UI
             if (rover == null) return;
             if (siteCard != null && rover.Config != null && rover.Config.TryGetSite(siteId, out var site))
             {
+                foreach (var m in markers) if (m != null) m.SetSelected(m.SiteId == siteId);
                 siteCard.Show(site, rover, resources, weather, () => DispatchSite(siteId));
                 return;
             }
             DispatchSite(siteId);
+        }
+
+        private void ClearSelection()
+        {
+            foreach (var m in markers) if (m != null) m.SetSelected(false);
         }
 
         private void DispatchSite(string siteId)

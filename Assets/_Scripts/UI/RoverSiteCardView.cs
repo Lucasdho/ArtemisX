@@ -48,6 +48,8 @@ namespace ArtemisX.UI
 
         private Action onSendClicked;
 
+        public event Action Closed;
+
         public bool IsOpen => root != null && root.activeSelf;
 
         private void Awake()
@@ -132,8 +134,10 @@ namespace ArtemisX.UI
 
         public void Hide()
         {
+            bool wasOpen = IsOpen;
             onSendClicked = null;
             if (root != null) root.SetActive(false);
+            if (wasOpen) Closed?.Invoke();
         }
 
         private void HandleSend() => onSendClicked?.Invoke();
