@@ -40,6 +40,7 @@ namespace ArtemisX.UI
 
         [Header("Replay tutorial")]
         [SerializeField] private Button replayButton;
+        [SerializeField] private GameObject replayCaption;
         [SerializeField] private Day1Onboarding onboarding;
 
         [Header("Visibility")]
@@ -51,7 +52,17 @@ namespace ArtemisX.UI
         private float previousTimeScale = 1f;
         private float popElapsed;
 
+        /// <summary>Set by the title screen: the modal may open while the HUD is cinematic, and the HUD gear stays hidden.</summary>
+        public bool TitleMode { get; set; }
+
         public bool IsOpen => root != null && root.activeSelf;
+
+        /// <summary>Shows or hides the Replay tutorial button (hidden on the title screen).</summary>
+        public void SetReplayVisible(bool visible)
+        {
+            if (replayButton != null) replayButton.gameObject.SetActive(visible);
+            if (replayCaption != null) replayCaption.SetActive(visible);
+        }
         public static bool SoundOn => PlayerPrefs.GetInt(SoundPrefKey, 1) == 1;
 
         private void Awake()
@@ -84,13 +95,14 @@ namespace ArtemisX.UI
         private void Update()
         {
             bool gameplay = (hud == null || !hud.Cinematic) && (endScreen == null || !endScreen.IsOpen);
+            bool showGear = gameplay && !TitleMode;
             if (openButtonGroup != null)
             {
-                openButtonGroup.alpha = gameplay ? 1f : 0f;
-                openButtonGroup.blocksRaycasts = gameplay;
-                openButtonGroup.interactable = gameplay;
+                openButtonGroup.alpha = showGear ? 1f : 0f;
+                openButtonGroup.blocksRaycasts = showGear;
+                openButtonGroup.interactable = showGear;
             }
-            if (IsOpen && !gameplay) Close();
+            if (IsOpen && !gameplay && !TitleMode) Close();
             if (!IsOpen) return;
 
             if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
