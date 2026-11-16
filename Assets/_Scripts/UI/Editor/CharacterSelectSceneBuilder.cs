@@ -353,6 +353,30 @@ namespace ArtemisX.UI.EditorTools
             scaler.referenceResolution = new Vector2(1920f, 1080f);
             scaler.matchWidthOrHeight = 0.5f;
 
+            // --- Title ---
+            var titleGo = new GameObject("TitleLabel", typeof(RectTransform), typeof(Text), typeof(Outline), typeof(Shadow));
+            titleGo.transform.SetParent(canvasGo.transform, false);
+            var titleRt = titleGo.GetComponent<RectTransform>();
+            titleRt.anchorMin = new Vector2(0.5f, 1f);
+            titleRt.anchorMax = new Vector2(0.5f, 1f);
+            titleRt.pivot = new Vector2(0.5f, 1f);
+            titleRt.anchoredPosition = new Vector2(0f, -36f);
+            titleRt.sizeDelta = new Vector2(1400f, 150f);
+            var titleText = titleGo.GetComponent<Text>();
+            titleText.font = luckiestGuy;
+            titleText.fontSize = 96;
+            titleText.color = Color.white;
+            titleText.alignment = TextAnchor.MiddleCenter;
+            titleText.text = "CHOOSE YOUR ASTRONAUT";
+            titleText.raycastTarget = false;
+            titleText.horizontalOverflow = HorizontalWrapMode.Overflow;
+            var titleOutline = titleGo.GetComponent<Outline>();
+            titleOutline.effectColor = InkColor;
+            titleOutline.effectDistance = new Vector2(4f, -4f);
+            var titleShadow = titleGo.GetComponent<Shadow>();
+            titleShadow.effectColor = InkColor;
+            titleShadow.effectDistance = new Vector2(0f, -8f);
+
             // --- Minimal ToyUI Bottom Box ---
             var boxGo = new GameObject("ToyBox", typeof(RectTransform), typeof(Image), typeof(Shadow));
             boxGo.transform.SetParent(canvasGo.transform, false);
@@ -361,17 +385,11 @@ namespace ArtemisX.UI.EditorTools
             boxRt.anchorMax = new Vector2(0.5f, 0f);
             boxRt.pivot = new Vector2(0.5f, 0f);
             boxRt.anchoredPosition = new Vector2(0f, 44f);
-            boxRt.sizeDelta = new Vector2(880f, 148f);
+            boxRt.sizeDelta = new Vector2(880f, 130f);
 
-            var boxImg = boxGo.GetComponent<Image>();
-            boxImg.sprite = panelPlain;
-            boxImg.type = Image.Type.Sliced;
-            boxImg.pixelsPerUnitMultiplier = 2f;
-            boxImg.color = Color.white;
-
-            var boxShadow = boxGo.GetComponent<Shadow>();
-            boxShadow.effectColor = new Color(0f, 0f, 0f, 0.45f);
-            boxShadow.effectDistance = new Vector2(0f, -6f);
+            // No backing panel: avatar + name plate + START sit directly on the scene.
+            boxGo.GetComponent<Image>().enabled = false;
+            boxGo.GetComponent<Shadow>().enabled = false;
 
             // 1. Character Avatar (runtime 3D face photo)
             var avatarFrameGo = new GameObject("AvatarFrame", typeof(RectTransform), typeof(Image));
@@ -419,13 +437,13 @@ namespace ArtemisX.UI.EditorTools
             inputRt.anchorMin = new Vector2(0f, 0.5f);
             inputRt.anchorMax = new Vector2(1f, 0.5f);
             inputRt.pivot = new Vector2(0.5f, 0.5f);
-            inputRt.offsetMin = new Vector2(150f, -34f);
-            inputRt.offsetMax = new Vector2(-230f, 38f);
+            inputRt.offsetMin = new Vector2(150f, -43f);
+            inputRt.offsetMax = new Vector2(-230f, 43f);
             var inputBg = inputBgGo.GetComponent<Image>();
-            inputBg.sprite = panelPlain;
+            inputBg.sprite = Load<Sprite>(ToyUiRoot + "name-plate.png");
             inputBg.type = Image.Type.Sliced;
             inputBg.pixelsPerUnitMultiplier = 2f;
-            inputBg.color = new Color(0.95f, 0.97f, 1.0f, 1f);
+            inputBg.color = Color.white;
 
             var placeholderGo = new GameObject("Placeholder", typeof(RectTransform), typeof(Text));
             placeholderGo.transform.SetParent(inputRt, false);
@@ -437,7 +455,7 @@ namespace ArtemisX.UI.EditorTools
             var phText = placeholderGo.GetComponent<Text>();
             phText.font = atkinsonBold;
             phText.fontSize = 26;
-            phText.color = PlaceholderColor;
+            phText.color = new Color(1f, 1f, 1f, 0.45f);
             phText.alignment = TextAnchor.MiddleLeft;
             phText.text = "Enter name...";
 
@@ -451,7 +469,7 @@ namespace ArtemisX.UI.EditorTools
             var inputText = inputTextGo.GetComponent<Text>();
             inputText.font = atkinsonBold;
             inputText.fontSize = 28;
-            inputText.color = InkColor;
+            inputText.color = Color.white;
             inputText.alignment = TextAnchor.MiddleLeft;
             inputText.supportRichText = false;
 
@@ -469,7 +487,7 @@ namespace ArtemisX.UI.EditorTools
             nextRt.anchorMax = new Vector2(1f, 0.5f);
             nextRt.pivot = new Vector2(1f, 0.5f);
             nextRt.anchoredPosition = new Vector2(-22f, 2f);
-            nextRt.sizeDelta = new Vector2(188f, 64f);
+            nextRt.sizeDelta = new Vector2(200f, 72f);
 
             var nextImg = nextGo.GetComponent<Image>();
             nextImg.sprite = btnPrimary;
@@ -500,7 +518,7 @@ namespace ArtemisX.UI.EditorTools
             nextLabel.fontSize = 26;
             nextLabel.color = Color.white;
             nextLabel.alignment = TextAnchor.MiddleCenter;
-            nextLabel.text = "NEXT >";
+            nextLabel.text = "START";
             nextLabel.raycastTarget = false;
 
             var outline = nextLabelGo.GetComponent<Outline>();
