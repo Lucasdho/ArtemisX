@@ -60,6 +60,18 @@ namespace ArtemisX.UI
             StartCoroutine(Run());
         }
 
+        /// <summary>Settings "Replay tutorial": drops any running pass and starts again from the first step.</summary>
+        public void RestartTutorial()
+        {
+            StopAllCoroutines();
+            if (IsRunning && runner != null && runner.IsOpen && runtimeSequence != null && runner.CurrentSequence == runtimeSequence)
+                runner.SkipCurrentSequence();
+            IsRunning = false;
+            if (highlight != null) highlight.Hide();
+            if (nextDay != null) nextDay.ExternalLock = false;
+            Begin();
+        }
+
         private void OnWorldClicked(WorldInteractable target)
         {
             if (target is SolarFieldInteractable) solarClicked = true;
