@@ -81,3 +81,5 @@ Unity Engine 6000.3, Universal Render Pipeline, Cinemachine, Input System: Unity
 - Supabase (Postgres REST API) for the anonymous run histogram, via the publishable key only: https://supabase.com/
 
 CC0 licence text: http://creativecommons.org/publicdomain/zero/1.0/
+
+- `Assets/_Audio/Music/MainTheme.mp3`: original background track by Lucas (made in FL Studio, 126 BPM)
