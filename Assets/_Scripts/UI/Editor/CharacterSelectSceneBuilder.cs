@@ -71,13 +71,13 @@ namespace ArtemisX.UI.EditorTools
             RenderSettings.fog = true;
             RenderSettings.fogMode = FogMode.Exponential;
             RenderSettings.fogColor = new Color(0.016f, 0.027f, 0.078f, 1f);
-            RenderSettings.fogDensity = 0.020f;
+            RenderSettings.fogDensity = 0.012f;
 
             // --- Main Camera ---
             var camGo = new GameObject("Main Camera");
             camGo.tag = "MainCamera";
-            camGo.transform.position = new Vector3(0f, 0.92f, -7.6f);
-            camGo.transform.rotation = Quaternion.Euler(3.5f, 0f, 0f);
+            camGo.transform.position = new Vector3(-0.45f, 3.45f, -5.95f);
+            camGo.transform.rotation = Quaternion.Euler(7.0f, 330f, 0f);
             var cam = camGo.AddComponent<Camera>();
             cam.clearFlags = CameraClearFlags.SolidColor;
             cam.backgroundColor = new Color(0.014f, 0.024f, 0.070f, 1f);
@@ -100,9 +100,9 @@ namespace ArtemisX.UI.EditorTools
             }
 
             // --- 3-Point Cool Studio + Moonlight Rig ---
-            CreateDirectionalLight("KeyLight_Moon", new Vector3(38f, -35f, 0f), new Color(0.75f, 0.86f, 1.0f, 1f), 0.55f, LightShadows.Soft);
-            CreateDirectionalLight("RimLight_Cyan", new Vector3(20f, 155f, 0f), new Color(0.22f, 0.78f, 1.0f, 1f), 2.4f, LightShadows.None);
-            CreateDirectionalLight("FillLight_Warm", new Vector3(8f, 25f, 0f), new Color(1.0f, 0.82f, 0.65f, 1f), 0.28f, LightShadows.None);
+            CreateDirectionalLight("KeyLight_Moon", new Vector3(34f, 345f, 0f), new Color(0.75f, 0.86f, 1.0f, 1f), 1.05f, LightShadows.Soft);
+            CreateDirectionalLight("RimLight_Cyan", new Vector3(18f, 145f, 0f), new Color(0.22f, 0.78f, 1.0f, 1f), 2.8f, LightShadows.None);
+            CreateDirectionalLight("FillLight_Warm", new Vector3(12f, 20f, 0f), new Color(1.0f, 0.82f, 0.65f, 1f), 0.45f, LightShadows.None);
 
             // --- Lunar Stage Environment ---
             var groundCollider = BuildEnvironment();
@@ -130,12 +130,18 @@ namespace ArtemisX.UI.EditorTools
             // --- 4 Nameless / Roleless 3D Astronauts ---
             var animController = Load<RuntimeAnimatorController>(ControllerPath);
             var selectableAstronauts = new SelectableAstronaut[4];
-            float[] xPositions = { -2.25f, -0.75f, 0.75f, 2.25f };
+            Vector3[] slotPositions =
+            {
+                new Vector3(-6.921f, 1.36f, -0.36f),
+                new Vector3(-6.09f, 1.26f, 1.49f),
+                new Vector3(-4.0f, 1.28f, 3.7f),
+                new Vector3(-2.19f, 1.29f, 3.89f)
+            };
+            float[] slotYaws = { 123.704f, 134.517f, 180.0f, 194.351f };
 
             for (int i = 0; i < 4; i++)
             {
-                float groundY = SampleGroundY(groundCollider, xPositions[i], 0f);
-                selectableAstronauts[i] = BuildAstronautSlot(i, xPositions[i], groundY, animController);
+                selectableAstronauts[i] = BuildAstronautSlot(i, slotPositions[i], slotYaws[i], animController);
             }
 
             // --- EventSystem (New Input System) ---
@@ -178,26 +184,26 @@ namespace ArtemisX.UI.EditorTools
                 groundCollider.sharedMesh = mesh;
             }
 
-            // Distant background moonbase dome with warm beacon & solar panels (centered in horizon gap)
+            // Distant background moonbase dome with warm beacon & solar panels (centered in horizon valley)
             PlaceProp("Assets/GameAssets/KayKit_Space_Base_Bits_1.0_SOURCE/Assets/fbx(unity)/dome.fbx",
-                envRoot.transform, new Vector3(0.0f, 0f, 14.5f), Quaternion.Euler(0f, -20f, 0f), 0.58f, groundCollider);
-            float domeGroundY = SampleGroundY(groundCollider, 0.0f, 14.2f);
+                envRoot.transform, new Vector3(-15.5f, -0.1f, 19.5f), Quaternion.Euler(0f, 145f, 0f), 0.72f, groundCollider);
+            float domeGroundY = SampleGroundY(groundCollider, -15.5f, 19.5f);
             var domeGlowGo = new GameObject("DomeBeaconLight");
             domeGlowGo.transform.SetParent(envRoot.transform, false);
-            domeGlowGo.transform.position = new Vector3(0.0f, domeGroundY + 0.9f, 14.2f);
+            domeGlowGo.transform.position = new Vector3(-15.1f, domeGroundY + 1.05f, 19.0f);
             var domeGlow = domeGlowGo.AddComponent<Light>();
             domeGlow.type = LightType.Point;
             domeGlow.color = new Color(1.0f, 0.65f, 0.28f, 1f);
-            domeGlow.intensity = 3.2f;
-            domeGlow.range = 6f;
+            domeGlow.intensity = 5.5f;
+            domeGlow.range = 8f;
 
             PlaceProp("Assets/GameAssets/KayKit_Space_Base_Bits_1.0_SOURCE/Assets/fbx(unity)/solarpanel.fbx",
-                envRoot.transform, new Vector3(0.95f, 0f, 14.8f), Quaternion.Euler(0f, -28f, 0f), 0.5f, groundCollider);
+                envRoot.transform, new Vector3(-16.8f, -0.05f, 18.8f), Quaternion.Euler(0f, 130f, 0f), 0.6f, groundCollider);
             PlaceProp("Assets/GameAssets/KayKit_Space_Base_Bits_1.0_SOURCE/Assets/fbx(unity)/solarpanel.fbx",
-                envRoot.transform, new Vector3(-0.95f, 0f, 15.0f), Quaternion.Euler(0f, 22f, 0f), 0.5f, groundCollider);
+                envRoot.transform, new Vector3(-14.1f, -0.05f, 20.1f), Quaternion.Euler(0f, 165f, 0f), 0.6f, groundCollider);
 
             // Framed lunar rocks & ridge silhouettes (clear of astronaut silhouettes)
-            PlaceProp("Assets/_Prefabs/Environment/Rock_Quat_Large_1.prefab", envRoot.transform, new Vector3(-4.8f, 0f, 4.2f), Quaternion.Euler(0f, 20f, 0f), 0.65f, groundCollider);
+            PlaceProp("Assets/_Prefabs/Environment/Rock_Quat_Large_1.prefab", envRoot.transform, new Vector3(-8.6f, 0f, 2.2f), Quaternion.Euler(0f, 20f, 0f), 0.65f, groundCollider);
             PlaceProp("Assets/_Prefabs/Environment/Rock_Quat_Large_2.prefab", envRoot.transform, new Vector3(4.9f, 0f, 4.0f), Quaternion.Euler(0f, -45f, 0f), 0.68f, groundCollider);
             PlaceProp("Assets/_Prefabs/Environment/Rock_Quat_Large_3.prefab", envRoot.transform, new Vector3(2.9f, -0.15f, 13.5f), Quaternion.Euler(0f, 12f, 0f), 0.9f, groundCollider);
             PlaceProp("Assets/_Prefabs/Environment/Rock_Quat_1.prefab", envRoot.transform, new Vector3(-3.35f, 0f, -1.2f), Quaternion.Euler(0f, 15f, 0f), 0.42f, groundCollider);
@@ -208,21 +214,22 @@ namespace ArtemisX.UI.EditorTools
             // Subtle distant starfield particles
             var starsGo = new GameObject("Starfield");
             starsGo.transform.SetParent(envRoot.transform, false);
-            starsGo.transform.position = new Vector3(0f, 4.8f, 16f);
+            starsGo.transform.position = new Vector3(-13.0f, 8.2f, 15.8f);
+            starsGo.transform.rotation = Quaternion.Euler(0f, 330f, 0f);
             var ps = starsGo.AddComponent<ParticleSystem>();
             var main = ps.main;
             main.loop = true;
             main.prewarm = true;
             main.startLifetime = 10f;
             main.startSpeed = 0f;
-            main.startSize = new ParticleSystem.MinMaxCurve(0.02f, 0.045f);
-            main.maxParticles = 220;
+            main.startSize = new ParticleSystem.MinMaxCurve(0.045f, 0.095f);
+            main.maxParticles = 350;
             main.startColor = new ParticleSystem.MinMaxGradient(new Color(0.75f, 0.88f, 1f, 0.85f), new Color(1f, 0.96f, 0.85f, 0.95f));
             var emission = ps.emission;
-            emission.rateOverTime = 22f;
+            emission.rateOverTime = 35f;
             var shape = ps.shape;
             shape.shapeType = ParticleSystemShapeType.Box;
-            shape.scale = new Vector3(26f, 9f, 2f);
+            shape.scale = new Vector3(34f, 10f, 4f);
             var psr = starsGo.GetComponent<ParticleSystemRenderer>();
             var starMat = AssetDatabase.LoadAssetAtPath<Material>(PadMatFolder + "/M_StarParticle.mat");
             if (starMat == null)
@@ -231,8 +238,8 @@ namespace ArtemisX.UI.EditorTools
                 if (pUnlit != null)
                 {
                     EnsureFolder(PadMatFolder);
-                    starMat = new Material(pUnlit) { color = new Color(1.5f, 1.6f, 1.9f, 1f) };
-                    Texture2D dotTex = AssetDatabase.GetBuiltinExtraResource<Texture2D>("Default-Particle.psd");
+                    starMat = new Material(pUnlit) { color = new Color(2.2f, 2.4f, 2.8f, 1f) };
+                    Texture2D dotTex = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/_Prefabs/UI/Sprites/UICircle.png");
                     if (dotTex != null) starMat.mainTexture = dotTex;
                     AssetDatabase.CreateAsset(starMat, PadMatFolder + "/M_StarParticle.mat");
                 }
@@ -242,11 +249,11 @@ namespace ArtemisX.UI.EditorTools
             return groundCollider;
         }
 
-        private static SelectableAstronaut BuildAstronautSlot(int index, float xPos, float yPos, RuntimeAnimatorController animController)
+        private static SelectableAstronaut BuildAstronautSlot(int index, Vector3 slotPos, float yaw, RuntimeAnimatorController animController)
         {
             var slot = new GameObject($"Astronaut_{index}");
-            slot.transform.position = new Vector3(xPos, yPos, 0f);
-            slot.transform.rotation = Quaternion.Euler(0f, 180f, 0f); // Face -Z toward Main Camera
+            slot.transform.position = slotPos;
+            slot.transform.rotation = Quaternion.Euler(0f, yaw, 0f);
 
             // Collider for click selection
             var col = slot.AddComponent<CapsuleCollider>();
@@ -309,7 +316,7 @@ namespace ArtemisX.UI.EditorTools
             spot.color = Color.Lerp(Color.white, AccentColors[index], 0.3f);
             spot.intensity = 2.5f;
             spot.range = 9f;
-            spot.spotAngle = 32f;
+            spot.spotAngle = 36f;
             spot.innerSpotAngle = 14f;
             spot.shadows = LightShadows.Soft;
 
@@ -320,6 +327,7 @@ namespace ArtemisX.UI.EditorTools
             so.FindProperty("spotLight").objectReferenceValue = spot;
             so.FindProperty("padRingRenderer").objectReferenceValue = padRenderer;
             so.FindProperty("accentColor").colorValue = AccentColors[index];
+            so.FindProperty("idleSpotIntensity").floatValue = 2.5f;
             so.ApplyModifiedPropertiesWithoutUndo();
 
             return selectable;
